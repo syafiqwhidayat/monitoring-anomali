@@ -5,7 +5,13 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Pages::index');
+$routes->get('/', 'Home::index');
+$routes->get('/anomali', 'Anom::list');
+$routes->get('/anomali/getListKec/(:any)', 'Anom::listDesa/$1');
+$routes->get('/anomali/manajemen', 'Anom::manajemen');
+$routes->get('/anomali/upload', 'Anom::upload');
+$routes->get('/anomali/upload/template-anomali', 'Anom::template');
+$routes->get('/anomali/edit/(:any)', 'Anom::edit/$1');
 $routes->get('/pages', 'Pages::index');
 $routes->get('/about', 'Pages::about');
 $routes->get('/contact', 'Pages::contact');

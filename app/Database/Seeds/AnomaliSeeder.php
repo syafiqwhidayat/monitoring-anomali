@@ -14,8 +14,6 @@ class AnomaliSeeder extends Seeder
                 'id_user'    => 1,
                 'id_wilayah'    => '1311040008000400',
                 'id_rtart'    => '131104000800040000101',
-                'nm_krt'    => 'Syafiq',
-                'nm_art'    => 'Wahyu',
                 'konfirmasi'    => ''
             ],
             [
@@ -23,8 +21,6 @@ class AnomaliSeeder extends Seeder
                 'id_user'    => 1,
                 'id_wilayah'    => '1311040008000400',
                 'id_rtart'    => '131104000800040000102',
-                'nm_krt'    => 'Syafiq',
-                'nm_art'    => 'Hidayat',
                 'konfirmasi'    => 'Sesuai Lapangan'
             ],
         ];

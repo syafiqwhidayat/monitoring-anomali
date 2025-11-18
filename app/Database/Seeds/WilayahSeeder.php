@@ -24,7 +24,7 @@ class WilayahSeeder extends Seeder
                 'nm_sls'    => 'Jorong Sikabau'
             ],
             [
-                'id'    => '1311040008000400',
+                'id'    => '1311040008000500',
                 'id_prov'    => '13',
                 'id_kab'    => '11',
                 'id_kec'    => '040',

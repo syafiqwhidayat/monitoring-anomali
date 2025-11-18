@@ -5,3 +5,31 @@
 .table > tbody > tr > * {
     vertical-align: middle;
 }
+
+.bg-bps-prm{
+    background-color: #0369A1;
+}
+
+.bg-bps-prm-grd{
+    background: linear-gradient(to bottom,#0369A1,rgba(255,0,0,0));
+}
+
+.text-family-logo{
+    font-family: Arial;
+    color: #fff;
+}
+
+.text-full-justify {
+    text-align: justify;
+}
+
+.btn-with-icon {
+    /* Gunakan d-flex untuk mengelola ::before dan span */
+    display: inline-flex;
+    align-items: center;
+}
+
+.a-butt{
+    width: fit-content;
+    height: fit-content;
+}
