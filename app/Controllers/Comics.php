@@ -160,7 +160,6 @@ class Comics extends BaseController
                 ->with('validation', $validation);
         }
 
-
         $this->comicsModel->save($dataToValidate);
 
         session()->setFlashdata('pesan', 'Data berhasil diubah.');

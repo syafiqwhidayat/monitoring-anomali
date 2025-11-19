@@ -2,7 +2,7 @@
     <?php foreach ($listAnom as $d): ?>
         <div class="accordion-item">
             <h2 class="accordion-header">
-                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $d['id']; ?>" aria-expanded="false" aria-controls="collapse<?= $d['id']; ?>">
+                <button class="accordion-button collapsed text-end" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $d['id']; ?>" aria-expanded="false" aria-controls="collapse<?= $d['id']; ?>">
                     <?= $d['kd'] . ' ' . $d['nm'] . ' (' . $d['jmlAnom'] . ')'; ?>
                 </button>
             </h2>

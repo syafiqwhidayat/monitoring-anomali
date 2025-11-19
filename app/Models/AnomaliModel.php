@@ -101,7 +101,7 @@ class AnomaliModel extends Model
         $len = strlen($idArt);
         $data = null;
         $data = $this
-            ->select('anomali.id_rtart AS id , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom')
+            ->select('anomali.id_rtart AS id , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             ->where('k.is_show', true)
             ->where('anomali.id_rtart', $idArt)

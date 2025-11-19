@@ -332,6 +332,7 @@ class Anom extends BaseController
         ];
 
         $data['listAnom'] = $this->anomaliModel->getListAnomali('131103000100120200101');
+        // dd($data['listAnom']);
 
         return view('anomali/listAnomaliDetil', $data);
     }
@@ -393,6 +394,21 @@ class Anom extends BaseController
             ]
 
         ];
+        return view('anomali/edit', $data);
+    }
+
+    public function updateKonfirmasi()
+    {
+        $data = [
+            "title" => "Upload Anomali",
+        ];
+
+        $konfir = $this->request->getVar('konfirmasi');
+        dd($konfir);
+        // return redirect()->to('/comics/edit/' . $this->request->getVar('slug'))
+        //     ->withInput()
+        //     ->with('validation', $data);
+
         return view('anomali/edit', $data);
     }
 }
