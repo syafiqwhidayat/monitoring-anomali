@@ -1,6 +1,7 @@
 <div id="listAnomIndividu" class="">
     <?php foreach ($listAnom as $l): ?>
-        <form action="/anomali/updateKonfirmasi" method="POST">
+        <!-- <form action="/anomali/updateKonfirmasi" method="POST"> -->
+        <form class="anomali-form-submit">
             <div class="d-flex align-items-center row row-cols-4 row-cols-2 row-cols-md-4 mb-2">
                 <div class="d-flex col-12 col-md-2 justify-content-center">
                     <p class="btn btn-warning"><?= $l['kdAnom']; ?></p>
@@ -17,7 +18,8 @@
                         aria-label="With textarea"><?= (old('konfirmasi')) ? old('konfirmasi') : $l['konfirmasi']; ?></textarea>
                 </div>
                 <div class="d-flex col-12 col-md-2 justify-content-end">
-                    <button type="submit" class="btn btn-primary my-2">Save</button>
+                    <button type="submit" id="submit-button" class="btn btn-primary my-2" data-id="<?= $l['id']; ?>">Save</button>
+                    <span id="feedback-<?= $l['id']; ?>" class="ms-2"></span>
                 </div>
             </div>
         </form>

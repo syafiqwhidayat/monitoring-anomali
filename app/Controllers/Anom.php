@@ -95,7 +95,7 @@ class Anom extends BaseController
         return view('anomali/listAnomali', $data);
     }
 
-    public function listDesa($idKec)
+    public function listWilAnom($idKec)
     {
         $id = substr($idKec, 8);
         $data = [
@@ -331,7 +331,7 @@ class Anom extends BaseController
             ]
         ];
 
-        $data['listAnom'] = $this->anomaliModel->getListAnomali('131103000100120200101');
+        $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt);
         // dd($data['listAnom']);
 
         return view('anomali/listAnomaliDetil', $data);
@@ -403,12 +403,38 @@ class Anom extends BaseController
             "title" => "Upload Anomali",
         ];
 
-        $konfir = $this->request->getVar('konfirmasi');
-        dd($konfir);
-        // return redirect()->to('/comics/edit/' . $this->request->getVar('slug'))
-        //     ->withInput()
-        //     ->with('validation', $data);
+        $id = $this->request->getPost('id');
+        $konfirmasi = $this->request->getVar('konfirmasi');
+        $rules = [
+            'id'           => 'required|is_natural_no_zero',
+            'konfirmasi'   => 'required',
+        ];
+        if (! $this->validate($rules)) {
+            // Jika validasi GAGAL, kembalikan JSON error
+            dd("gagal validasi");
+            return $this->response->setJSON([
+                'status' => 'error',
+                'message' => 'Validasi gagal: ' . $this->validator->getError('konfirmasi') // Kirim pesan error spesifik
+            ]);
+        }
 
-        return view('anomali/edit', $data);
+        // Lakukan proses update
+        $dataUpdate = [
+            'konfirmasi' => trim($konfirmasi),
+            // ...
+        ];
+
+        $this->anomaliModel->update($id, $dataUpdate);
+
+        // Jika BERHASIL, kembalikan JSON sukses
+
+        dd("berhasil validasi");
+        return $this->response->setJSON([
+            'status' => 'success',
+            'message' => 'Konfirmasi berhasil disimpan.',
+            'id_updated' => $id
+        ]);
+
+        dd($konfirmasi);
     }
 }

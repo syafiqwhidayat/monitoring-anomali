@@ -7,7 +7,7 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 $routes->get('/anomali', 'Anom::list');
-$routes->get('/anomali/getListKec/(:any)', 'Anom::listDesa/$1');
+$routes->get('/anomali/getListWilAnom/(:any)', 'Anom::listWilAnom/$1');
 $routes->get('/anomali/manajemen', 'Anom::manajemen');
 $routes->get('/anomali/upload', 'Anom::upload');
 $routes->get('/anomali/upload/template-anomali', 'Anom::template');
