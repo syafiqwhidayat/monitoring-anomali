@@ -9,6 +9,7 @@ $routes->get('/', 'Home::index');
 $routes->get('/anomali', 'Anom::list');
 $routes->get('/anomali/getListWilAnom/(:any)', 'Anom::listWilAnom/$1');
 $routes->get('/anomali/manajemen', 'Anom::manajemen');
+$routes->post('/anomali/manajemen-see', 'Anom::manajemenSee');
 $routes->get('/anomali/upload', 'Anom::upload');
 $routes->get('/anomali/upload/template-anomali', 'Anom::template');
 $routes->get('/anomali/edit/(:any)', 'Anom::edit/$1');

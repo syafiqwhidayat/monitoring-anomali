@@ -7,7 +7,7 @@
                 </button>
             </h2>
             <div id="collapse<?= $d['id']; ?>" class="accordion-collapse collapse" data-bs-parent="#accordionAnomali<?= $jenis; ?>">
-                <div class="accordion-body data-load-container p-2">
+                <div class="accordion-body data-load-container p-2 container-<?= $jenis; ?>">
                     <p class="fst-italic">Memuat data ...</p>
                 </div>
             </div>

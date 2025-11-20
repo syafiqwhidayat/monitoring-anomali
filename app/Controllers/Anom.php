@@ -304,7 +304,7 @@ class Anom extends BaseController
             case 21:
                 // $data['listAnom'] = $dataArt;
                 $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id);
-                $data['jenis'] = 'Art';
+                $data['jenis'] = 'Anom';
                 // return view('anomali/listAnomaliDetil', $data);
                 return $this->listAnom($id);
                 break;
@@ -367,6 +367,21 @@ class Anom extends BaseController
         ];
         return view('anomali/manajemen', $data);
     }
+
+    public function manajemenSee(){
+        $id = $this->request->getVar('id');
+        $action = $this->request->getVar('action');
+        
+        if($action === "toggle"){
+            return redirect()->to('/anomali/manajemen')->with('message','Status Lihat diubah');
+        } elseif ($action === "delete"){
+            return redirect()->to('/anomali/manajemen')->with('message','anomali berhasil dihapus');
+        } else{
+            return redirect()->to('/anomali/manajemen')->with('error','aksi tidak valid');
+        }
+     return view('anomali/manajemen');
+    }
+
     public function upload()
     {
         $data = [
@@ -437,4 +452,5 @@ class Anom extends BaseController
 
         dd($konfirmasi);
     }
+
 }
