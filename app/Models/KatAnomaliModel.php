@@ -5,15 +5,15 @@ namespace App\Models;
 use CodeIgniter\Model;
 use PhpParser\Node\Stmt\Case_;
 
-class AnomaliModel extends Model
+class KatAnomaliModel extends Model
 {
-    protected $table = 'anomali';
+    protected $table = 'kategori_anomali';
     protected $useTimestamps = true;
     protected $dateFormat = 'datetime';
     protected $createdField = 'date_created';
     protected $updatedField = 'date_updated';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['id_kategori_anomali', 'id_user', 'id_wilayah', 'id_rtart', 'konfirmasi'];
+    protected $allowedFields = ['id_kegiatan', 'kode_anomali', 'definisi_anomali', 'detil_anomali', 'is_show'];
 
     public function getAnomaliByWilayah($wilayah = false)
     {

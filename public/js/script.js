@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
       // C. Logic ketika sudah dapat accordion-anomali
-      const anomContainer = targetElement.querySelector(".container-Anom");
+      const anomContainer = targetElement.querySelector(".container-Ruta");
       if (anomContainer) {
         // --- C. Logic saat Pencet Submit ---
         anomContainer.addEventListener("submit", function (event) {
@@ -43,52 +43,60 @@ document.addEventListener("DOMContentLoaded", function () {
           console.log(forms);
           event.preventDefault(); // Mencegah submit form tradisional (refresh halaman)
 
-          const formData = new FormData(form);
-          const anomaliId = formData.get("id"); // Ambil ID dari hidden input
-          const saveButton = form.querySelector(".btn-save-konfirmasi");
-          const feedbackElement = document.getElementById(
-            `feedback-${anomaliId}`
-          );
+          forms.forEach((form) => {
+            form.addEventListener("submit", function (event) {
+              event.preventDefault(); // Mencegah submit form tradisional (refresh halaman)
 
-          // Tampilkan status loading
-          saveButton.disabled = true;
-          saveButton.textContent = "Saving...";
-          feedbackElement.innerHTML = ""; // Kosongkan feedback sebelumnya
+              const formData = new FormData(form);
+              const anomaliId = formData.get("id"); // Ambil ID dari hidden input
+              console.log(anomaliId);
+              const anomaliKonfirmasi = formData.get("konfirmasi"); // Ambil ID dari hidden input
+              console.log(anomaliKonfirmasi);
+              const saveButton = form.querySelector("#submit-button");
+              const feedbackElement = document.getElementById(`feedback-${anomaliId}`);
 
-          // 2. Kirim data menggunakan Fetch API
-          fetch("/anomali/updateKonfirmasi", {
-            method: "POST",
-            body: formData, // Langsung kirim FormData
-            // Anda mungkin perlu menambahkan headers jika menggunakan CSRF protection
-          })
-            .then((response) => response.json()) // Asumsikan Controller mengembalikan JSON
-            .then((data) => {
-              // 3. Handle Feedback Berhasil
-              if (data.status === "success") {
-                feedbackElement.innerHTML =
-                  '<i class="text-success bi bi-check-circle-fill"></i> Saved!';
-                // Optional: Highlight baris yang sukses
-                form.classList.add("bg-success", "bg-opacity-10");
-                setTimeout(
-                  () => form.classList.remove("bg-success", "bg-opacity-10"),
-                  2000
-                );
-              } else {
-                // 4. Handle Feedback Gagal (Validasi)
-                feedbackElement.innerHTML = `<span class="text-danger">Error: ${data.message}</span>`;
-              }
-            })
-            .catch((error) => {
-              // Handle kesalahan koneksi
-              feedbackElement.innerHTML =
-                '<span class="text-danger">Koneksi Error.</span>';
-              console.error("Error:", error);
-            })
-            .finally(() => {
-              // 5. Kembalikan tombol ke keadaan normal
-              saveButton.disabled = false;
-              saveButton.textContent = "Save";
+              // Tampilkan status loading
+              saveButton.disabled = true;
+              saveButton.textContent = "Saving...";
+              feedbackElement.innerHTML = ""; // Kosongkan feedback sebelumnya
+
+              // 2. Kirim data menggunakan Fetch API
+              fetch("/anomali/updateKonfirmasi", {
+                method: "POST",
+                body: formData, // Langsung kirim FormData
+                // Anda mungkin perlu menambahkan headers jika menggunakan CSRF protection
+              })
+                .then((response) => response.json()) // Asumsikan Controller mengembalikan JSON
+                .then((data) => {
+                  // 3. Handle Feedback Berhasil
+                  console.log(data)
+                  if (data.status === "success") {
+                    feedbackElement.innerHTML =
+                      '<i class="text-success bi bi-check-circle-fill"></i> Saved!';
+                    // Optional: Highlight baris yang sukses
+                    form.classList.add("bg-success", "bg-opacity-10");
+                    setTimeout(
+                      () => form.classList.remove("bg-success", "bg-opacity-10"),
+                      2000
+                    );
+                  } else {
+                    // 4. Handle Feedback Gagal (Validasi)
+                    feedbackElement.innerHTML = `<span class="text-danger">Error: ${data.message}</span>`;
+                  }
+                })
+                .catch((error) => {
+                  // Handle kesalahan koneksi
+                  feedbackElement.innerHTML =
+                    '<span class="text-danger">Koneksi Error.</span>';
+                  console.error("Error:", error);
+                })
+                .finally(() => {
+                  // 5. Kembalikan tombol ke keadaan normal
+                  saveButton.disabled = false;
+                  saveButton.textContent = "Save";
+                });
             });
+  });
         });
       }
     });

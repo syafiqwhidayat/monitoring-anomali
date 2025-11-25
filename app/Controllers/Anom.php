@@ -3,16 +3,19 @@
 namespace App\Controllers;
 
 use \App\Models\AnomaliModel;
+use App\Models\KatAnomaliModel;
 use Config\Services;
 use Faker\Provider\Lorem;
 
 class Anom extends BaseController
 {
     protected $anomaliModel;
+    protected $katAnomaliModel;
 
     public function __construct()
     {
         $this->anomaliModel = new AnomaliModel();
+        $this->katAnomaliModel = new KatAnomaliModel();
     }
 
     public function list()
@@ -337,8 +340,10 @@ class Anom extends BaseController
         return view('anomali/listAnomaliDetil', $data);
     }
 
-    public function manajemen()
+    public function manajemenList()
     {
+        $perPage = 10;
+
         $data = [
             "title" => "Manajemen Anomali",
             "listAnom" => [
@@ -365,21 +370,28 @@ class Anom extends BaseController
                 ],
             ],
         ];
+        $data['listAnom'] = $this->katAnomaliModel->where('id_kegiatan', 1)->paginate($perPage, 'default');
+        $data['pager'] = $this->katAnomaliModel->where('id_kegiatan', 1)->pager;
+        $data['currentPage'] = $this->katAnomaliModel->where('id_kegiatan', 1)->pager->getCurrentPage();
+
+        // dd($data);
+        // dd($data);
         return view('anomali/manajemen', $data);
     }
 
-    public function manajemenSee(){
+    public function manajemenSee()
+    {
         $id = $this->request->getVar('id');
         $action = $this->request->getVar('action');
-        
-        if($action === "toggle"){
-            return redirect()->to('/anomali/manajemen')->with('message','Status Lihat diubah');
-        } elseif ($action === "delete"){
-            return redirect()->to('/anomali/manajemen')->with('message','anomali berhasil dihapus');
-        } else{
-            return redirect()->to('/anomali/manajemen')->with('error','aksi tidak valid');
+
+        if ($action === "toggle") {
+            return redirect()->to('/anomali/manajemen')->with('message', 'Status Lihat diubah');
+        } elseif ($action === "delete") {
+            return redirect()->to('/anomali/manajemen')->with('message', 'anomali berhasil dihapus');
+        } else {
+            return redirect()->to('/anomali/manajemen')->with('error', 'aksi tidak valid');
         }
-     return view('anomali/manajemen');
+        return view('anomali/manajemen');
     }
 
     public function upload()
@@ -443,14 +455,13 @@ class Anom extends BaseController
 
         // Jika BERHASIL, kembalikan JSON sukses
 
-        dd("berhasil validasi");
+        // dd("berhasil validasi");
         return $this->response->setJSON([
             'status' => 'success',
             'message' => 'Konfirmasi berhasil disimpan.',
             'id_updated' => $id
         ]);
 
-        dd($konfirmasi);
+        // dd($konfirmasi);
     }
-
 }
