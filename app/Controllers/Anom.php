@@ -385,13 +385,13 @@ class Anom extends BaseController
         $action = $this->request->getVar('action');
 
         if ($action === "toggle") {
-            return redirect()->to('/anomali/manajemen')->with('message', 'Status Lihat diubah');
+            return redirect()->back()->with('message', 'Status Lihat diubah');
         } elseif ($action === "delete") {
-            return redirect()->to('/anomali/manajemen')->with('message', 'anomali berhasil dihapus');
+            return redirect()->back()->with('message', 'anomali berhasil dihapus');
         } else {
-            return redirect()->to('/anomali/manajemen')->with('error', 'aksi tidak valid');
+            return redirect()->back()->with('error', 'aksi tidak valid');
         }
-        return view('anomali/manajemen');
+        // return view('anomali/manajemen');
     }
 
     public function upload()
@@ -421,6 +421,10 @@ class Anom extends BaseController
             ]
 
         ];
+
+        $data['data'] = $this->katAnomaliModel->find($id);
+        // dd($data);
+
         return view('anomali/edit', $data);
     }
 
@@ -461,6 +465,42 @@ class Anom extends BaseController
             'message' => 'Konfirmasi berhasil disimpan.',
             'id_updated' => $id
         ]);
+
+        // dd($konfirmasi);
+    }
+
+    public function updateKategori()
+    {
+        $data = [
+            "title" => "Upload Anomali",
+        ];
+
+        $data = $this->request->getPost();
+        if ($data['is_show'] == "show_id_" . $data['id']) {
+            $data['is_show'] = true;
+        } else {
+            $data['is_show'] = false;
+        }
+
+        if ($this->katAnomaliModel->save($data) === false) {
+            session()->setFlashdata('errors', $this->katAnomaliModel->errors());
+            return redirect()->to(base_url('/anomali/edit/' . $data['id']))
+                ->withInput()
+                ->with('message_errors', 'Gagal Simpan Data');
+        }
+
+        return redirect()->back()->with('message', 'data berhasil di update');
+
+
+
+        // Jika BERHASIL, kembalikan JSON sukses
+
+        // dd("berhasil validasi");
+        // return $this->response->setJSON([
+        //     'status' => 'success',
+        //     'message' => 'Konfirmasi berhasil disimpan.',
+        //     'id_updated' => $id
+        // ]);
 
         // dd($konfirmasi);
     }

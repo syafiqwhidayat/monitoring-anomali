@@ -14,6 +14,7 @@ $routes->get('/anomali/upload', 'Anom::upload');
 $routes->get('/anomali/upload/template-anomali', 'Anom::template');
 $routes->get('/anomali/edit/(:any)', 'Anom::edit/$1');
 $routes->post('/anomali/updateKonfirmasi', 'Anom::updateKonfirmasi');
+$routes->post('/anomali/updateKategori', 'Anom::updateKategori');
 $routes->get('/pages', 'Pages::index');
 $routes->get('/about', 'Pages::about');
 $routes->get('/contact', 'Pages::contact');
