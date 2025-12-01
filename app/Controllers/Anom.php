@@ -483,13 +483,13 @@ class Anom extends BaseController
         }
 
         if ($this->katAnomaliModel->save($data) === false) {
-            session()->setFlashdata('errors', $this->katAnomaliModel->errors());
-            return redirect()->to(base_url('/anomali/edit/' . $data['id']))
+            session()->setFlashdata($this->katAnomaliModel->errors());
+            return redirect()->back()
                 ->withInput()
                 ->with('message_errors', 'Gagal Simpan Data');
         }
 
-        return redirect()->back()->with('message', 'data berhasil di update');
+        return redirect()->to(base_url('/anomali/manajemen'))->with('message', 'data berhasil di update');
 
 
 

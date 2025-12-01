@@ -10,7 +10,7 @@
     </div>
     <?php
     $errors['kode_anomali'] = '';
-    $errors = session()->getFlashdata('errors');
+    $errors = session()->getFlashdata('kode_anomali');
     ?>
     <?php if (session()->getFlashdata('message_errors')) : ?>
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -26,13 +26,13 @@
                 <input type="hidden" name="id" value="<?= $data['id']; ?>">
                 <div class="mb-3">
                     <label for="kdAnom" class="form-label">Kode Anomali</label>
-                    <input type="text" name="kode_anomali" class="form-control <?= ($errors['kode_anomali']) ? 'is-invalid' : ''; ?>"
+                    <input type="text" name="kode_anomali" class="form-control <?= (session()->getFlashdata('kode_anomali')) ? 'is-invalid' : ''; ?>"
                         id="kdAnom" aria-describedby="kdAnomHelp"
                         value="<?= (old('kode_anomali')) ? old('kode_anomali') : $data['kode_anomali']; ?>">
                     <div class="invalid-feedback">
-                        <?= $errors['kode_anomali']; ?>
+                        <?= session()->getFlashdata('kode_anomali'); ?>
                     </div>
-                    <div id="kdAnomHelp" class="form-text">Kode Anomali tidak dapat di edit</div>
+                    <!-- <div id="kdAnomHelp" class="form-text">Kode Anomali tidak dapat di edit</div> -->
                 </div>
                 <div class="mb-3">
                     <div class="form-check form-switch">
