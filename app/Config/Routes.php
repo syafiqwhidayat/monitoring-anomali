@@ -8,13 +8,16 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 $routes->get('/anomali', 'Anom::list');
 $routes->get('/anomali/getListWilAnom/(:any)', 'Anom::listWilAnom/$1');
-$routes->get('/anomali/manajemen', 'Anom::manajemenList');
-$routes->post('/anomali/manajemen-see', 'Anom::manajemenSee');
-$routes->get('/anomali/upload', 'Anom::upload');
-$routes->get('/anomali/upload/template-anomali', 'Anom::template');
-$routes->get('/anomali/edit/(:any)', 'Anom::edit/$1');
 $routes->post('/anomali/updateKonfirmasi', 'Anom::updateKonfirmasi');
-$routes->post('/anomali/updateKategori', 'Anom::updateKategori');
+$routes->get('/anomali/listEdit', 'Anom::listEdit');
+
+$routes->get('/manajemen-anomali/list', 'ManajAnom::manajemenList');
+$routes->post('/manajemen-anomali/action', 'ManajAnom::manajemenAction');
+$routes->get('/manajemen-anomali/upload', 'ManajAnom::upload');
+$routes->get('/manajemen-anomali/upload/template-anomali', 'ManajAnom::template');
+$routes->get('manajemen-anomali/edit/(:any)', 'ManajAnom::edit/$1');
+$routes->post('/manajemen-anomali/updateKategori', 'ManajAnom::updateKategori');
+
 $routes->get('/pages', 'Pages::index');
 $routes->get('/about', 'Pages::about');
 $routes->get('/contact', 'Pages::contact');

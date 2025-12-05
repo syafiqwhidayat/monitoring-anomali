@@ -15,7 +15,7 @@
     <?php endif; ?>
     <div class="row">
         <div class="col d-flex justify-content-end">
-            <a class="btn btn-success" aria-current="page" href="<?= base_url('/anomali/upload'); ?>">Upload Anomali</a>
+            <a class="btn btn-success" aria-current="page" href="<?= base_url('/manajemen-anomali/upload'); ?>">Upload Anomali</a>
         </div>
     </div>
     <div class="row">
@@ -25,6 +25,7 @@
                     <tr>
                         <th scope="col">#</th>
                         <th scope="col">Kode Anomali</th>
+                        <th scope="col">Flag</th>
                         <th scope="col">Deskripsi Anmali</th>
                         <th scope="col">Detil Anomali</th>
                         <th scope="col">Aksi</th>
@@ -35,15 +36,17 @@
                         <tr>
                             <th scope="row"><i class="bi <?= ($l['is_show']) ? 'bi-eye-fill text-success' : 'bi-eye-slash-fill text-warning'; ?>"></i></th>
                             <td><button type=" button" class="btn btn-primary p-1 d-flex align-items-center"><?= $l['kode_anomali']; ?></button></td>
+                            <td><button type=" button" class="btn btn-warning p-1 d-flex align-items-center"><?= $l['flag']; ?></button></td>
                             <td><?= $l['definisi_anomali']; ?></td>
                             <td><?= $l['detil_anomali']; ?></td>
                             <td>
-                                <form action="<?= base_url('/anomali/manajemen-see'); ?>" method="POST">
+                                <form action="<?= base_url('/manajemen-anomali/action'); ?>" method="POST">
                                     <input type="hidden" name="id" value="<?= $l['id']; ?>">
+                                    <input type="hidden" name="is_show" value="<?= $l['is_show']; ?>">
                                     <button type="submit"
                                         name="action" value="toggle"
                                         class="btn btn-primary p-1 d-flex align-items-center"><img src="<?= ($l['is_show']) ? '/img/icons/eye-slash.svg' : '/img/icons/eye.svg'; ?>" alt="Ikon Simpan" width="16" height="16"></button>
-                                    <a aria-current="page" class="btn btn-warning p-1 d-flex justify-content-center a-butt" href="<?= base_url('/anomali/edit/' . $l['id']); ?>"><img src="/img/icons/edit.svg" alt="Ikon Simpan" width="16" height="16"></a>
+                                    <a aria-current="page" class="btn btn-warning p-1 d-flex justify-content-center a-butt" href="<?= base_url('/manajemen-anomali/edit/' . $l['id']); ?>"><img src="/img/icons/edit.svg" alt="Ikon Simpan" width="16" height="16"></a>
                                     <button type="button"
                                         name="action" value="delete"
                                         data-bs-toggle="modal" data-bs-target="#deleteModal"
@@ -68,7 +71,7 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                            <form id="deleteFormModal" action="<?= base_url('/anomali/manajemen-see'); ?>" method="POST">
+                            <form id="deleteFormModal" action="<?= base_url('/manajemen-anomali/action'); ?>" method="POST">
                                 <input type="hidden" name="id" id="delete_id_input">
                                 <input type="hidden" name="action" value="delete">
                                 <button type="submit" class="btn btn-danger">Hapus Permanen</button>

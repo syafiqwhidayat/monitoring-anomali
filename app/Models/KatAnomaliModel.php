@@ -14,7 +14,7 @@ class KatAnomaliModel extends Model
     protected $createdField = 'date_created';
     protected $updatedField = 'date_updated';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['id_kegiatan', 'kode_anomali', 'definisi_anomali', 'detil_anomali', 'is_show'];
+    protected $allowedFields = ['id_kegiatan', 'kode_anomali', 'flag', 'definisi_anomali', 'detil_anomali', 'is_show'];
     protected $validationRules = [
         'id_kegiatan' => 'is_not_unique[kegiatan.id]',
         'kode_anomali' => 'uniqueWith[kategori_anomali.id_kegiatan.kode_anomali]',

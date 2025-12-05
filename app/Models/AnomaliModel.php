@@ -15,7 +15,7 @@ class AnomaliModel extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = ['id_kategori_anomali', 'id_user', 'id_wilayah', 'id_rtart', 'konfirmasi'];
 
-    public function getAnomaliByWilayah($wilayah = false)
+    public function getAnomaliByWilayah($wilayah = false, $isNull = false)
     {
         $len = strlen($wilayah);
         $data = null;
@@ -26,8 +26,7 @@ class AnomaliModel extends Model
                     ->join('wilayah', 'wilayah.id = anomali.id_wilayah', 'left')
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                     ->where('k.is_show', true)
-                    ->groupBy('wilayah.kd_kec')
-                    ->findAll();
+                    ->groupBy('wilayah.kd_kec');
                 break;
             case '7':
                 $data = $this
@@ -36,8 +35,7 @@ class AnomaliModel extends Model
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                     ->where('SUBSTRING(anomali.id_rtart, 1, 7)', $wilayah)
                     ->where('k.is_show', true)
-                    ->groupBy('w.kd_des')
-                    ->findAll();
+                    ->groupBy('w.kd_des');
                 break;
             case '10':
                 $data = $this
@@ -46,15 +44,7 @@ class AnomaliModel extends Model
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                     ->where('SUBSTRING(anomali.id_rtart, 1, 10)', $wilayah)
                     ->where('k.is_show', true)
-                    ->groupBy('CONCAT(wilayah.kd_sls,wilayah.kd_subsls)')
-                    ->findAll();
-                // $data = $this
-                //     ->select('art.*, anomali.*')
-                //     ->where('SUBSTRING(anomali.id_wilayah, 1, 10)', $wilayah)
-                //     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                //     ->join('rt_art art', 'art.id = anomali.id_rtart', 'left')
-                //     ->where('k.is_show', true)
-                //     ->findAll();
+                    ->groupBy('CONCAT(wilayah.kd_sls,wilayah.kd_subsls)');
                 break;
             case '16':
                 $data = $this
@@ -63,13 +53,7 @@ class AnomaliModel extends Model
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                     ->where('SUBSTRING(anomali.id_rtart, 1, 16)', $wilayah)
                     ->where('k.is_show', true)
-                    ->groupBy('art.kd_krt')
-                    ->findAll();
-                // $data = $this
-                //     ->where('anomali.id_wilayah', $wilayah)
-                //     ->select('art.*, anomali.*')
-                //     ->join('rt_art art', 'art.id = anomali.id_rtart', 'left')
-                //     ->findAll();
+                    ->groupBy('art.kd_krt');
                 break;
             case '19':
                 $data = $this
@@ -78,8 +62,7 @@ class AnomaliModel extends Model
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                     ->where('SUBSTRING(anomali.id_rtart, 1, 19)', $wilayah)
                     ->where('k.is_show', true)
-                    ->groupBy('art.kd_krt')
-                    ->findAll();
+                    ->groupBy('art.kd_krt');
                 break;
             default:
                 # code...
@@ -92,10 +75,13 @@ class AnomaliModel extends Model
                 ->join('wilayah', 'wilayah.id = anomali.id_wilayah', 'left')
                 ->findAll();
         };
-        // return $this->select('anomali.*, wilayah.*')
-        //     ->join('wilayah', 'wilayah.id = anomali.id_wilayah', 'left')
-        //     ->where('wilayah.id', $wilayah)
-        //     ->findAll();
+
+        if (!$isNull) {
+            $data = $data->where('konfirmasi', NULL);
+        };
+
+        $data = $data->findAll();
+
         return $data;
     }
 

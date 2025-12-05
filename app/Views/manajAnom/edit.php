@@ -21,7 +21,7 @@
     <div class="row">
         <div class="col">
             <form
-                action="<?= base_url('/anomali/updateKategori'); ?>"
+                action="<?= base_url('/manajemen-anomali/updateKategori'); ?>"
                 method="post">
                 <input type="hidden" name="id" value="<?= $data['id']; ?>">
                 <div class="mb-3">
@@ -33,6 +33,13 @@
                         <?= session()->getFlashdata('kode_anomali'); ?>
                     </div>
                     <!-- <div id="kdAnomHelp" class="form-text">Kode Anomali tidak dapat di edit</div> -->
+                </div>
+                <div class="mb-3">
+                    <select class="form-control" name="flag" aria-label="Default select example">
+                        <option value="1" <?= ($data['flag'] == '1') ? 'selected' : ''; ?>>1</option>
+                        <option value="2" <?= ($data['flag'] == '2') ? 'selected' : ''; ?>>2</option>
+                        <option value="3" <?= ($data['flag'] == '3') ? 'selected' : ''; ?>>3</option>
+                    </select>
                 </div>
                 <div class="mb-3">
                     <div class="form-check form-switch">

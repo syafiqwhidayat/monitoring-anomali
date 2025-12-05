@@ -4,12 +4,7 @@
 <div class="container">
     <div class="row">
         <div class="col">
-            <h1>Daftar Anomali</h1>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col d-flex justify-content-end">
-            <a class="btn btn-success" aria-current="page" href="<?= base_url('/anomali/listEdit'); ?>">Edit Konfirmasi</a>
+            <h1>Edit Konfirmasi Anomali</h1>
         </div>
     </div>
     <div class="row">

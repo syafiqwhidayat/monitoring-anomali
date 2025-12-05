@@ -30,7 +30,7 @@
                     <a class="nav-link active" aria-current="page" href="<?= base_url('/'); ?>">Home</a>
                     <a class="nav-link active" aria-current="page" href="<?= base_url('/'); ?>">Broadcast</a>
                     <a class="nav-link active" aria-current="page" href="<?= base_url('/anomali'); ?>">Anomali</a>
-                    <a class="nav-link active" aria-current="page" href="<?= base_url('/anomali/manajemen'); ?>">Manajemen Anomali</a>
+                    <a class="nav-link active" aria-current="page" href="<?= base_url('/manajemen-anomali/list'); ?>">Manajemen Anomali</a>
                     <a class="nav-link active" aria-current="page" href="<?= base_url('/'); ?>">Monitoring</a>
                 </div>
             </div>
