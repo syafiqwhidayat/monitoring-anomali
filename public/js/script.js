@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // untuk halaman daftar anomali
   const parentAccordionKec = document.getElementById("accordionAnomaliKec");
   const deleteModal = document.getElementById("deleteModal");
+  const isEdit = window.location.href.includes("listEdit") ? "1" : "0";
 
   //untuk halaman manajemen anomali
   // cont;
@@ -27,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function () {
         '<p class="text-center">⏳ Sedang memuat detail anomali...</p>';
 
       // 3. Panggil Endpoint CI4 via AJAX
-      fetch(`/anomali/getListWilAnom/${anomaliId}`)
+      fetch(`/anomali/getListWilAnom/${anomaliId}/${isEdit}`)
         // fetch(`/anomali/getListKec`)
         .then((response) => response.text())
         .then((htmlContent) => {

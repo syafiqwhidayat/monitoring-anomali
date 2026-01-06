@@ -92,7 +92,7 @@ class Anom extends BaseController
             ]
         ];
 
-        $dat = $this->anomaliModel->getAnomaliByWilayah('1311');
+        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', false);
         $data['listAnom'] = $dat;
 
         return view('anomali/listAnomali', $data);
@@ -111,7 +111,7 @@ class Anom extends BaseController
         return view('anomali/listAnomaliEdit', $data);
     }
 
-    public function listWilAnom($idKec)
+    public function listWilAnom($idKec, $isEdit = false)
     {
         $id = substr($idKec, 8);
         $data = [
@@ -294,35 +294,36 @@ class Anom extends BaseController
         switch ($ids) {
             case 4:
                 // $data['listAnom'] = $dataDesa;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id);
+                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
                 $data['jenis'] = 'Kec';
                 break;
             case 7:
                 // $data['listAnom'] = $dataDesa;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id);
+                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
                 $data['jenis'] = 'Des';
                 break;
             case 10:
                 // $data['listAnom'] = $dataSLS;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id);
+                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
                 $data['jenis'] = 'SLS';
                 break;
             case 16:
                 // $data['listAnom'] = $dataRuta;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id);
+                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
                 $data['jenis'] = 'Ruta';
                 break;
             case 19:
                 // $data['listAnom'] = $dataArt;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id);
+                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
                 $data['jenis'] = 'Art';
                 break;
             case 21:
                 // $data['listAnom'] = $dataArt;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id);
+                // $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
+                // $data['listAnom'] = $this->anomaliModel->getListAnomali($id, $isEdit);
                 $data['jenis'] = 'Anom';
                 // return view('anomali/listAnomaliDetil', $data);
-                return $this->listAnom($id);
+                return $this->listAnom($id, $isEdit);
                 break;
         }
         // dd($data);
@@ -330,7 +331,7 @@ class Anom extends BaseController
         return view('anomali/listAnomaliPart', $data);
     }
 
-    public function listAnom($idArt)
+    public function listAnom($idArt, $isEdit)
     {
         $data = [
             'listAnom' => [
@@ -347,7 +348,7 @@ class Anom extends BaseController
             ]
         ];
 
-        $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt);
+        $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt, $isEdit);
         // dd($data['listAnom']);
 
         return view('anomali/listAnomaliDetil', $data);
@@ -371,7 +372,7 @@ class Anom extends BaseController
         $konfirmasi = $this->request->getVar('konfirmasi');
         $rules = [
             'id'           => 'required|is_natural_no_zero',
-            'konfirmasi'   => 'required',
+            // 'konfirmasi'   => 'required',
         ];
         if (! $this->validate($rules)) {
             // Jika validasi GAGAL, kembalikan JSON error

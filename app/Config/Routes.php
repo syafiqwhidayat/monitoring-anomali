@@ -7,7 +7,7 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 $routes->get('/anomali', 'Anom::list');
-$routes->get('/anomali/getListWilAnom/(:any)', 'Anom::listWilAnom/$1');
+$routes->get('/anomali/getListWilAnom/(:any)/(:num)', 'Anom::listWilAnom/$1/$2');
 $routes->post('/anomali/updateKonfirmasi', 'Anom::updateKonfirmasi');
 $routes->get('/anomali/listEdit', 'Anom::listEdit');
 

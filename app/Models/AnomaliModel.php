@@ -15,7 +15,7 @@ class AnomaliModel extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = ['id_kategori_anomali', 'id_user', 'id_wilayah', 'id_rtart', 'konfirmasi'];
 
-    public function getAnomaliByWilayah($wilayah = false, $isNull = false)
+    public function getAnomaliByWilayah($wilayah = false, $isEdit = false)
     {
         $len = strlen($wilayah);
         $data = null;
@@ -64,6 +64,15 @@ class AnomaliModel extends Model
                     ->where('k.is_show', true)
                     ->groupBy('art.kd_krt');
                 break;
+            case '21':
+                $data = $this
+                    ->select('anomali.id_rtart AS id , art.kd_art AS kd, art.nm_art AS nm, COUNT(*) AS jmlAnom')
+                    ->join('rt_art art', 'art.id = anomali.id_rtart', 'left')
+                    ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                    ->where('SUBSTRING(anomali.id_rtart, 1, 19)', $wilayah)
+                    ->where('k.is_show', true)
+                    ->groupBy('art.kd_krt');
+                break;
             default:
                 # code...
                 break;
@@ -76,8 +85,8 @@ class AnomaliModel extends Model
                 ->findAll();
         };
 
-        if (!$isNull) {
-            $data = $data->where('konfirmasi', NULL);
+        if (!$isEdit) {
+            $data = $data->where('konfirmasi', "");
         };
 
         $data = $data->findAll();
@@ -85,16 +94,21 @@ class AnomaliModel extends Model
         return $data;
     }
 
-    public function getListAnomali($idArt = false)
+    public function getListAnomali($idArt = false, $isEdit = false)
     {
         $len = strlen($idArt);
         $data = null;
-        $data = $this
+        $query = $this
             ->select('anomali.id AS id, anomali.id_rtart AS id_rtart , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             ->where('k.is_show', true)
-            ->where('anomali.id_rtart', $idArt)
-            ->findAll();
+            ->where('anomali.id_rtart', $idArt);
+        // ->findAll();
+        if (!$isEdit) {
+            $query = $query->where('konfirmasi', "");
+        };
+
+        $data  = $query->findAll();
 
         // return $this->select('anomali.*, wilayah.*')
         //     ->join('wilayah', 'wilayah.id = anomali.id_wilayah', 'left')

@@ -1,7 +1,7 @@
 <?= $this->extend('layout/template'); ?>
 
 <?= $this->section('content'); ?>
-<div class="container">
+<div class="container" jenis-konf="0">
     <div class="row">
         <div class="col">
             <h1>Daftar Anomali</h1>

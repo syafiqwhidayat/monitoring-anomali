@@ -1,7 +1,7 @@
 <?= $this->extend('layout/template'); ?>
 
 <?= $this->section('content'); ?>
-<div class="container">
+<div class="container" jenis-konf="1">
     <div class="row">
         <div class="col">
             <h1>Edit Konfirmasi Anomali</h1>
