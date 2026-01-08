@@ -116,4 +116,20 @@ class AnomaliModel extends Model
         //     ->findAll();
         return $data;
     }
+
+    public function setKonfirmasiBulk($KategoriAnomali, $konfirmasi)
+    {
+        $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
+        $joinKatAnomali->where('kategori_anomali.kode_anomali', $KategoriAnomali);
+        $joinKatAnomali->set('kategori_anomali.konfirmasi', $konfirmasi);
+        // $joinKatAnomali->update();
+        $hasil = $joinKatAnomali->findAll();
+        // $hasil = $joinKatAnomali->update();
+        dd($hasil);
+
+        // update Anomali
+        // $joinKatAnomali->update([
+        //     'anomali.konfirmasi' => $konfirmasi
+        // ]);
+    }
 }

@@ -10,6 +10,7 @@ $routes->get('/anomali', 'Anom::list');
 $routes->get('/anomali/getListWilAnom/(:any)/(:num)', 'Anom::listWilAnom/$1/$2');
 $routes->post('/anomali/updateKonfirmasi', 'Anom::updateKonfirmasi');
 $routes->get('/anomali/listEdit', 'Anom::listEdit');
+$routes->get('/anomali/konfirmasiBulk', 'Anom::konfirmasiBulk');
 
 $routes->get('/manajemen-anomali/list', 'ManajAnom::manajemenList');
 $routes->post('/manajemen-anomali/action', 'ManajAnom::manajemenAction');

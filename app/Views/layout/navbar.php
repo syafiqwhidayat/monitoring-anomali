@@ -32,6 +32,7 @@
                     <a class="nav-link active" aria-current="page" href="<?= base_url('/anomali'); ?>">Anomali</a>
                     <a class="nav-link active" aria-current="page" href="<?= base_url('/manajemen-anomali/list'); ?>">Manajemen Anomali</a>
                     <a class="nav-link active" aria-current="page" href="<?= base_url('/'); ?>">Monitoring</a>
+                    <a class="nav-link active" aria-current="page" href="<?= base_url('/anomali/konfirmasiBulk'); ?>">Konfirmasi Bulk</a>
                 </div>
             </div>
         </div>

@@ -368,6 +368,10 @@ class Anom extends BaseController
             "title" => "Upload Anomali",
         ];
 
+        if ($this->request->getPost('bulk')) {
+            return $this->updateKonfirmasiBulk();
+        }
+
         $id = $this->request->getPost('id');
         $konfirmasi = $this->request->getVar('konfirmasi');
         $rules = [
@@ -403,6 +407,52 @@ class Anom extends BaseController
         // dd($konfirmasi);
     }
 
+    public function updateKonfirmasiBulk()
+    {
+        $konfirmasi = $this->request->getVar('konfirmasi');
+        $id_kode_anomali = $this->request->getVar('kode_anomali');
+        $konfirmasi = trim($konfirmasi);
+        // dd($id_kode_anomali);
+
+        // Lakukan proses update
+        $dataUpdate = [
+            'konfirmasi' => trim($konfirmasi),
+            // ...
+        ];
+        $jumlah = 0;
+
+        // if ($this->anomaliModel->setKonfirmasiBulk($id_kode_anomali, $konfirmasi)) {
+        //     $jumlah = $this->anomaliModel->db->affectedRows();
+        //     // echo "Berhasil memperbarui $jumlah data.";
+        // } else {
+        //     dd("gagal");
+        // }
+        $hasil = $this->anomaliModel
+            ->where('id_kategori_anomali', $id_kode_anomali)
+            ->set(['konfirmasi' => $konfirmasi])
+            ->update();
+        // ->findAll();
+        // dd($hasil);
+        if ($hasil) {
+            $jumlah = $this->anomaliModel->db->affectedRows();
+            // echo "Berhasil memperbarui $jumlah data.";
+        } else {
+            dd("gagal");
+        }
+
+        // Jika BERHASIL, kembalikan JSON sukses
+
+        // dd("berhasil validasi");
+        // return $this->response->setJSON([
+        //     'status' => 'success',
+        //     'message' => 'Konfirmasi berhasil disimpan. Berhasil mempengaruhi ' . $jumlah . ' anomali'
+        // ]);
+
+        return redirect()->to(base_url('/anomali/konfirmasiBulk'))->with('message', 'Konfirmasi berhasil disimpan. Berhasil mempengaruhi ' . $jumlah . ' anomali');
+
+        // dd($konfirmasi);
+    }
+
     public function tanyaAnom()
     {
         $data = [
@@ -410,5 +460,22 @@ class Anom extends BaseController
         ];
 
         return view('anomali/tanya', $data);
+    }
+
+    public function konfirmasiBulk()
+    {
+        $data = [
+            'title' => 'Konfirmasi Bulk Anomali',
+            'listKodeAnom' => null,
+            'data' => [
+                'is_show' => true,
+            ],
+        ];
+
+        $data['listKodeAnom'] = $this->katAnomaliModel->select('kode_anomali , id')->findAll();
+
+        // dd($data['listKodeAnom']);
+
+        return view('anomali/konfirmasiBulk', $data);
     }
 }
