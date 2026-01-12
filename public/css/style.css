@@ -1,3 +1,12 @@
+:root {
+    --biru-bps: #0369A1;
+    --biru-bps-hover: rgb(9, 98, 146);
+    --oren-bps:#EE8911;
+    --oren-bps-hover:#d87e10;
+    --hijau-bps:#94C11F;
+    --hijau-bps-hover:#7ca31a;
+}
+
 .sampul{
     width: 70px;
 }
@@ -38,4 +47,101 @@
     max-height: 250px; /* Batasi tinggi */
     overflow-y: auto;  /* Aktifkan scroll vertikal */
     width: 300px;      /* Batasi lebar agar tidak terlalu panjang ke samping */
+}
+
+.label-bps {
+    opacity: 1 !important;
+}
+
+/* 1. Kondisi Normal */
+.btn-primary-bps {
+    background-color: var(--biru-bps);
+    border-color: var(--biru-bps);
+    color: #ffffff;
+}
+
+/* 2. Kondisi Hover (Saat kursor di atas tombol) */
+.btn-primary-bps:hover {
+    background-color: #025582; /* Warna lebih gelap 15% */
+    border-color: #025582;
+    color: #ffffff;
+}
+
+/* 3. Kondisi Disabled (Saat tombol dimatikan) */
+.btn-primary-bps:disabled,
+.btn-primary-bps.disabled {
+    background-color: var(--biru-bps);
+    border-color: var(--biru-bps);
+    opacity: 0.65; /* Standar Bootstrap untuk efek pudar */
+    color: #ffffff;
+    cursor: not-allowed; /* Mengubah kursor jadi tanda dilarang */
+    pointer-events: none; /* Mencegah klik */
+}
+
+/* 4. Kondisi Active (Saat ditekan) */
+.btn-primary-bps:active {
+    background-color: var(--biru-bps) !important;
+    border-color: var(--biru-bps) !important;
+}
+
+/* 1. Kondisi Normal */
+.btn-warning-bps {
+    background-color: var(--oren-bps);
+    border-color: var(--oren-bps);
+    color: #ffffff;
+}
+
+/* 2. Kondisi Hover (Saat kursor di atas tombol) */
+.btn-warning-bps:hover {
+    background-color: var(--oren-bps-hover); /* Warna lebih gelap 15% */
+    border-color: var(--oren-bps-hover);
+    color: #ffffff;
+}
+
+/* 3. Kondisi Disabled (Saat tombol dimatikan) */
+.btn-warning-bps:disabled,
+.btn-warning-bps.disabled {
+    background-color: var(--oren-bps);
+    border-color: var(--oren-bps);
+    opacity: 0.65; /* Standar Bootstrap untuk efek pudar */
+    color: #ffffff;
+    cursor: not-allowed; /* Mengubah kursor jadi tanda dilarang */
+    pointer-events: none; /* Mencegah klik */
+}
+
+/* 4. Kondisi Active (Saat ditekan) */
+.btn-warning-bps:active {
+    background-color: var(--oren-bps) !important;
+    border-color: var(--oren-bps) !important;
+}
+
+/* 1. Kondisi Normal */
+.btn-sucess-bps {
+    background-color: var(--hijau-bps);
+    border-color: var(--hijau-bps);
+    color: #ffffff;
+}
+
+/* 2. Kondisi Hover (Saat kursor di atas tombol) */
+.btn-sucess-bps:hover {
+    background-color: var(--hijau-bps-hover); /* Warna lebih gelap 15% */
+    border-color: var(--hijau-bps-hover);
+    color: #ffffff;
+}
+
+/* 3. Kondisi Disabled (Saat tombol dimatikan) */
+.btn-sucess-bps:disabled,
+.btn-sucess-bps.disabled {
+    background-color: var(--hijau-bps);
+    border-color: var(--hijau-bps);
+    opacity: 0.65; /* Standar Bootstrap untuk efek pudar */
+    color: #ffffff;
+    cursor: not-allowed; /* Mengubah kursor jadi tanda dilarang */
+    pointer-events: none; /* Mencegah klik */
+}
+
+/* 4. Kondisi Active (Saat ditekan) */
+.btn-sucess-bps:active {
+    background-color: var(--hijau-bps) !important;
+    border-color: var(--hijau-bps) !important;
 }

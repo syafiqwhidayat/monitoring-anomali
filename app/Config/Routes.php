@@ -19,6 +19,9 @@ $routes->get('/manajemen-anomali/upload/template-anomali', 'ManajAnom::template'
 $routes->get('manajemen-anomali/edit/(:any)', 'ManajAnom::edit/$1');
 $routes->post('/manajemen-anomali/updateKategori', 'ManajAnom::updateKategori');
 
+$routes->get('monitoring/', 'Monitoring::index');
+$routes->get('monitoringSelc/', 'Monitoring::view');
+
 $routes->get('/pages', 'Pages::index');
 $routes->get('/about', 'Pages::about');
 $routes->get('/contact', 'Pages::contact');

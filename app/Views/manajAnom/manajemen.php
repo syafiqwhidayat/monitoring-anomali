@@ -35,8 +35,12 @@
                     <?php foreach ($listAnom as $l): ?>
                         <tr>
                             <th scope="row"><i class="bi <?= ($l['is_show']) ? 'bi-eye-fill text-success' : 'bi-eye-slash-fill text-warning'; ?>"></i></th>
-                            <td><button type=" button" class="btn btn-primary p-1 d-flex align-items-center"><?= $l['kode_anomali']; ?></button></td>
-                            <td><button type=" button" class="btn btn-warning p-1 d-flex align-items-center"><?= $l['flag']; ?></button></td>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <button type=" button" class="btn btn-primary rounded-pill"><?= $l['kode_anomali']; ?></button>
+                                </div>
+                            </td>
+                            <td><button type=" button" class="btn btn-warning p-1 "><i class="fas fa-flag"></i><?= $l['flag']; ?></button></td>
                             <td><?= $l['definisi_anomali']; ?></td>
                             <td><?= $l['detil_anomali']; ?></td>
                             <td>
