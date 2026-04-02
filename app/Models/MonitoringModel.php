@@ -6,7 +6,7 @@ use App\Validation\CustomRules;
 use CodeIgniter\Model;
 use PhpParser\Node\Stmt\Case_;
 
-class KatAnomaliModel extends Model
+class MonitoringModel extends Model
 {
     protected $table = 'kategori_anomali';
     protected $useTimestamps = true;
@@ -27,14 +27,4 @@ class KatAnomaliModel extends Model
             'uniqueWith' => 'kode anomali sudah ada untuk kegiatan ini'
         ]
     ];
-
-    public function getDataUmum($id)
-    {
-        $data = $this
-            ->select('kode_anomali,is_show,flag')
-            ->where("id", $id);
-        $data = $data->findAll();
-        return ($data);
-        // dd($data);
-    }
 }

@@ -132,4 +132,153 @@ class AnomaliModel extends Model
         //     'anomali.konfirmasi' => $konfirmasi
         // ]);
     }
+
+    public function jumlahKonfirmasiByAnoamli()
+    {
+        $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
+        $joinKatAnomali->select('kategori_anomali.kode_anomali,COUNT(*) as jumlah_total')
+            ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi")
+            ->groupBy('kategori_anomali.kode_anomali');
+        $hasil = $joinKatAnomali->findAll();
+        // dd($hasil);
+        return ($hasil);
+    }
+
+    public function jumlahKonfirmasiByWiayah($idKat = 1)
+    {
+        // $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
+
+        $hasil = $this
+            ->select("LEFT(id_wilayah,10) as 'id_kec'")
+            ->select('COUNT(*) as jumlah_total')
+            ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi")
+            ->where('id_kategori_anomali', $idKat)
+            ->groupBy("id_kec");
+        $hasil = $hasil->findAll();
+        // dd($hasil);
+        return ($hasil);
+    }
+    public function jumlahKonfirmasiByPublik($idKat = null)
+    {
+        $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
+        $joinKatAnomali->select('COUNT(*) as jumlah_total')
+            ->select("SUM(CASE WHEN kategori_anomali.is_show = 1 THEN 1 ELSE 0 END) as jumlah_public")
+            ->select("SUM(CASE WHEN kategori_anomali.is_show = 0 THEN 1 ELSE 0 END) as jumlah_non_public");
+        if ($idKat) {
+            $joinKatAnomali->where('anomali.id_kategori_anomali', $idKat);
+        }
+        $hasil = $joinKatAnomali->findAll();
+        return ($hasil);
+    }
+    public function jumlahProses($jenis = "all", $idKat = null)
+    {
+        $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
+        $joinKatAnomali->select('COUNT(*) as jumlah_total')
+            ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi");
+
+        switch ($jenis) {
+            case "public":
+                $joinKatAnomali->where('kategori_anomali.is_show', 1);
+                break;
+            case "non_public":
+                $joinKatAnomali->where('kategori_anomali.is_show', 0);
+                break;
+            case "flag1":
+                $joinKatAnomali->where('kategori_anomali.flag', 1);
+                break;
+            case "flag2":
+                $joinKatAnomali->where('kategori_anomali.flag', 2);
+                break;
+            case "flag3":
+                $joinKatAnomali->where('kategori_anomali.flag', 3);
+                break;
+                dafault:
+                $joinKatAnomali->where('kategori_anomali.is_show', 1);
+                break;
+        }
+        if ($idKat) {
+            $joinKatAnomali->where('anomali.id_kategori_anomali', $idKat);
+        }
+        $hasil = $joinKatAnomali->findAll();
+        // dd($hasil);
+        return ($hasil);
+    }
+    public function jumlahByTanggal($idKat = '')
+    {
+        $dataUpdate = $this
+            ->select("DATE(date_updated) as 'tanggal'")
+            // ->select("COUNT(*) as jumlah")
+            ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah")
+            ->groupBy("tanggal");
+        if ($idKat) {
+            $dataUpdate->where('id_kategori_anomali', $idKat);
+        };
+        $dataUpdate = $dataUpdate->findAll();
+
+        $dataCreated = $this
+            ->select("DATE(date_created) as 'tanggal'")
+            ->select("COUNT(*) as jumlah")
+            ->groupBy("tanggal");
+        if ($idKat) {
+            $dataCreated->where('id_kategori_anomali', $idKat);
+        };
+        $dataCreated = $dataCreated->findAll();
+
+        $data = [
+            "dataUpdated" => $dataUpdate,
+            "dataCreated" => $dataCreated
+        ];
+        return ($data);
+    }
+
+    public function getTop5($id_kat = '')
+    {
+        $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
+        $joinKatAnomali
+            ->select('id_wilayah,kategori_anomali.kode_anomali,detil_anomali,konfirmasi')
+            ->where("konfirmasi IS NOT NULL AND konfirmasi != ''")
+            ->orderBy('anomali.date_updated', 'DESC')
+            ->limit(5);
+        if ($id_kat) {
+            $joinKatAnomali->where('id_kategori_anomali', $id_kat);
+        };
+
+        $hasil = $joinKatAnomali->findAll();
+        return ($hasil);
+    }
+
+    public function wordCloudKonfirmasi($idKat = '', $limit = 30)
+    {
+        // Ambil semua teks dari kolom konfirmasi
+        $data = $this->select('konfirmasi');
+        if ($idKat) {
+            $data->where('id_kategori_anomali', $idKat);
+        };
+        $data = $data->findAll();
+
+        // Gabungkan jadi satu string besar
+        $text = implode(" ", array_column($data, 'konfirmasi'));
+        $text = strtolower($text);
+
+        // Bersihkan karakter aneh
+        $text = preg_replace('/[^a-z0-9\s]/', '', $text);
+
+        // Hitung kata
+        $words = str_word_count($text, 1);
+
+        // Filter stopwords (kata yang tidak penting)
+        $stopWords = ['dan', 'yang', 'untuk', 'di', 'dari', 'ke', 'ini', 'itu', 'dengan', 'ada', 'telah', 'perlu'];
+        $filteredWords = array_diff($words, $stopWords);
+
+        $counts = array_count_values($filteredWords);
+        arsort($counts); // Urutkan dari yang terbesar
+
+        // Format untuk JavaScript: [["kata", 10], ["kata", 5]]
+        $result = [];
+        foreach (array_slice($counts, 0, $limit) as $word => $count) {
+            $result[] = [$word, (int)$count];
+        }
+
+        return $result;
+    }
 }

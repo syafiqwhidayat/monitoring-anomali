@@ -90,81 +90,24 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <th scope="row">1</th>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <button type=" button" class="btn btn-primary-bps rounded-pill">1311010001</button>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <button type=" button" class="btn btn-warning-bps rounded-pill">AN01</button>
-                        </div>
-                    </td>
-                    <td>Jenis kelamin KK tidak sesuai dengan aturan sensus, Syafiq</td>
-                    <td>Sudah Sesuai Lapangan sudah sesuai dengan lapangan, sudah se</td>
-                </tr>
-                <tr>
-                    <th scope="row">2</th>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <button type=" button" class="btn btn-primary-bps rounded-pill">1311010001</button>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <button type=" button" class="btn btn-warning-bps rounded-pill">AN01</button>
-                        </div>
-                    </td>
-                    <td>Jenis kelamin KK tidak sesuai dengan aturan sensus, Syafiq</td>
-                    <td>Sudah Sesuai Lapangan sudah sesuai dengan lapangan, sudah se</td>
-                </tr>
-                <tr>
-                    <th scope="row">3</th>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <button type=" button" class="btn btn-primary-bps rounded-pill">1311010001</button>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <button type=" button" class="btn btn-warning-bps rounded-pill">AN01</button>
-                        </div>
-                    </td>
-                    <td>Jenis kelamin KK tidak sesuai dengan aturan sensus, Syafiq</td>
-                    <td>Sudah Sesuai Lapangan sudah sesuai dengan lapangan, sudah se</td>
-                </tr>
-                <tr>
-                    <th scope="row">4</th>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <button type=" button" class="btn btn-primary-bps rounded-pill">1311010001</button>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <button type=" button" class="btn btn-warning-bps rounded-pill">AN01</button>
-                        </div>
-                    </td>
-                    <td>Jenis kelamin KK tidak sesuai dengan aturan sensus, Syafiq</td>
-                    <td>Sudah Sesuai Lapangan sudah sesuai dengan lapangan, sudah se</td>
-                </tr>
-                <tr>
-                    <th scope="row">5</th>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <button type=" button" class="btn btn-primary-bps rounded-pill">1311010001</button>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex justify-content-center">
-                            <button type=" button" class="btn btn-warning-bps rounded-pill">AN01</button>
-                        </div>
-                    </td>
-                    <td>Jenis kelamin KK tidak sesuai dengan aturan sensus, Syafiq</td>
-                    <td>Sudah Sesuai Lapangan sudah sesuai dengan lapangan, sudah se</td>
-                </tr>
+                <?= $nomorBaris = 1; ?>
+                <?php foreach ($dataTop5 as $dat): ?>
+                    <tr>
+                        <th scope="row"><?= $nomorBaris++; ?></th>
+                        <td>
+                            <div class="d-flex justify-content-center">
+                                <button type=" button" class="btn btn-primary-bps rounded-pill"><?= $dat['id_wilayah']; ?></button>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center">
+                                <button type=" button" class="btn btn-warning-bps rounded-pill"><?= $dat['kode_anomali']; ?></button>
+                            </div>
+                        </td>
+                        <td><?= $dat['detil_anomali']; ?></td>
+                        <td><?= $dat['konfirmasi']; ?></td>
+                    </tr>
+                <?php endforeach; ?>
             </tbody>
         </table>
     </div>

@@ -20,120 +20,65 @@ class Monitoring extends BaseController
 
     public function index()
     {
+        $dataHead = $this->anomaliModel->jumlahKonfirmasiByPublik();
         $data = [
             "title" => "Monitoring Semua Anomali",
-            "dataCharJmlAnom" => [
-                'labels' => json_encode(['AN01', 'AN02', 'AN03', 'AN04']),
-                'datesets' => [
-                    [
-                        'label' => json_encode(['Sudah Konfirmasi']),
-                        'nilai' => json_encode([15, 84, 15, 34]),
-                    ],
-                    [
-                        'label' => json_encode(['Belum Konfirmasi']),
-                        'nilai' => json_encode([10, 45, 30, 25]),
-                    ]
-                ],
-            ],
+            "dataCharJmlAnom" => $this->dataChartJmlAnom(),
             "dataHead" => [
-                'total seluruh' => 245,
-                'total public' => 135,
-                'total non public' => 97
+                'total seluruh' => $dataHead[0]['jumlah_total'],
+                'total public' => $dataHead[0]['jumlah_public'],
+                'total non public' => $dataHead[0]['jumlah_non_public']
             ],
             "dataProses" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode([89, 31]),
+                'nilai' => json_encode($this->dataChartProses()),
             ],
             "dataProsesPublic" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode([74, 21]),
+                'nilai' => json_encode($this->dataChartProses('public')),
             ],
             "dataProsesNonPublic" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode([84, 12]),
+                'nilai' => json_encode($this->dataChartProses('non_public')),
             ],
             "dataProsesFlag1" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode([78, 35]),
+                'nilai' => json_encode($this->dataChartProses('flag1')),
             ],
             "dataProsesFlag2" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode([23, 43]),
+                'nilai' => json_encode($this->dataChartProses('flag2')),
             ],
             "dataProsesFlag3" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode([38, 48]),
+                'nilai' => json_encode($this->dataChartProses('flag3')),
             ],
-            "dataTimeline" => [
-                'labels' => json_encode(['1 Jan 2025', '2 Jan 2025', '3 Jan 2025', '4 Jan 2025']),
-                'datasets' => [
-                    [
-                        'label' => json_encode(['Total Anomali']),
-                        'nilai' => json_encode([45, 45, 85, 85])
-                    ],
-                    [
-                        'label' => json_encode(['Progres Anomali']),
-                        'nilai' => json_encode([12, 25, 45, 65])
-                    ],
-                ]
-            ]
+            "dataTimeline" => $this->dataTimeline(),
+            "dataTop5" => $this->anomaliModel->getTop5()
         ];
         return view('monitoring/monitoringAll', $data);
     }
 
-    public function view()
+    public function view($id_kat)
     {
+        $general = $this->katAnomaliModel->getDataUmum($id_kat)[0];
+        $dataHead = $this->anomaliModel->jumlahKonfirmasiByPublik($id_kat);
         $data = [
-            "title" => "Monitoring Semua Anomali",
-            "kode_anomali" => "AN01",
-            "is_public" => true,
-            "dataCharJmlAnom" => [
-                'labels' => json_encode(['AN01', 'AN02', 'AN03', 'AN04']),
-                'datesets' => [
-                    [
-                        'label' => json_encode(['Sudah Konfirmasi']),
-                        'nilai' => json_encode([15, 84, 15, 34]),
-                    ],
-                    [
-                        'label' => json_encode(['Belum Konfirmasi']),
-                        'nilai' => json_encode([10, 45, 30, 25]),
-                    ]
-                ],
-            ],
+            "title" => "Monitoring Anomali " . $general['kode_anomali'],
+            "kode_anomali" => $general['kode_anomali'],
+            "is_public" => $general['is_show'],
+            "flag" => $general['flag'],
+            "dataCharJmlAnom" => $this->dataChartJmlAnom($id_kat),
             "dataHead" => [
-                'total seluruh' => 245,
-                'total public' => 135,
-                'total non public' => 97
+                'total seluruh' => $dataHead[0]['jumlah_total'],
             ],
             "dataProses" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode([89, 31]),
+                'nilai' => json_encode($this->dataChartProses('proses', $id_kat)),
             ],
-            "dataTimeline" => [
-                'labels' => json_encode(['1 Jan 2025', '2 Jan 2025', '3 Jan 2025', '4 Jan 2025']),
-                'datasets' => [
-                    [
-                        'label' => json_encode(['Total Anomali']),
-                        'nilai' => json_encode([45, 45, 85, 85])
-                    ],
-                    [
-                        'label' => json_encode(['Progres Anomali']),
-                        'nilai' => json_encode([12, 25, 45, 65])
-                    ],
-                ]
-            ],
-            "dataWordCloud" => json_encode([
-                ["error", 40],
-                ["anomali", 30],
-                ["wilayah", 30],
-                ["konfirmasi", 20],
-                ["data", 20],
-                ["jawa", 20],
-                ["barat", 20],
-                ["petugas", 20],
-                ["validasi", 20],
-                ["duplikasi", 20]
-            ])
+            "dataTimeline" => $this->dataTimeline($id_kat),
+            "dataWordCloud" => json_encode($this->dataWordCloud($id_kat)),
+            "dataTop5" => $this->anomaliModel->getTop5($id_kat)
         ];
         return view('monitoring/monitoringSelc', $data);
     }
@@ -226,5 +171,136 @@ class Monitoring extends BaseController
     {
         $template = "ini adalah template";
         dd($template);
+    }
+
+    public function dataChartJmlAnom($id_kat = null)
+    {
+        $dataModel = null;
+        $judulBaris = null;
+        if ($id_kat) {
+            $dataModel = $this->anomaliModel->jumlahKonfirmasiByWiayah($id_kat);
+            $judulBaris = array_column($dataModel, 'id_kec');
+        } else {
+            $dataModel = $this->anomaliModel->jumlahKonfirmasiByAnoamli();
+            $judulBaris = array_column($dataModel, 'kode_anomali');
+        };
+        $jumlah_terisi = array_column($dataModel, 'jumlah_terisi');
+        $jumlah_total = array_column($dataModel, 'jumlah_total');
+        $selisih = array_map(fn($a, $b) => $a - $b, $jumlah_total, $jumlah_terisi);
+        $data =  [
+            'labels' => json_encode($judulBaris),
+            'datesets' => [
+                [
+                    'label' => json_encode(['Sudah Konfirmasi']),
+                    'nilai' => json_encode($jumlah_terisi),
+                ],
+                [
+                    'label' => json_encode(['Belum Konfirmasi']),
+                    'nilai' => json_encode($selisih),
+                ]
+            ],
+        ];
+        return $data;
+    }
+
+    public function dataChartProses($string = "proses", $id_kat = '')
+    {
+        $array = [];
+        // $array = $this->anomaliModel->jumlahProses("non_public");
+        // dd($array);
+        switch ($string) {
+            case "proses":
+                $array = $this->anomaliModel->jumlahProses("", $id_kat);
+                break;
+            case "public":
+                $array = $this->anomaliModel->jumlahProses("public", $id_kat);
+                break;
+            case "non_public":
+                $array = $this->anomaliModel->jumlahProses("non_public", $id_kat);
+                break;
+            case "flag1":
+                $array = $this->anomaliModel->jumlahProses("flag1", $id_kat);
+                break;
+            case "flag2":
+                $array = $this->anomaliModel->jumlahProses("flag2", $id_kat);
+                break;
+            case "flag3":
+                $array = $this->anomaliModel->jumlahProses("flag3", $id_kat);
+                break;
+            default:
+                $array = $this->anomaliModel->jumlahProses("", $id_kat);
+                break;
+        }
+        // cek if na
+        $data = [$array[0]['jumlah_terisi'], $array[0]['jumlah_total'] - $array[0]['jumlah_terisi']];
+
+        $data = array_map(function ($val) {
+            return ($val === null) ? 0 : $val;
+        }, $data);
+        return ($data);
+    }
+
+    public function dataTimeline($id_kat = '')
+    {
+        $hasil = $this->anomaliModel->jumlahByTanggal($id_kat);
+        $dataCreated = array_column($hasil['dataCreated'], 'jumlah', 'tanggal');
+        $dataUpdated = array_column($hasil['dataUpdated'], 'jumlah', 'tanggal');
+        $tanggalCreated = array_column($hasil['dataCreated'], 'tanggal');
+        $tanggalUpdated = array_column($hasil['dataUpdated'], 'tanggal');
+        $tanggalGabung = array_unique(array_merge($tanggalCreated, $tanggalUpdated));
+        sort($tanggalGabung);
+
+        $runningTotalCreated = 0;
+        $runningTotalUpdated = 0;
+        $dataChartCreated = array_map(function ($tgl) use ($dataCreated, &$runningTotalCreated) {
+            // Ambil jumlah hari ini (jika tidak ada, anggap 0)
+            $jumlahHariIni = (int) ($dataCreated[$tgl] ?? 0);
+            // Tambahkan ke total akumulasi
+            $runningTotalCreated += $jumlahHariIni;
+
+            return $runningTotalCreated;
+            // return (int) ($dataCreated[$tgl] ?? 0);
+        }, $tanggalGabung);
+        $dataChartUpdated = array_map(function ($tgl) use ($dataUpdated, &$runningTotalUpdated) {
+            // Ambil jumlah hari ini (jika tidak ada, anggap 0)
+            $jumlahHariIni = (int) ($dataUpdated[$tgl] ?? 0);
+
+            // Tambahkan ke total akumulasi
+            $runningTotalUpdated += $jumlahHariIni;
+
+            return $runningTotalUpdated;
+            // return (int) ($dataUpdated[$tgl] ?? 0);
+        }, $tanggalGabung);
+
+        // ubah nilai null jadi yg terkecil
+        $tglTerkecil = min(array_filter($tanggalGabung), 0);
+        $tglBaru = date('Y-m-d', strtotime($tglTerkecil . " -1 day"));
+        $tanggalGabung = array_map(function ($val) use ($tglBaru) {
+            return $val ?? $tglBaru;
+        }, $tanggalGabung);
+
+
+
+        $data = [
+            'labels' => json_encode($tanggalGabung),
+            'datasets' => [
+                [
+                    'label' => json_encode(['Total Anomali']),
+                    'nilai' => json_encode($dataChartCreated)
+                ],
+                [
+                    'label' => json_encode(['Progres Anomali']),
+                    'nilai' => json_encode($dataChartUpdated)
+                ],
+            ]
+        ];
+        return ($data);
+    }
+
+    public function dataWordCloud($id_kat = '')
+    {
+        $data = $this->anomaliModel->wordCloudKonfirmasi($id_kat);
+        // dd($data);
+        return ($data);
     }
 }

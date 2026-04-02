@@ -9,13 +9,13 @@
         <div class="col mb-3">
             <div class="d-flex justify-content-center align-items-center gap-3">
                 <h1 class="text-center">Statistik Anomali</h1>
-                <h1 class="btn btn-primary-bps rounded-pill">AN01</h1>
+                <h1 class="btn btn-primary-bps rounded-pill"><?= $kode_anomali; ?></h1>
             </div>
             <div class="d-flex justify-content-center align-items-center gap-3">
                 <div class="text-align-center" for="UpdateAll">
                     <i class="bi <?= ($is_public) ? 'bi-eye-fill text-success' : 'bi-eye-slash-fill text-warning'; ?>"></i> <?= ($is_public) ? '' : 'Not'; ?> Public
                 </div>
-                <i class="btn-warning-bps rounded-pill py-1 px-2">Flag 1</i>
+                <i class="btn-warning-bps rounded-pill py-1 px-2">Flag <?= ($flag) ? $flag : "?"; ?></i>
             </div>
         </div>
     </div>
@@ -74,51 +74,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <th scope="row">1</th>
-                        <td>
-                            <div class="d-flex justify-content-center">
-                                <button type=" button" class="btn btn-primary-bps rounded-pill">1311010001</button>
-                            </div>
-                        </td>
-                        <td>Sudah Sesuai Lapangan sudah sesuai dengan lapangan, sudah se</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">2</th>
-                        <td>
-                            <div class="d-flex justify-content-center">
-                                <button type=" button" class="btn btn-primary-bps rounded-pill">1311010001</button>
-                            </div>
-                        </td>
-                        <td>Sudah Sesuai Lapangan sudah sesuai dengan lapangan, sudah se</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">3</th>
-                        <td>
-                            <div class="d-flex justify-content-center">
-                                <button type=" button" class="btn btn-primary-bps rounded-pill">1311010001</button>
-                            </div>
-                        </td>
-                        <td>Sudah Sesuai Lapangan sudah sesuai dengan lapangan, sudah se</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">4</th>
-                        <td>
-                            <div class="d-flex justify-content-center">
-                                <button type=" button" class="btn btn-primary-bps rounded-pill">1311010001</button>
-                            </div>
-                        </td>
-                        <td>Sudah Sesuai Lapangan sudah sesuai dengan lapangan, sudah se</td>
-                    </tr>
-                    <tr>
-                        <th scope="row">5</th>
-                        <td>
-                            <div class="d-flex justify-content-center">
-                                <button type=" button" class="btn btn-primary-bps rounded-pill">1311010001</button>
-                            </div>
-                        </td>
-                        <td>Sudah Sesuai Lapangan sudah sesuai dengan lapangan, sudah se</td>
-                    </tr>
+                    <?= $nomorBaris = 1; ?>
+                    <?php foreach ($dataTop5 as $dat): ?>
+                        <tr>
+                            <th scope="row"><?= $nomorBaris++; ?></th>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <button type=" button" class="btn btn-primary-bps rounded-pill"><?= $dat['id_wilayah']; ?></button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <button type=" button" class="btn btn-warning-bps rounded-pill"><?= $dat['kode_anomali']; ?></button>
+                                </div>
+                            </td>
+                            <td><?= $dat['detil_anomali']; ?></td>
+                            <td><?= $dat['konfirmasi']; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
@@ -244,7 +217,16 @@
             },
             options: {
                 maintainAspectRatio: false,
-                plugins: getBaseOptions('Timeline Anomali')
+                plugins: getBaseOptions('Timeline Anomali'),
+                scales: {
+                    y: {
+                        // beginAtZero: true,
+                        ticks: {
+                            // Cara paling efektif: Memaksa step antar angka adalah 1
+                            stepSize: 1,
+                        }
+                    }
+                }
             }
         });
 
@@ -262,8 +244,8 @@
 
             backgroundColor: '#ffffff',
             gridSize: 10, // Jarak antar kata
-            weightFactor: 2, // Faktor pengali ukuran (sesuaikan jika kata terlalu kecil)
-            rotateRatio: 0.3, // Persentase kata yang tampil vertikal (0.3 = 30%)
+            weightFactor: 5, // Faktor pengali ukuran (sesuaikan jika kata terlalu kecil)
+            rotateRatio: 0.1, // Persentase kata yang tampil vertikal (0.3 = 30%)
             rotationSteps: 2, // Sudut rotasi (hanya horizontal dan vertikal)
             ellipticity: 0.65, // Membuat bentuk sebaran agak oval (lebih estetik)
             shuffle: true // Mengacak posisi setiap kali refresh

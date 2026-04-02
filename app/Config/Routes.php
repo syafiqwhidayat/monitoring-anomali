@@ -20,7 +20,7 @@ $routes->get('manajemen-anomali/edit/(:any)', 'ManajAnom::edit/$1');
 $routes->post('/manajemen-anomali/updateKategori', 'ManajAnom::updateKategori');
 
 $routes->get('monitoring/', 'Monitoring::index');
-$routes->get('monitoringSelc/', 'Monitoring::view');
+$routes->get('monitoringSelc/(:num)', 'Monitoring::view/$1');
 
 $routes->get('/pages', 'Pages::index');
 $routes->get('/about', 'Pages::about');
