@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 08, 2026 at 03:26 AM
+-- Generation Time: Apr 02, 2026 at 06:42 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -98,7 +98,7 @@ INSERT INTO `anomali` (`id`, `id_kategori_anomali`, `id_user`, `id_wilayah`, `id
 (53, 2, 1, '1311040003001101', '131104000300110100101', 'Sesuai Lapangan: Dikonfirmasi data usia valid', '0000-00-00 00:00:00', NULL, NULL),
 (54, 4, 1, '1311030005001501', '131103000500150100101', 'Perlu perbaikan: Kode pos salah', '0000-00-00 00:00:00', NULL, NULL),
 (55, 2, 1, '1311011002000201', '131101100200020100101', 'Data Ganda: Entri ini sudah ada, hapus', '0000-00-00 00:00:00', NULL, NULL),
-(56, 2, 1, '1311012001000200', '131101200100020000101', '', '0000-00-00 00:00:00', '2026-01-06 11:15:42', NULL),
+(56, 2, 1, '1311012001000200', '131101200100020000101', 'update sayfiq', '0000-00-00 00:00:00', '2026-01-29 06:41:54', NULL),
 (57, 2, 1, '1311040003000201', '131104000300020100101', 'Perlu perbaikan: Jenis atap rumah tidak sesuai', '0000-00-00 00:00:00', NULL, NULL),
 (58, 2, 1, '1311041003000101', '131104100300010100101', 'Sesuai Lapangan: Tidak ada koreksi', '0000-00-00 00:00:00', NULL, NULL),
 (59, 1, 1, '1311020003000900', '131102000300090000101', '', '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
@@ -155,7 +155,7 @@ INSERT INTO `anomali` (`id`, `id_kategori_anomali`, `id_user`, `id_wilayah`, `id
 (110, 4, 1, '1311010008001500', '131101000800150000101', 'Sesuai Lapangan', '0000-00-00 00:00:00', NULL, NULL),
 (111, 3, 1, '1311031001000401', '131103100100040100101', 'Perlu perbaikan: Pengeluaran per bulan kosong', '0000-00-00 00:00:00', NULL, NULL),
 (112, 4, 1, '1311020005001500', '131102000500150000101', 'Data Ganda: Entri sudah diperbaiki', '0000-00-00 00:00:00', NULL, NULL),
-(113, 1, 1, '1311012001000200', '131101200100020000101', '', '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(113, 1, 1, '1311012001000200', '131101200100020000101', 'update lagi', '0000-00-00 00:00:00', '2026-01-29 06:41:58', NULL),
 (114, 3, 1, '1311030002000600', '131103000200060000101', 'Perlu perbaikan: Jenis bahan bakar memasak tidak sesuai', '0000-00-00 00:00:00', NULL, NULL),
 (115, 4, 1, '1311021004000900', '131102100400090000101', 'Sesuai Lapangan', '0000-00-00 00:00:00', NULL, NULL),
 (116, 1, 1, '1311030005001101', '131103000500110100101', '', '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
@@ -320,10 +320,10 @@ CREATE TABLE `kategori_anomali` (
 
 INSERT INTO `kategori_anomali` (`id`, `id_kegiatan`, `kode_anomali`, `flag`, `definisi_anomali`, `detil_anomali`, `is_show`, `date_created`, `date_updated`, `date_deleted`) VALUES
 (1, 1, 'AN01', 2, 'Cek konsistensi jenis kelamin Kepala Keluarga.', 'Jenis kelamin KK tidak sesuai dengan aturan sensus. Syafiq', 1, '2025-11-05 13:04:39', '2025-12-05 08:14:38', NULL),
-(2, 1, 'AN02', NULL, 'Verifikasi usia responden yang berusia di bawah 5 tahun.', 'Usia di bawah 5 tahun memiliki data pendidikan formal yang terisi.', 1, '2025-11-05 13:04:45', NULL, NULL),
+(2, 1, 'AN02', 1, 'Verifikasi usia responden yang berusia di bawah 5 tahun.', 'Usia di bawah 5 tahun memiliki data pendidikan formal yang terisi.', 1, '2025-11-05 13:04:45', '2026-01-29 05:48:13', NULL),
 (3, 1, 'AN03', NULL, 'Cek data pekerjaan untuk responden berusia di atas 70 tahun.', 'Responden lansia (>70) terdeteksi memiliki pekerjaan full-time.', 1, '2025-11-05 13:05:10', NULL, NULL),
 (4, 1, 'AN04', NULL, 'Pemeriksaan status perkawinan responden di bawah 15 tahun.', 'Responden di bawah usia legal perkawinan terdeteksi menikah.', 0, '2025-11-05 13:05:30', NULL, NULL),
-(5, 1, 'AN05', NULL, 'Cek kelengkapan data alamat dan kode pos.', 'Kolom kode pos kosong atau tidak valid.', 1, '2025-11-05 13:06:01', NULL, NULL),
+(5, 1, 'AN05', 3, 'Cek kelengkapan data alamat dan kode pos.', 'Kolom kode pos kosong atau tidak valid.', 1, '2025-11-05 13:06:01', '2026-01-29 05:48:19', NULL),
 (6, 1, 'AN06', NULL, 'Konsistensi hubungan dengan Kepala Keluarga (Hubungan Ganda).', 'Ditemukan lebih dari satu responden berstatus \"Istri\" dalam satu KK.', 1, '2025-11-05 13:06:22', NULL, NULL),
 (7, 1, 'AN07', NULL, 'Verifikasi status disabilitas dan kemampuan bekerja.', 'Responden disabilitas berat terdeteksi bekerja di sektor formal.', 1, '2025-11-05 13:07:05', NULL, NULL),
 (8, 1, 'AN08', NULL, 'Cek kesesuaian tingkat pendidikan dengan jenis pekerjaan.', 'Pendidikan SD memiliki pekerjaan sebagai Manajer/Profesional.', 0, '2025-11-05 13:07:40', NULL, NULL),
