@@ -13,7 +13,7 @@ class AnomaliModel extends Model
     protected $createdField = 'date_created';
     protected $updatedField = 'date_updated';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['id_kategori_anomali', 'id_user', 'id_wilayah', 'id_rtart', 'konfirmasi'];
+    protected $allowedFields = ['id_kategori_anomali', 'id_user', 'id_wilayah', 'id_assigment', 'konfirmasi'];
 
     public function getAnomaliByWilayah($wilayah = false, $isEdit = false)
     {
@@ -33,7 +33,7 @@ class AnomaliModel extends Model
                     ->select('SUBSTRING(anomali.id_wilayah, 1, 10) AS id, w.kd_des AS kd, w.nm_des AS nm,COUNT(*) AS jmlAnom')
                     ->join('wilayah w', 'w.id = anomali.id_wilayah', 'left')
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                    ->where('SUBSTRING(anomali.id_rtart, 1, 7)', $wilayah)
+                    ->where('SUBSTRING(anomali.id_assigment, 1, 7)', $wilayah)
                     ->where('k.is_show', true)
                     ->groupBy('w.kd_des');
                 break;
@@ -42,34 +42,34 @@ class AnomaliModel extends Model
                     ->select('anomali.id_wilayah AS id,wilayah.nm_sls AS nm, CONCAT(wilayah.kd_sls,wilayah.kd_subsls) AS kd ,COUNT(*) AS jmlAnom')
                     ->join('wilayah', 'wilayah.id = anomali.id_wilayah', 'left')
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                    ->where('SUBSTRING(anomali.id_rtart, 1, 10)', $wilayah)
+                    ->where('SUBSTRING(anomali.id_assigment, 1, 10)', $wilayah)
                     ->where('k.is_show', true)
                     ->groupBy('CONCAT(wilayah.kd_sls,wilayah.kd_subsls)');
                 break;
             case '16':
                 $data = $this
-                    ->select('SUBSTRING(anomali.id_rtart, 1, 19) AS id , art.kd_krt AS kd, art.nm_krt AS nm, COUNT(*) AS jmlAnom')
-                    ->join('rt_art art', 'art.id = anomali.id_rtart', 'left')
+                    ->select('SUBSTRING(anomali.id_assigment, 1, 19) AS id , art.kd_krt AS kd, art.nm_krt AS nm, COUNT(*) AS jmlAnom')
+                    ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                    ->where('SUBSTRING(anomali.id_rtart, 1, 16)', $wilayah)
+                    ->where('SUBSTRING(anomali.id_assigment, 1, 16)', $wilayah)
                     ->where('k.is_show', true)
                     ->groupBy('art.kd_krt');
                 break;
             case '19':
                 $data = $this
-                    ->select('anomali.id_rtart AS id , art.kd_art AS kd, art.nm_art AS nm, COUNT(*) AS jmlAnom')
-                    ->join('rt_art art', 'art.id = anomali.id_rtart', 'left')
+                    ->select('anomali.id_assigment AS id , art.kd_art AS kd, art.nm_art AS nm, COUNT(*) AS jmlAnom')
+                    ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                    ->where('SUBSTRING(anomali.id_rtart, 1, 19)', $wilayah)
+                    ->where('SUBSTRING(anomali.id_assigment, 1, 19)', $wilayah)
                     ->where('k.is_show', true)
                     ->groupBy('art.kd_krt');
                 break;
             case '21':
                 $data = $this
-                    ->select('anomali.id_rtart AS id , art.kd_art AS kd, art.nm_art AS nm, COUNT(*) AS jmlAnom')
-                    ->join('rt_art art', 'art.id = anomali.id_rtart', 'left')
+                    ->select('anomali.id_assigment AS id , art.kd_art AS kd, art.nm_art AS nm, COUNT(*) AS jmlAnom')
+                    ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                    ->where('SUBSTRING(anomali.id_rtart, 1, 19)', $wilayah)
+                    ->where('SUBSTRING(anomali.id_assigment, 1, 19)', $wilayah)
                     ->where('k.is_show', true)
                     ->groupBy('art.kd_krt');
                 break;
@@ -99,10 +99,10 @@ class AnomaliModel extends Model
         $len = strlen($idArt);
         $data = null;
         $query = $this
-            ->select('anomali.id AS id, anomali.id_rtart AS id_rtart , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi')
+            ->select('anomali.id AS id, anomali.id_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             ->where('k.is_show', true)
-            ->where('anomali.id_rtart', $idArt);
+            ->where('anomali.id_assigment', $idArt);
         // ->findAll();
         if (!$isEdit) {
             $query = $query->where('konfirmasi', "");
@@ -280,5 +280,15 @@ class AnomaliModel extends Model
         }
 
         return $result;
+    }
+
+    public function getAnomaliByAssigment($id_assigment)
+    {
+        $query = $this
+            ->select('anomali.id AS id, anomali.id_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi')
+            ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+            ->where('anomali.id_assigment', $id_assigment);
+        $data  = $query->findAll();
+        return ($data);
     }
 }

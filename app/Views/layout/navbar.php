@@ -34,6 +34,7 @@
                     <a class="nav-link active" aria-current="page" href="<?= base_url('/monitoring'); ?>">Monitoring</a>
                     <a class="nav-link active" aria-current="page" href="<?= base_url('/monitoringSelc'); ?>">Monitoring Khusus</a>
                     <a class="nav-link active" aria-current="page" href="<?= base_url('/anomali/konfirmasiBulk'); ?>">Konfirmasi Bulk</a>
+                    <a class="nav-link active" aria-current="page" href="<?= base_url('/upload'); ?>">Upload Anomali</a>
                 </div>
             </div>
         </div>

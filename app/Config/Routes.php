@@ -22,6 +22,10 @@ $routes->post('/manajemen-anomali/updateKategori', 'ManajAnom::updateKategori');
 $routes->get('monitoring/', 'Monitoring::index');
 $routes->get('monitoringSelc/(:num)', 'Monitoring::view/$1');
 
+$routes->get('/upload', 'Upload::index');
+$routes->get('/upload/download-template', 'Upload::downloadTemplate');
+$routes->post('/uploadFile', 'Upload::import');
+
 $routes->get('/pages', 'Pages::index');
 $routes->get('/about', 'Pages::about');
 $routes->get('/contact', 'Pages::contact');
