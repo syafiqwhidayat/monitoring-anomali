@@ -14,13 +14,16 @@ class KatAnomaliModel extends Model
     protected $createdField = 'date_created';
     protected $updatedField = 'date_updated';
     protected $primaryKey = 'id';
+    protected $useAutoIncrement = true;
     protected $allowedFields = ['id_kegiatan', 'kode_anomali', 'flag', 'definisi_anomali', 'detil_anomali', 'is_show'];
     protected $validationRules = [
-        'id_kegiatan' => 'is_not_unique[kegiatan.id]',
+        'id_kegiatan' => 'required|is_not_unique[kegiatan.id]',
         'kode_anomali' => 'uniqueWith[kategori_anomali.id_kegiatan.kode_anomali]',
+        // 'kode_anomali' => 'required'
+
     ];
     protected $validationMessages = [
-        'id_kegitan' => [
+        'id_kegiatan' => [
             'is_not_unique' => 'kegiatan statistik tidak ditemukan di database'
         ],
         'kode_anomali' => [
@@ -35,6 +38,14 @@ class KatAnomaliModel extends Model
             ->where("id", $id);
         $data = $data->findAll();
         return ($data);
-        // dd($data);
+    }
+
+    public function getIdKategori($id_kegiatan)
+    {
+        $data = $this
+            ->select('id,kode_anomali')
+            ->where('id_kegiatan', $id_kegiatan)
+            ->findAll();
+        return ($data);
     }
 }

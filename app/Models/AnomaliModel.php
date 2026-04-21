@@ -13,7 +13,7 @@ class AnomaliModel extends Model
     protected $createdField = 'date_created';
     protected $updatedField = 'date_updated';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['id_kategori_anomali', 'id_user', 'id_wilayah', 'id_assigment', 'konfirmasi'];
+    protected $allowedFields = ['id_kategori_anomali', 'id_user', 'id_wilayah', 'id_assigment', 'konfirmasi', 'is_insert'];
 
     public function getAnomaliByWilayah($wilayah = false, $isEdit = false)
     {

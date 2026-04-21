@@ -37,3 +37,11 @@ $routes->post('/comics/update/(:num)', 'Comics::update/$1');
 $routes->delete('/comics/(:num)', 'Comics::delete/$1');
 $routes->get('/comics/(:any)', 'Comics::detail/$1');
 $routes->setAutoRoute(true);
+
+$routes->group('admin', ['filter' => 'group:admin'], static function ($routes) {
+    $routes->get('users', 'Admin\UserController::index');
+    $routes->post('users/store', 'Admin\UserController::store');
+    // Tambahkan route edit/delete di sini
+});
+
+service('auth')->routes($routes);

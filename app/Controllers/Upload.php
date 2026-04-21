@@ -11,6 +11,8 @@ use App\Models\AnomalyModel;
 use App\Models\AssigmentModel;
 use SebastianBergmann\CodeCoverage\Node\File;
 
+use function PHPUnit\Framework\isNull;
+
 class Upload extends BaseController
 {
     protected $anomaliModel;
@@ -34,7 +36,7 @@ class Upload extends BaseController
 
     public function downloadTemplate()
     {
-        return $this->response->download(FCPATH . 'assets/templates/template_anomali.xlsx', null);
+        return $this->response->download(FCPATH . 'assets\templates\template_anomali.xlsx', null);
     }
 
     public function get_file()
@@ -50,23 +52,29 @@ class Upload extends BaseController
 
     public function import()
     {
+        // mengambil file
         $file = $this->request->getFile('fileAnom');
 
         if (!$file->isValid()) return redirect()->back()->with('error', 'File tidak valid');
 
-        // Load spreadsheet
+        // membaca file
         $spreadsheet = IOFactory::load($file->getTempName());
         $sheetData = $spreadsheet->getActiveSheet()->toArray();
 
+
         $anomalyModel = $this->anomaliModel;
         $errors = []; // Tempat menampung error per baris
-        $successCount = 0;
+        $successReport = []; // Mengelompokkan sukses berdasarkan id_wilayah
+        $totalSuccess = 0;
 
         // Loop mulai dari baris ke-2 (asumsi baris 1 adalah header)
         foreach ($sheetData as $index => $row) {
             if ($index === 0) continue;
 
             $rowNum = $index + 1; // Untuk penanda baris di pesan error
+
+            // Identitas unik untuk laporan error
+            $currentIdAssigment = $row[0] . $row[1] . $row[2] . $row[3] . $row[4] . $row[5] . $row[6];
 
             // Mapping data dari kolom Excel
             $data = [
@@ -98,25 +106,135 @@ class Upload extends BaseController
 
             if (!$validation->run($data)) {
                 // 2. Jika gagal, simpan pesan error berdasarkan nomor baris
-                $errors[$rowNum] = $validation->getErrors();
+                $errors[] = [
+                    'baris' => $rowNum,
+                    'id_assigment' => $currentIdAssigment,
+                    'messages' => $validation->getErrors()
+                ];
             } else {
                 // 3. Jika lolos validasi, simpan ke database
-                // $anomalyModel->insert($data);
-                $id_assigment = $this->assigmentModel->getOrInsert($data);
-                $listAnomali = $this->anomaliModel->getAnomaliByAssigment($id_assigment);
-                // pecah string berdasarkan koma
-                $list_anomali = explode(',', $data['anomali']);
-                dd($list_anomali);
 
-                $successCount++;
+                // mendapatkan id assigment
+                $id_assigment = $this->assigmentModel->getOrInsert($data);
+
+                //  mendapatkan daftar anomali pada assigment tersebut
+                $listAnomali = $this->anomaliModel->getAnomaliByAssigment($id_assigment);
+
+                // pecah string berdasarkan koma
+                $anomaliTambahan = explode(',', $data['anomali']);
+                $anomaliTambahan = array_map('trim', $anomaliTambahan);
+
+                $id_wilayah = substr($id_assigment, 0, 16);
+
+                $this->insertAnomali($listAnomali, $anomaliTambahan, $id_assigment, $id_wilayah);
+
+                // Kelompokkan sukses per id_wilayah
+                if (!isset($successReport[$id_wilayah])) {
+                    $successReport[$id_wilayah] = 0;
+                }
+                $successReport[$id_wilayah]++;
+                $totalSuccess++;
             }
         }
-        dd($sheetData);
 
         // Kirim hasil ke view
-        return view('upload_result', [
+        return view('upload/uploadResult', [
+            'title' => "Result Import anomali",
             'errors' => $errors,
-            'successCount' => $successCount
+            'successReport' => $successReport,
+            'totalSuccess' => $totalSuccess
         ]);
+    }
+
+    public function insertAnomali($listAnomali, $anomaliTambahan, $id_assigment, $id_wilayah)
+    {
+        // Reset kolom is insert
+        $this->anomaliModel->set('is_insert', 0);
+
+        // cek apakah kategori sudah ada
+        // mengembalikan map nilainya
+        $mappedKategori = $this->cekOrInsertKategori(1, $anomaliTambahan);
+
+
+        // cek apakah anomalinya belum ada
+        if (isNull($listAnomali)) {
+            // tambahkan semua anomali
+            foreach ($anomaliTambahan as $anom) {
+                $this->anomaliModel->insert(
+                    [
+                        'id_kategori_anomali' => $mappedKategori[$anom],
+                        'id_wilayah' => $id_wilayah,
+                        'id_assigment' => $id_assigment,
+                        'is_insert' => 1,
+                    ]
+                );
+            };
+        } else {
+            // ada anomali yg sudah masuk dan ada yg belum.
+            // memetakan data lama berdasarkan kat_anomali
+            $mappedExisting = [];
+            foreach ($listAnomali as $list) {
+                $mappedExisting[$list['id_kategori_anomali']] = $list['id'];
+            }
+
+            // $listKategori = $this->katAnomaliModel->getIdKategori(1);
+
+
+            // dd($mappedExisting);
+
+            foreach ($anomaliTambahan as $anom) {
+                $data = [
+                    'id_kategori_anomali' => $mappedKategori[$anom],
+                    'id_wilayah' => $id_wilayah,
+                    'id_assigment' => $id_assigment,
+                    'is_insert' => 1,
+                ];
+
+                if (isset($mappedExisting[$anom])) {
+                    // Jika sudah ada. maka update
+                    $this->anomaliModel->update($mappedExisting[$anom], $data);
+                } else {
+                    // jika data belum ada
+                    $this->anomaliModel->insert($data);
+                }
+            }
+        }
+    }
+
+    public function cekOrInsertKategori($id_kegiatan, $anomaliTambahan)
+    {
+        // fungsi untuk menambakan kategori yg belum ada dan return nilai id kategorinya jika sudah ada
+
+        $listKategori = $this->katAnomaliModel->getIdKategori($id_kegiatan);
+        $mappedKategori = [];
+        foreach ($listKategori as $list) {
+            $mappedKategori[$list['kode_anomali']] = $list['id'];
+        }
+
+        // insert jika belum ada
+        foreach ($anomaliTambahan as $anom) {
+            if (!isset($mappedKategori[$anom])) {
+                $data = [
+                    'id_kegiatan' => $id_kegiatan,
+                    'kode_anomali' => $anom,
+                    'is_show' => 0,
+                ];
+                $idbaru = $this->katAnomaliModel->insert($data);
+                if ($idbaru) {
+                    $mappedKategori[$anom] = $idbaru;
+                } else {
+                    // Jika gagal karena validasi (duplikat), ambil ID yang sudah ada di DB
+                    $existing = $this->katAnomaliModel
+                        ->where('id_kegiatan', $id_kegiatan)
+                        ->where('kode_anomali', $anom)
+                        ->first();
+
+                    if ($existing) {
+                        $mappedKategori[$anom] = $existing['id'];
+                    }
+                }
+            }
+        }
+        return ($mappedKategori);
     }
 }

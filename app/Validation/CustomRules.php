@@ -48,39 +48,64 @@ class CustomRules extends BaseConfig
         'uniqueWith' => 'Nilai ini sudah dipakai pada scope yang sama.',
     ];
 
+    // public function uniqueWith(string $value, string $params, array $data): bool
+    // {
+    //     // Memecah parameter rule menjadi array
+    //     // [table, scopeField, scopeFieldInInput, uniqueField, primaryKey]
+    //     // dd($params);
+    //     // dd($data);
+    //     [$table, $scopeField, $uniqueField] = explode('.', $params);
+
+    //     // Menghubungkan ke database
+    //     $db = Database::connect();
+    //     $data['id_kegiatan'] = $db->table($table)->select('id_kegiatan')->where('id', $data['id'])->get()->getFirstRow()->id_kegiatan;
+    //     // dd($data[$scopeField]);
+
+    //     // Membuat builder query
+    //     $builder = $db->table($table)
+
+    //         // Kondisi: scope harus sama (contoh: id_kegiatan = 5)
+    //         ->where($scopeField, $data[$scopeField])
+
+    //         // Kondisi: nilai yang unik tidak boleh duplikat (contoh: kode_anomali = "A01")
+    //         ->where($uniqueField, $value);
+
+    //     // Jika ini mode update, dan user mengirimkan primary key
+    //     // Maka record dengan primary key itu diabaikan
+    //     if (isset($data['id']) && $data['id'] != '') {
+
+    //         // Contoh: WHERE id != 7
+    //         $builder->where('id' . ' !=', $data['id']);
+    //     }
+
+    //     // Hitung jumlah record yang cocok
+    //     // Jika hasil > 0 berarti duplikat
+    //     // dd($data);
+    //     return $builder->countAllResults() === 0;
+    // }
     public function uniqueWith(string $value, string $params, array $data): bool
     {
-        // Memecah parameter rule menjadi array
-        // [table, scopeField, scopeFieldInInput, uniqueField, primaryKey]
-        // dd($params);
-        // dd($data);
+        // [table, scopeField, uniqueField]
         [$table, $scopeField, $uniqueField] = explode('.', $params);
 
-        // Menghubungkan ke database
-        $db = Database::connect();
-        $data['id_kegiatan'] = $db->table($table)->select('id_kegiatan')->where('id', $data['id'])->get()->getFirstRow()->id_kegiatan;
-        // dd($data[$scopeField]);
+        $db = \Config\Database::connect();
+        $builder = $db->table($table);
 
-        // Membuat builder query
-        $builder = $db->table($table)
+        // Ambil nilai scope (misal id_kegiatan) langsung dari data input
+        $scopeValue = $data[$scopeField] ?? null;
 
-            // Kondisi: scope harus sama (contoh: id_kegiatan = 5)
-            ->where($scopeField, $data[$scopeField])
-
-            // Kondisi: nilai yang unik tidak boleh duplikat (contoh: kode_anomali = "A01")
-            ->where($uniqueField, $value);
-
-        // Jika ini mode update, dan user mengirimkan primary key
-        // Maka record dengan primary key itu diabaikan
-        if (isset($data['id']) && $data['id'] != '') {
-
-            // Contoh: WHERE id != 7
-            $builder->where('id' . ' !=', $data['id']);
+        if (!$scopeValue) {
+            return false; // Jika id_kegiatan tidak ada di input, validasi gagal
         }
 
-        // Hitung jumlah record yang cocok
-        // Jika hasil > 0 berarti duplikat
-        // dd($data);
+        $builder->where($scopeField, $scopeValue)
+            ->where($uniqueField, $value);
+
+        // Jika mode UPDATE (id sudah ada), abaikan ID diri sendiri
+        if (!empty($data['id'])) {
+            $builder->where('id !=', $data['id']);
+        }
+
         return $builder->countAllResults() === 0;
     }
 }
