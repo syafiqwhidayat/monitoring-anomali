@@ -11,9 +11,9 @@
             <form action="<?= base_url('anomali/filter') ?>" method="get">
                 <div class="row g-3">
                     <div class="col-md-5">
-                        <label class="form-label">Anomali</label>
+                        <label class="form-label">Kode Anomali</label>
                         <select name="selected-kode-anomali" class="form-select">
-                            <option value="">Semua Kecamatan</option>
+                            <option value="">Semua Anomali</option>
                             <option value="1">AN01</option>
                             <option value="2">AN02</option>
                         </select>

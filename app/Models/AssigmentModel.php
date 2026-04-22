@@ -12,6 +12,15 @@ class AssigmentModel extends Model
     protected $useTimestamps = false;
     protected $primaryKey = 'id';
     protected $allowedFields = ['id', 'id_wilayah', 'id_kegiatan', 'kd_krt', 'kd_art', 'nm_krt', 'nm_art', 'id_bs'];
+    protected $validationRules = [
+        'id_wilayah' => 'required|is_not_unique[wilayah.id]',
+
+    ];
+    protected $validationMessages = [
+        'id_kegiatan' => [
+            'is_not_unique' => 'Wialyah tidak ditemukan pada database'
+        ],
+    ];
 
     public function getOrInsert($data)
     {

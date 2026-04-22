@@ -15,10 +15,20 @@ class AnomaliModel extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = ['id_kategori_anomali', 'id_user', 'id_wilayah', 'id_assigment', 'konfirmasi', 'is_insert'];
 
-    public function getAnomaliByWilayah($wilayah = false, $isEdit = false)
+    public function getAnomaliByWilayah($wilayah = false, $isEdit = false, $kode_anomali = null, $flag = null)
     {
         $len = strlen($wilayah);
         $data = null;
+
+        // return semua data ketika tidak ada wilayah
+        if ($wilayah == false) {
+            return $this->select('id_wilayah AS id, wilayah.kd_kec AS kd,wilayah.nm_kec AS nmKec,COUNT(*) AS jmlAnom')
+                ->join('wilayah', 'wilayah.id = anomali.id_wilayah', 'left')
+                ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                ->groupBy('wilayah.kd_kec')
+                ->findAll();
+        };
+
         switch ($len) {
             case '4':
                 $data = $this
@@ -79,15 +89,16 @@ class AnomaliModel extends Model
                 break;
         }
 
-
-        if ($wilayah == false) {
-            return $this->select('anomali.*, wilayah.*')
-                ->join('wilayah', 'wilayah.id = anomali.id_wilayah', 'left')
-                ->findAll();
-        };
-
         if (!$isEdit) {
             $data = $data->where('konfirmasi', "");
+        };
+
+        if ($kode_anomali) {
+            $data = $data->where('id_kategori_anomali', $kode_anomali);
+        };
+
+        if ($flag) {
+            $data = $data->where('k.flag', $flag);
         };
 
         $data = $data->findAll();

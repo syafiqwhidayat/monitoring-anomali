@@ -92,7 +92,7 @@ class Anom extends BaseController
             ]
         ];
 
-        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', false);
+        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', true);
         $data['listAnom'] = $dat;
 
         return view('anomali/listAnomali', $data);
@@ -105,11 +105,16 @@ class Anom extends BaseController
             'listAnom' => ''
         ];
 
-        $dat = $this->anomaliModel->getAnomaliByWilayah('1311030001', true);
+        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', true);
         $data['listAnom'] = $dat;
-        dd($data);
 
         return view('anomali/listAnomaliEdit', $data);
+    }
+
+    public function listFilter()
+    {
+        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', false);
+        $data['listAnom'] = $dat;
     }
 
     public function listWilAnom($idKec, $isEdit = false)

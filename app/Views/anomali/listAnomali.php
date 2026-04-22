@@ -12,9 +12,9 @@
             <form action="<?= base_url('anomali/filter') ?>" method="get">
                 <div class="row g-3">
                     <div class="col-md-5">
-                        <label class="form-label">Anomali</label>
-                        <select name="selected-kode-anomali" class="form-select">
-                            <option value="">Semua Kecamatan</option>
+                        <label class="form-label">Kode Anomali</label>
+                        <select name="selected-kode-anomali" class="form-select" id="filterKode">
+                            <option value="">Semua Anomali</option>
                             <option value="1">AN01</option>
                             <option value="2">AN02</option>
                         </select>
@@ -22,7 +22,7 @@
 
                     <div class="col-md-5">
                         <label class="form-label">Flag Prioritas</label>
-                        <select name="selected-flag" class="form-select">
+                        <select name="selected-flag" class="form-select" id="filterFlag">
                             <option value="">Semua Jenis</option>
                             <option value="1">Flag 1</option>
                             <option value="2">Flag 1</option>
@@ -31,7 +31,7 @@
                     </div>
 
                     <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">
+                        <button type="button" class="btn btn-primary w-100" id="tombolFilter">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-filter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                 <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-4 2v-8.5l-4.414 -4.414a2 2 0 0 1 -.586 -1.414v-2.172z" />

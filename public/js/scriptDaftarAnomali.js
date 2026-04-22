@@ -3,6 +3,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const parentAccordionKec = document.getElementById("accordionAnomaliKec");
   const deleteModal = document.getElementById("deleteModal");
   const isEdit = window.location.href.includes("listEdit") ? "1" : "0";
+  const tombolFilter = document.getElementById("tombolFilter");
+  const kodeFilter = document.getElementsByName('selected-kode-anomali');
+  const flagFilter = document.getElementsByName('selected-flag');
 
   //untuk halaman manajemen anomali
   // cont;
@@ -202,24 +205,48 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // untuk halaman manajemen anomali
-  if (deleteModal) {
-    // Tangkap event saat Modal mulai ditampilkan (Bootstrap Event)
-    deleteModal.addEventListener("show.bs.modal", function (event) {
-      // Dapatkan tombol yang memicu modal
-      const button = event.relatedTarget;
+  // if (deleteModal) {
+  //   // Tangkap event saat Modal mulai ditampilkan (Bootstrap Event)
+  //   deleteModal.addEventListener("show.bs.modal", function (event) {
+  //     // Dapatkan tombol yang memicu modal
+  //     const button = event.relatedTarget;
 
-      // Ambil ID dari atribut data-id tombol
-      const anomaliKode = button.getAttribute("data-kode");
+  //     // Ambil ID dari atribut data-id tombol
+  //     const anomaliKode = button.getAttribute("data-kode");
 
-      // 1. Masukkan ID ke hidden input di dalam Modal
-      const modalInput = deleteModal.querySelector("#delete_id_input");
-      modalInput.value = anomaliKode;
+  //     // 1. Masukkan ID ke hidden input di dalam Modal
+  //     const modalInput = deleteModal.querySelector("#delete_id_input");
+  //     modalInput.value = anomaliKode;
 
-      // 2. Tampilkan ID di badan modal untuk konfirmasi
-      const modalDisplay = deleteModal.querySelector("#anomali-id-display");
-      modalDisplay.textContent = anomaliKode;
-    });
-  }
+  //     // 2. Tampilkan ID di badan modal untuk konfirmasi
+  //     const modalDisplay = deleteModal.querySelector("#anomali-id-display");
+  //     modalDisplay.textContent = anomaliKode;
+  //   });
+  // }
+
+  // untuk filter
+  tombolFilter.addEventListener('click',function(){
+    console.log('tombol filter ditekan')
+    console.log('parentAcordion:',parentAccordionKec)
+    const dib = 
+    `
+    <div class="accordion" id="accordionAnomaliKec">
+      <div class="accordion-item">
+        <h2 class="accordion-header">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1311010" aria-expanded="false" aria-controls="collapse1311010">
+              010 SUNGAI RUMBAI (1)                                    </button>
+        </h2>
+      <div id="collapse1311010" class="accordion-collapse collapse" data-bs-parent="#accordionAnomaliKec">
+        <div class="accordion-body data-load-container p-2">
+          <p class="fst-italic">Memuat data ...</p>
+        </div>
+      </div>
+    </div>`;
+
+    parentAccordionKec.innerHTML=dib;
+  
+    
+  })
 
 
 });

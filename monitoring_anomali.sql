@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 22, 2026 at 12:58 PM
+-- Generation Time: Apr 22, 2026 at 03:17 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -45,8 +45,6 @@ CREATE TABLE `anomali` (
 --
 
 INSERT INTO `anomali` (`id`, `id_kategori_anomali`, `id_user`, `id_wilayah`, `id_assigment`, `konfirmasi`, `is_insert`, `date_created`, `date_updated`, `date_deleted`) VALUES
-(1, 1, 1, '1311040008000401', '1311040008000401001011', '', NULL, '2025-11-13 20:22:45', '2026-01-08 02:15:58', NULL),
-(2, 1, 1, '1311040008000401', '1311040008000401001021', '', NULL, '2025-11-13 20:22:45', '2026-01-08 02:15:58', NULL),
 (4, 13, 1, '1311021002000100', '131102100200010000101', 'Perlu Perbaikan: NIK salah format', NULL, '0000-00-00 00:00:00', NULL, NULL),
 (5, 10, 1, '1311030005000901', '131103000500090100101', 'Data Ganda: Ditemukan entri serupa di Blok B', NULL, '0000-00-00 00:00:00', NULL, NULL),
 (6, 9, 1, '1311040003000902', '131104000300090200101', 'Sesuai Lapangan: Tidak ada perubahan data', NULL, '0000-00-00 00:00:00', NULL, NULL),
@@ -118,7 +116,6 @@ INSERT INTO `anomali` (`id`, `id_kategori_anomali`, `id_user`, `id_wilayah`, `id
 (72, 2, 1, '1311011004000302', '131101100400030200101', 'Perlu perbaikan: Tanggal lahir kosong', NULL, '0000-00-00 00:00:00', NULL, NULL),
 (73, 3, 1, '1311012003000400', '131101200300040000101', 'Sesuai Lapangan', NULL, '0000-00-00 00:00:00', NULL, NULL),
 (74, 3, 1, '1311041004000101', '131104100400010100101', 'Data Ganda: Duplikasi alamat dan KK', NULL, '0000-00-00 00:00:00', NULL, NULL),
-(75, 3, 1, '1311010005000301', '131101000500030100101', 'Perlu perbaikan: Kolom hubungan keluarga tidak diisi syafiq', NULL, '0000-00-00 00:00:00', '2025-12-05 07:26:15', NULL),
 (76, 1, 1, '1311031001000500', '131103100100050000101', '', NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
 (77, 2, 1, '1311010005000602', '131101000500060200101', 'Perlu perbaikan: NIK kurang digit', NULL, '0000-00-00 00:00:00', NULL, NULL),
 (78, 4, 1, '1311030001001201', '131103000100120100101', 'Sesuai Lapangan', NULL, '0000-00-00 00:00:00', NULL, NULL),
@@ -244,31 +241,7 @@ INSERT INTO `anomali` (`id`, `id_kategori_anomali`, `id_user`, `id_wilayah`, `id
 (198, 4, 1, '1311011002000301', '131101100200030100101', 'Perlu perbaikan: Jenis rumah tidak valid', NULL, '0000-00-00 00:00:00', NULL, NULL),
 (199, 3, 1, '1311040008000402', '131104000800040200101', 'Data Ganda: Duplikasi ID responden', NULL, '0000-00-00 00:00:00', NULL, NULL),
 (200, 3, 1, '1311021004000100', '131102100400010000101', 'Perlu perbaikan: NIK dan tanggal lahir tidak cocok', NULL, '0000-00-00 00:00:00', NULL, NULL),
-(201, 3, 1, '1311022004000401', '131102200400040100101', 'Sesuai Lapangan', NULL, '0000-00-00 00:00:00', NULL, NULL),
-(234, 24, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:12:45', '2026-04-21 08:12:45', NULL),
-(235, 25, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:12:45', '2026-04-21 08:12:45', NULL),
-(236, 26, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:12:45', '2026-04-21 08:12:45', NULL),
-(237, 24, NULL, '1311030001000100', '131103000100010000102', NULL, 1, '2026-04-21 08:12:45', '2026-04-21 08:12:45', NULL),
-(238, 24, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:19:56', '2026-04-21 08:19:56', NULL),
-(239, 25, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:19:56', '2026-04-21 08:19:56', NULL),
-(240, 26, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:19:56', '2026-04-21 08:19:56', NULL),
-(241, 24, NULL, '1311030001000100', '131103000100010000102', NULL, 1, '2026-04-21 08:19:56', '2026-04-21 08:19:56', NULL),
-(242, 24, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:20:47', '2026-04-21 08:20:47', NULL),
-(243, 25, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:20:47', '2026-04-21 08:20:47', NULL),
-(244, 26, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:20:47', '2026-04-21 08:20:47', NULL),
-(245, 24, NULL, '1311030001000100', '131103000100010000102', NULL, 1, '2026-04-21 08:20:48', '2026-04-21 08:20:48', NULL),
-(246, 24, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:21:18', '2026-04-21 08:21:18', NULL),
-(247, 25, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:21:18', '2026-04-21 08:21:18', NULL),
-(248, 26, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:21:18', '2026-04-21 08:21:18', NULL),
-(249, 24, NULL, '1311030001000100', '131103000100010000102', NULL, 1, '2026-04-21 08:21:18', '2026-04-21 08:21:18', NULL),
-(250, 24, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:21:49', '2026-04-21 08:21:49', NULL),
-(251, 25, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:21:49', '2026-04-21 08:21:49', NULL),
-(252, 26, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:21:49', '2026-04-21 08:21:49', NULL),
-(253, 24, NULL, '1311030001000100', '131103000100010000102', NULL, 1, '2026-04-21 08:21:50', '2026-04-21 08:21:50', NULL),
-(254, 24, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:22:15', '2026-04-21 08:22:15', NULL),
-(255, 25, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:22:15', '2026-04-21 08:22:15', NULL),
-(256, 26, NULL, '1311030001000100', '131103000100010000101', NULL, 1, '2026-04-21 08:22:16', '2026-04-21 08:22:16', NULL),
-(257, 24, NULL, '1311030001000100', '131103000100010000102', NULL, 1, '2026-04-21 08:22:16', '2026-04-21 08:22:16', NULL);
+(201, 3, 1, '1311022004000401', '131102200400040100101', 'Sesuai Lapangan', NULL, '0000-00-00 00:00:00', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -390,8 +363,6 @@ INSERT INTO `assigment` (`id`, `id_wilayah`, `id_kegiatan`, `kd_krt`, `kd_art`, 
 ('131102300400020200101', '1311023004000202', 1, '001', '01', 'Wati', 'Wati', ''),
 ('131102300400030000101', '1311023004000300', 1, '001', '01', 'Panji', 'Panji', ''),
 ('131102300400040100101', '1311023004000401', 1, '001', '01', 'Ratna', 'Ratna', ''),
-('131103000100010000101', '1311030001000100', 1, '001', '01', 'Syafiq', 'Syafiq', NULL),
-('131103000100010000102', '1311030001000100', 1, '001', '02', 'Syafiq', 'Atqiya', NULL),
 ('131103000100020100101', '1311030001000201', 1, '001', '01', 'Zaki', 'Zaki', ''),
 ('131103000100040200101', '1311030001000402', 1, '001', '01', 'Usman', 'Usman', ''),
 ('131103000100090000101', '1311030001000900', 1, '001', '01', 'Rendi', 'Rendi', ''),
@@ -638,7 +609,7 @@ CREATE TABLE `kategori_anomali` (
   `id` int(11) NOT NULL,
   `id_kegiatan` int(11) NOT NULL,
   `kode_anomali` varchar(20) NOT NULL,
-  `flag` int(11) NOT NULL DEFAULT 3,
+  `flag` enum('1','2','3') DEFAULT '3',
   `definisi_anomali` text DEFAULT NULL,
   `detil_anomali` text DEFAULT NULL,
   `is_show` tinyint(1) NOT NULL DEFAULT 0,
@@ -652,29 +623,29 @@ CREATE TABLE `kategori_anomali` (
 --
 
 INSERT INTO `kategori_anomali` (`id`, `id_kegiatan`, `kode_anomali`, `flag`, `definisi_anomali`, `detil_anomali`, `is_show`, `date_created`, `date_updated`, `date_deleted`) VALUES
-(1, 1, 'AN01', 2, 'Cek konsistensi jenis kelamin Kepala Keluarga.', 'Jenis kelamin KK tidak sesuai dengan aturan sensus. Syafiq', 1, '2025-11-05 13:04:39', '2026-04-22 10:06:52', NULL),
-(2, 1, 'AN02', 1, 'Verifikasi usia responden yang berusia di bawah 5 tahun.', 'Usia di bawah 5 tahun memiliki data pendidikan formal yang terisi.', 1, '2025-11-05 13:04:45', '2026-01-29 05:48:13', NULL),
-(3, 1, 'AN03', 3, 'Cek data pekerjaan untuk responden berusia di atas 70 tahun.', 'Responden lansia (>70) terdeteksi memiliki pekerjaan full-time.', 1, '2025-11-05 13:05:10', NULL, NULL),
-(4, 1, 'AN04', 3, 'Pemeriksaan status perkawinan responden di bawah 15 tahun.', 'Responden di bawah usia legal perkawinan terdeteksi menikah.', 0, '2025-11-05 13:05:30', NULL, NULL),
-(5, 1, 'AN05', 3, 'Cek kelengkapan data alamat dan kode pos.', 'Kolom kode pos kosong atau tidak valid.', 1, '2025-11-05 13:06:01', '2026-01-29 05:48:19', NULL),
-(6, 1, 'AN06', 3, 'Konsistensi hubungan dengan Kepala Keluarga (Hubungan Ganda).', 'Ditemukan lebih dari satu responden berstatus \"Istri\" dalam satu KK.', 1, '2025-11-05 13:06:22', NULL, NULL),
-(7, 1, 'AN07', 3, 'Verifikasi status disabilitas dan kemampuan bekerja.', 'Responden disabilitas berat terdeteksi bekerja di sektor formal.', 1, '2025-11-05 13:07:05', NULL, NULL),
-(8, 1, 'AN08', 3, 'Cek kesesuaian tingkat pendidikan dengan jenis pekerjaan.', 'Pendidikan SD memiliki pekerjaan sebagai Manajer/Profesional.', 0, '2025-11-05 13:07:40', NULL, NULL),
-(9, 1, 'AN09', 3, 'Pemeriksaan data migrasi (tempat lahir dan tempat tinggal saat ini).', 'Tempat lahir berada di luar negeri, tetapi tidak ada catatan migrasi.', 1, '2025-11-05 13:08:00', NULL, NULL),
-(10, 1, 'AN10', 3, 'Cek keberadaan NIK yang duplikat dalam wilayah sensus.', 'Nomor Induk Kependudukan (NIK) terdeteksi ganda.', 1, '2025-11-05 13:08:35', NULL, NULL),
-(11, 1, 'AN11', 3, 'Validasi tanggal lahir (usia lebih dari 100 tahun).', 'Responden berusia sangat lanjut (>100) memerlukan verifikasi data.', 1, '2025-11-05 13:09:12', NULL, NULL),
-(12, 1, 'AN12', 3, 'Pemeriksaan data kepemilikan aset (aset dan pendapatan tidak konsisten).', 'Pendapatan sangat rendah, namun memiliki aset properti mewah.', 0, '2025-11-05 13:09:40', NULL, NULL),
-(13, 1, 'AN13', 3, 'Cek konsistensi data kepemilikan lahan pertanian.', 'Lahan pertanian yang dicatat melebihi batas kepemilikan maksimum.', 1, '2025-11-05 13:10:05', NULL, NULL),
-(14, 1, 'AN14', 3, 'Verifikasi nomor telepon (terdapat format yang tidak baku).', 'Format nomor kontak responden tidak mengikuti standar nasional.', 1, '2025-11-05 13:10:30', NULL, NULL),
-(15, 1, 'AN15', 3, 'Cek kelengkapan kolom penghasilan per bulan (terdapat nilai 0).', 'Kolom penghasilan wajib terisi, namun bernilai nol (0).', 0, '2025-11-05 13:11:00', NULL, NULL),
-(16, 1, 'AN16', 3, 'Konsistensi status kepemilikan rumah (kontrak/milik sendiri).', 'Ditemukan status kepemilikan ganda atau tidak jelas.', 1, '2025-11-05 13:11:34', NULL, NULL),
-(17, 1, 'AN17', 3, 'Pemeriksaan kode wilayah (kecamatan dan desa tidak sesuai).', 'Kombinasi kode kecamatan dan desa tidak terdaftar.', 1, '2025-11-05 13:12:01', NULL, NULL),
-(18, 1, 'AN18', 3, 'Validasi data penggunaan air minum dan sanitasi.', 'Air minum dari PDAM, namun tidak memiliki fasilitas sanitasi yang layak.', 1, '2025-11-05 13:12:30', NULL, NULL),
-(19, 1, 'AN19', 3, 'Cek kelengkapan data vaksinasi pada anak-anak.', 'Anak usia sekolah tidak memiliki catatan vaksinasi dasar lengkap.', 0, '2025-11-05 13:13:00', NULL, NULL),
-(20, 1, 'AN20', 3, 'Pemeriksaan status kepemilikan hewan ternak (jumlah melebihi batas wajar).', 'Ditemukan jumlah ternak yang tidak realistis untuk ukuran rumah tangga biasa.', 1, '2025-11-05 13:13:30', NULL, NULL),
-(24, 1, 'A2', 1, 'anomali baru A2', 'anomali baru A2', 1, '2026-04-21 07:46:01', '2026-04-22 10:02:09', NULL),
-(25, 1, 'A34', 1, 'Anomali Baru A34', 'Anomali Baru A34', 0, '2026-04-21 07:46:01', '2026-04-22 10:02:26', NULL),
-(26, 1, 'A50', 1, 'Anomali Baru A50', 'Anomali Baru A50', 0, '2026-04-21 07:46:01', '2026-04-22 10:02:45', NULL);
+(1, 1, 'AN01', '3', 'Cek konsistensi jenis kelamin Kepala Keluarga.', 'Jenis kelamin KK tidak sesuai dengan aturan sensus. Syafiq', 1, '2025-11-05 13:04:39', '2026-04-22 10:06:52', NULL),
+(2, 1, 'AN02', '3', 'Verifikasi usia responden yang berusia di bawah 5 tahun.', 'Usia di bawah 5 tahun memiliki data pendidikan formal yang terisi.', 1, '2025-11-05 13:04:45', '2026-01-29 05:48:13', NULL),
+(3, 1, 'AN03', '3', 'Cek data pekerjaan untuk responden berusia di atas 70 tahun.', 'Responden lansia (>70) terdeteksi memiliki pekerjaan full-time.', 1, '2025-11-05 13:05:10', NULL, NULL),
+(4, 1, 'AN04', '3', 'Pemeriksaan status perkawinan responden di bawah 15 tahun.', 'Responden di bawah usia legal perkawinan terdeteksi menikah.', 0, '2025-11-05 13:05:30', NULL, NULL),
+(5, 1, 'AN05', '3', 'Cek kelengkapan data alamat dan kode pos.', 'Kolom kode pos kosong atau tidak valid.', 1, '2025-11-05 13:06:01', '2026-01-29 05:48:19', NULL),
+(6, 1, 'AN06', '3', 'Konsistensi hubungan dengan Kepala Keluarga (Hubungan Ganda).', 'Ditemukan lebih dari satu responden berstatus \"Istri\" dalam satu KK.', 1, '2025-11-05 13:06:22', NULL, NULL),
+(7, 1, 'AN07', '3', 'Verifikasi status disabilitas dan kemampuan bekerja.', 'Responden disabilitas berat terdeteksi bekerja di sektor formal.', 1, '2025-11-05 13:07:05', NULL, NULL),
+(8, 1, 'AN08', '3', 'Cek kesesuaian tingkat pendidikan dengan jenis pekerjaan.', 'Pendidikan SD memiliki pekerjaan sebagai Manajer/Profesional.', 0, '2025-11-05 13:07:40', NULL, NULL),
+(9, 1, 'AN09', '3', 'Pemeriksaan data migrasi (tempat lahir dan tempat tinggal saat ini).', 'Tempat lahir berada di luar negeri, tetapi tidak ada catatan migrasi.', 1, '2025-11-05 13:08:00', NULL, NULL),
+(10, 1, 'AN10', '3', 'Cek keberadaan NIK yang duplikat dalam wilayah sensus.', 'Nomor Induk Kependudukan (NIK) terdeteksi ganda.', 1, '2025-11-05 13:08:35', NULL, NULL),
+(11, 1, 'AN11', '3', 'Validasi tanggal lahir (usia lebih dari 100 tahun).', 'Responden berusia sangat lanjut (>100) memerlukan verifikasi data.', 1, '2025-11-05 13:09:12', NULL, NULL),
+(12, 1, 'AN12', '3', 'Pemeriksaan data kepemilikan aset (aset dan pendapatan tidak konsisten).', 'Pendapatan sangat rendah, namun memiliki aset properti mewah.', 0, '2025-11-05 13:09:40', NULL, NULL),
+(13, 1, 'AN13', '3', 'Cek konsistensi data kepemilikan lahan pertanian.', 'Lahan pertanian yang dicatat melebihi batas kepemilikan maksimum.', 1, '2025-11-05 13:10:05', NULL, NULL),
+(14, 1, 'AN14', '3', 'Verifikasi nomor telepon (terdapat format yang tidak baku).', 'Format nomor kontak responden tidak mengikuti standar nasional.', 1, '2025-11-05 13:10:30', NULL, NULL),
+(15, 1, 'AN15', '3', 'Cek kelengkapan kolom penghasilan per bulan (terdapat nilai 0).', 'Kolom penghasilan wajib terisi, namun bernilai nol (0).', 0, '2025-11-05 13:11:00', NULL, NULL),
+(16, 1, 'AN16', '3', 'Konsistensi status kepemilikan rumah (kontrak/milik sendiri).', 'Ditemukan status kepemilikan ganda atau tidak jelas.', 1, '2025-11-05 13:11:34', '0000-00-00 00:00:00', NULL),
+(17, 1, 'AN17', '3', 'Pemeriksaan kode wilayah (kecamatan dan desa tidak sesuai).', 'Kombinasi kode kecamatan dan desa tidak terdaftar.', 1, '2025-11-05 13:12:01', NULL, NULL),
+(18, 1, 'AN18', '3', 'Validasi data penggunaan air minum dan sanitasi.', 'Air minum dari PDAM, namun tidak memiliki fasilitas sanitasi yang layak.', 1, '2025-11-05 13:12:30', NULL, NULL),
+(19, 1, 'AN19', '3', 'Cek kelengkapan data vaksinasi pada anak-anak.', 'Anak usia sekolah tidak memiliki catatan vaksinasi dasar lengkap.', 0, '2025-11-05 13:13:00', NULL, NULL),
+(20, 1, 'AN20', '3', 'Pemeriksaan status kepemilikan hewan ternak (jumlah melebihi batas wajar).', 'Ditemukan jumlah ternak yang tidak realistis untuk ukuran rumah tangga biasa.', 1, '2025-11-05 13:13:30', NULL, NULL),
+(24, 1, 'A2', '3', 'anomali baru A2', 'anomali baru A2', 1, '2026-04-21 07:46:01', '2026-04-22 10:02:09', NULL),
+(25, 1, 'A34', '3', 'Anomali Baru A34', 'Anomali Baru A34', 0, '2026-04-21 07:46:01', '2026-04-22 10:02:26', NULL),
+(26, 1, 'A50', '3', 'Anomali Baru A50', 'Anomali Baru A50', 0, '2026-04-21 07:46:01', '2026-04-22 10:02:45', NULL);
 
 -- --------------------------------------------------------
 
@@ -766,7 +737,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `status`, `status_message`, `active`, `last_active`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'admin', NULL, NULL, 0, '2026-04-22 10:54:13', '2026-04-21 10:37:33', '2026-04-21 10:37:33', NULL);
+(1, 'admin', NULL, NULL, 0, '2026-04-22 13:16:15', '2026-04-21 10:37:33', '2026-04-21 10:37:33', NULL);
 
 -- --------------------------------------------------------
 
@@ -1519,13 +1490,15 @@ INSERT INTO `wilayah` (`id`, `kd_prov`, `kd_kab`, `kd_kec`, `kd_des`, `kd_sls`, 
 --
 ALTER TABLE `anomali`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_kategori_anomali` (`id_kategori_anomali`);
+  ADD KEY `fk_kategori_anomali` (`id_kategori_anomali`),
+  ADD KEY `fk_assigment` (`id_assigment`);
 
 --
 -- Indexes for table `assigment`
 --
 ALTER TABLE `assigment`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_wilayah` (`id_wilayah`);
 
 --
 -- Indexes for table `auth_groups_users`
@@ -1730,7 +1703,14 @@ ALTER TABLE `users_backup`
 -- Constraints for table `anomali`
 --
 ALTER TABLE `anomali`
+  ADD CONSTRAINT `fk_assigment` FOREIGN KEY (`id_assigment`) REFERENCES `assigment` (`id`),
   ADD CONSTRAINT `fk_kategori_anomali` FOREIGN KEY (`id_kategori_anomali`) REFERENCES `kategori_anomali` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `assigment`
+--
+ALTER TABLE `assigment`
+  ADD CONSTRAINT `fk_wilayah` FOREIGN KEY (`id_wilayah`) REFERENCES `wilayah` (`id`);
 
 --
 -- Constraints for table `auth_groups_users`
