@@ -14,8 +14,6 @@ $routes->get('/anomali/konfirmasiBulk', 'Anom::konfirmasiBulk');
 
 $routes->get('/manajemen-anomali/list', 'ManajAnom::manajemenList');
 $routes->post('/manajemen-anomali/action', 'ManajAnom::manajemenAction');
-$routes->get('/manajemen-anomali/upload', 'ManajAnom::upload');
-$routes->get('/manajemen-anomali/upload/template-anomali', 'ManajAnom::template');
 $routes->get('manajemen-anomali/edit/(:any)', 'ManajAnom::edit/$1');
 $routes->post('/manajemen-anomali/updateKategori', 'ManajAnom::updateKategori');
 

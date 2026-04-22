@@ -1,3 +1,4 @@
+/* Root */
 :root {
     --biru-bps: #0369A1;
     --biru-bps-hover: rgb(9, 98, 146);
@@ -5,7 +6,76 @@
     --oren-bps-hover:#d87e10;
     --hijau-bps:#94C11F;
     --hijau-bps-hover:#7ca31a;
+    --sidik-prm:#182433;
+    --tblr-primary: #1e7960;    /* Contoh warna biru BPS */
+    --tblr-primary-rgb: 6, 78, 59;
+    --tblr-secondary: #f76707;  /* Contoh warna sekunder */
+    --tblr-secondary-rgb: 247, 103, 7;
+
 }
+
+.nav-item.active {
+    border-left: 4px solid var(--se-orange); /* Garis oranye di samping menu aktif */
+}
+
+.bg-bps-prm{
+    background-color: #0369A1;
+}
+
+.bg-sidik-prm{
+    background-color: #182433;
+}
+
+.card {
+    border-radius: 12px !important; /* Sesuaikan angka ini */
+    overflow: hidden; /* Penting agar isi card tidak "bocor" keluar sudut */
+    margin-bottom: 1rem;
+}
+
+/* Jika card memiliki card-header atau card-footer */
+.card-header, .card-footer {
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+}
+
+/* .bg-bps-prm-grd{
+    background: linear-gradient(to bottom,#0369A1,rgba(255,0,0,0));
+} */
+
+/* Layout Header */
+/* Transisi halus saat sidebar bergeser */
+.page {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Saat class sidebar-collapsed aktif di body */
+body.sidebar-collapsed .navbar-vertical {
+    margin-left: -15rem; /* Sesuaikan dengan lebar sidebar Anda */
+    transition: margin-left 0.3s ease-in-out;
+}
+
+body.sidebar-collapsed .page-wrapper {
+    margin-left: 0 !important;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+/* Memperbaiki posisi sidebar saat muncul kembali */
+.navbar-vertical {
+    transition: margin-left 0.3s ease-in-out !important;
+    transform: translateX(0);
+}
+
+.header-sidik {
+    background-color: var(--tblr-primary);
+}
+
+.icon-burger{
+    width: 32px !important;  /* Ganti angka sesuai selera */
+    height: 32px !important;
+    stroke-width: 1.5;       /* Agar garis tidak terlihat tipis saat membesar */
+}
+
+
 
 .sampul{
     width: 70px;
@@ -13,14 +83,6 @@
 
 .table > tbody > tr > * {
     vertical-align: middle;
-}
-
-.bg-bps-prm{
-    background-color: #0369A1;
-}
-
-.bg-bps-prm-grd{
-    background: linear-gradient(to bottom,#0369A1,rgba(255,0,0,0));
 }
 
 .text-family-logo{

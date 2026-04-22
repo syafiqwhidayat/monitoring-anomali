@@ -4,119 +4,122 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js" integrity="sha512-Y51n9mtKTVBh3Jbx5pZSJNDDMyY+yGe77DGtBPzRlgsf/YLCh13kSZ3JmfHGzYFCmOndraf0sQgfM654b7dJ3w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <div class="container" jenis-konf="0">
-    <div class="row">
-        <div class="col">
-            <h1>Statistik Seluruh Anomali</h1>
+    <div class="card card-body">
+        <div class="row">
+            <div class="col">
+                <h1>Statistik Seluruh Anomali</h1>
+            </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-12 col-md-6">
-            <div class="chartJumlahAnomali">
-                <canvas id="grafikAnomali" aria-label="grafik_jumlah_anomali" role="img">
-                    <p>Browser Kamu tidak Support Canvas Element</p>
-                </canvas>
-            </div>
-        </div>
-        <div class="col-12 col-md-6">
-            <div class="row">
-                <div class="col d-flex flex-column align-items-center gap-1">
-                    <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Anomali: <?= $dataHead['total seluruh']; ?></button>
-                    <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Public: <?= $dataHead['total public']; ?></button>
-                    <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Non Public: <?= $dataHead['total non public']; ?></button>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <div class="d-flex">
-                        <canvas id="grafPersenAnom" aria-label="grafik_persen_anomali" role="img">
-                            <p>Browser Kamu tidak Support Canvas Element</p>
-                        </canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-6">
-                    <div class="d-flex">
-                        <canvas id="grafPersenAnomPublic" aria-label="grafik_persen_anomali_public" role="img">
-                            <p>Browser Kamu tidak Support Canvas Element</p>
-                        </canvas>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="d-flex">
-                        <canvas id="grafPersenAnomNonPublic" aria-label="grafik_persen_anomali_non_public" role="img">
-                            <p>Browser Kamu tidak Support Canvas Element</p>
-                        </canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-4">
-                    <canvas id="grafPersenAnomFlag1" class="gefPersenFlag" aria-label="grafik_persen_anomali_flag1" role="img">
+    <div class="card card-body">
+        <div class="row">
+            <div class="col-12 col-md-6">
+                <div class="chartJumlahAnomali">
+                    <canvas id="grafikAnomali" aria-label="grafik_jumlah_anomali" role="img">
                         <p>Browser Kamu tidak Support Canvas Element</p>
                     </canvas>
                 </div>
-                <div class="col-4">
-                    <canvas id="grafPersenAnomFlag2" class="gefPersenFlag" aria-label="grafik_persen_anomali_flag2" role="img">
-                        <p>Browser Kamu tidak Support Canvas Element</p>
-                    </canvas>
-                </div>
-                <div class="col-4">
-                    <canvas id="grafPersenAnomFlag3" class="gefPersenFlag" aria-label="grafik_persen_anomali_flag3" role="img">
-                        <p>Browser Kamu tidak Support Canvas Element</p>
-                    </canvas>
+            </div>
+            <div class="col-12 col-md-6">
+                <div class="row">
+                    <div class="col d-flex flex-column align-items-center gap-1">
+                        <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Anomali: <?= $dataHead['total seluruh']; ?></button>
+                        <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Public: <?= $dataHead['total public']; ?></button>
+                        <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Non Public: <?= $dataHead['total non public']; ?></button>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col">
-                        <canvas id="grafTimeline" class="gefPersenFlag1" aria-label="grafik_timeline" role="img">
+                        <div class="d-flex">
+                            <canvas id="grafPersenAnom" aria-label="grafik_persen_anomali" role="img">
+                                <p>Browser Kamu tidak Support Canvas Element</p>
+                            </canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="d-flex">
+                            <canvas id="grafPersenAnomPublic" aria-label="grafik_persen_anomali_public" role="img">
+                                <p>Browser Kamu tidak Support Canvas Element</p>
+                            </canvas>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex">
+                            <canvas id="grafPersenAnomNonPublic" aria-label="grafik_persen_anomali_non_public" role="img">
+                                <p>Browser Kamu tidak Support Canvas Element</p>
+                            </canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <canvas id="grafPersenAnomFlag1" class="gefPersenFlag" aria-label="grafik_persen_anomali_flag1" role="img">
                             <p>Browser Kamu tidak Support Canvas Element</p>
                         </canvas>
                     </div>
-                </div>
+                    <div class="col-4">
+                        <canvas id="grafPersenAnomFlag2" class="gefPersenFlag" aria-label="grafik_persen_anomali_flag2" role="img">
+                            <p>Browser Kamu tidak Support Canvas Element</p>
+                        </canvas>
+                    </div>
+                    <div class="col-4">
+                        <canvas id="grafPersenAnomFlag3" class="gefPersenFlag" aria-label="grafik_persen_anomali_flag3" role="img">
+                            <p>Browser Kamu tidak Support Canvas Element</p>
+                        </canvas>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <canvas id="grafTimeline" class="gefPersenFlag1" aria-label="grafik_timeline" role="img">
+                                <p>Browser Kamu tidak Support Canvas Element</p>
+                            </canvas>
+                        </div>
+                    </div>
 
+                </div>
             </div>
         </div>
     </div>
-    <div class="row mt-5">
-        <h1>Top 5 Konfirmasi Anomali Terbaru</h1>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Kode Wilayah</th>
-                    <th scope="col">Jenis Anomali</th>
-                    <th scope="col">Detil Anomali</th>
-                    <th scope="col">Jawaban Konfirmasi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?= $nomorBaris = 1; ?>
-                <?php foreach ($dataTop5 as $dat): ?>
+    <div class="card card-body">
+        <div class="row mt-5">
+            <h1>Top 5 Konfirmasi Anomali Terbaru</h1>
+            <table class="table">
+                <thead>
                     <tr>
-                        <th scope="row"><?= $nomorBaris++; ?></th>
-                        <td>
-                            <div class="d-flex justify-content-center">
-                                <button type=" button" class="btn btn-primary-bps rounded-pill"><?= $dat['id_wilayah']; ?></button>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="d-flex justify-content-center">
-                                <button type=" button" class="btn btn-warning-bps rounded-pill"><?= $dat['kode_anomali']; ?></button>
-                            </div>
-                        </td>
-                        <td><?= $dat['detil_anomali']; ?></td>
-                        <td><?= $dat['konfirmasi']; ?></td>
+                        <th scope="col">#</th>
+                        <th scope="col">Kode Wilayah</th>
+                        <th scope="col">Jenis Anomali</th>
+                        <th scope="col">Detil Anomali</th>
+                        <th scope="col">Jawaban Konfirmasi</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?= $nomorBaris = 1; ?>
+                    <?php foreach ($dataTop5 as $dat): ?>
+                        <tr>
+                            <th scope="row"><?= $nomorBaris++; ?></th>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <button type=" button" class="btn btn-primary-bps rounded-pill"><?= $dat['id_wilayah']; ?></button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <button type=" button" class="btn btn-warning-bps rounded-pill"><?= $dat['kode_anomali']; ?></button>
+                                </div>
+                            </td>
+                            <td><?= $dat['detil_anomali']; ?></td>
+                            <td><?= $dat['konfirmasi']; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <script>
-    // import {
-    //     Colors
-    // } from 'chart.js';
     document.addEventListener("DOMContentLoaded", function() {
         // 1. Ambil konteks canvas
         const ctx = document.getElementById('grafikAnomali');

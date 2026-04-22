@@ -25,6 +25,7 @@ class AnomaliModel extends Model
                     ->select('SUBSTRING(anomali.id_wilayah, 1, 7) AS id, wilayah.kd_kec AS kd,wilayah.nm_kec AS nmKec,COUNT(*) AS jmlAnom')
                     ->join('wilayah', 'wilayah.id = anomali.id_wilayah', 'left')
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                    ->where('SUBSTRING(anomali.id_assigment, 1, 4)', $wilayah)
                     ->where('k.is_show', true)
                     ->groupBy('wilayah.kd_kec');
                 break;

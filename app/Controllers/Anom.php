@@ -105,8 +105,9 @@ class Anom extends BaseController
             'listAnom' => ''
         ];
 
-        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', true);
+        $dat = $this->anomaliModel->getAnomaliByWilayah('1311030001', true);
         $data['listAnom'] = $dat;
+        dd($data);
 
         return view('anomali/listAnomaliEdit', $data);
     }

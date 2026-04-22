@@ -103,14 +103,20 @@ class ManajAnom extends BaseController
         ];
 
         $data = $this->request->getPost();
+        $id = $data['id'];
+        unset($data['id']);
+        unset($data['kode_anomali']);
 
-        if ($data['is_show'] == "show_id_" . $data['id']) {
+        // memastikan show untuk id yg sama
+        if ($data['is_show'] == "show_id_" . $id) {
             $data['is_show'] = true;
         } else {
             $data['is_show'] = false;
         }
 
-        if ($this->katAnomaliModel->save($data) === false) {
+
+        if ($this->katAnomaliModel->update($id, $data) === false) {
+            dd($this->katAnomaliModel->errors());
             session()->setFlashdata($this->katAnomaliModel->errors());
             return redirect()->back()
                 ->withInput()
@@ -131,19 +137,5 @@ class ManajAnom extends BaseController
         // ]);
 
         // dd($konfirmasi);
-    }
-
-    public function upload()
-    {
-        $data = [
-            "title" => "Upload Anomali"
-        ];
-        return view('manajAnom/upload', $data);
-    }
-
-    public function template()
-    {
-        $template = "ini adalah template";
-        dd($template);
     }
 }
