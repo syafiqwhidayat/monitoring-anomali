@@ -22,7 +22,7 @@ class AnomaliModel extends Model
 
         // return semua data ketika tidak ada wilayah
         if ($wilayah == false) {
-            return $this->select('id_wilayah AS id, wilayah.kd_kec AS kd,wilayah.nm_kec AS nmKec,COUNT(*) AS jmlAnom')
+            return $this->select('id_wilayah AS id, wilayah.kd_kec AS kd,wilayah.nm_kec AS nm,COUNT(*) AS jmlAnom')
                 ->join('wilayah', 'wilayah.id = anomali.id_wilayah', 'left')
                 ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                 ->groupBy('wilayah.kd_kec')
@@ -32,7 +32,7 @@ class AnomaliModel extends Model
         switch ($len) {
             case '4':
                 $data = $this
-                    ->select('SUBSTRING(anomali.id_wilayah, 1, 7) AS id, wilayah.kd_kec AS kd,wilayah.nm_kec AS nmKec,COUNT(*) AS jmlAnom')
+                    ->select('SUBSTRING(anomali.id_wilayah, 1, 7) AS id, wilayah.kd_kec AS kd,wilayah.nm_kec AS nm,COUNT(*) AS jmlAnom')
                     ->join('wilayah', 'wilayah.id = anomali.id_wilayah', 'left')
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                     ->where('SUBSTRING(anomali.id_assigment, 1, 4)', $wilayah)
@@ -301,6 +301,24 @@ class AnomaliModel extends Model
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             ->where('anomali.id_assigment', $id_assigment);
         $data  = $query->findAll();
+        return ($data);
+    }
+
+    public function getKdAnomaliByUser()
+    {
+        $data = $this->select('k.kode_anomali AS nama,id_kategori_anomali as value')
+            ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+            ->distinct()
+            ->findAll();
+        return ($data);
+    }
+
+    public function getFlagByUser()
+    {
+        $data = $this->select('k.flag AS value')
+            ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+            ->distinct()
+            ->findAll();
         return ($data);
     }
 }

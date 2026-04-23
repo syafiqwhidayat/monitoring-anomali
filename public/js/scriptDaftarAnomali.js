@@ -4,8 +4,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const deleteModal = document.getElementById("deleteModal");
   const isEdit = window.location.href.includes("listEdit") ? "1" : "0";
   const tombolFilter = document.getElementById("tombolFilter");
-  const kodeFilter = document.getElementsByName('selected-kode-anomali');
-  const flagFilter = document.getElementsByName('selected-flag');
+  const kodeFilter = document.getElementsByName('sel-kdanomali');
+  const flagFilter = document.getElementsByName('sel-flag');
+  const loadingContent = '<div class="d-flex justify-content-center"><h1>Loading<span class="animated-dots"></span></h1></div></div>'
 
   //untuk halaman manajemen anomali
   // cont;
@@ -14,10 +15,12 @@ document.addEventListener("DOMContentLoaded", function () {
   if (parentAccordionKec) {
     // --- A. Logic saat Accordion DIBUKA (Uncollapse) ---
     parentAccordionKec.addEventListener("show.bs.collapse", function (event) {
+      // target elemen adalah, elemen yg di klik
       const targetElement = event.target;
-      console.log(targetElement);
+      // mendapatkan id elemen yg di klik
       const anomaliId = targetElement.getAttribute("id");
       console.log(anomaliId);
+      // mendapatkan container untuk mengisi isian
       const loadContainer = targetElement.querySelector(".data-load-container");
       const anomContainer = "";
 
@@ -27,8 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // 2. Tampilkan pesan loading
-      loadContainer.innerHTML =
-        '<p class="text-center">⏳ Sedang memuat detail anomali...</p>';
+      loadContainer.innerHTML =loadingContent;
 
       // 3. Panggil Endpoint CI4 via AJAX
       fetch(`/anomali/getListWilAnom/${anomaliId}/${isEdit}`)
@@ -46,8 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         })
         .catch((error) => {
-          loadContainer.innerHTML =
-            '<p class="text-danger">❌ Gagal memuat data.</p>';
+          loadContainer.innerHTML = loadingContent;
         });
 
       // // C. Logic ketika sudah dapat accordion-anomali
@@ -126,8 +127,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const loadContainer = targetElement.querySelector(".data-load-container");
 
       // 1. Hapus isi (Clear Content)
-      loadContainer.innerHTML =
-        '<p class="text-center">Data telah dihapus.</p>';
+      loadContainer.innerHTML = loadingContent;
 
       // 2. Reset status loaded
       targetElement.setAttribute("data-loaded", "false");
@@ -224,27 +224,32 @@ document.addEventListener("DOMContentLoaded", function () {
   //   });
   // }
 
+  
   // untuk filter
   tombolFilter.addEventListener('click',function(){
-    console.log('tombol filter ditekan')
-    console.log('parentAcordion:',parentAccordionKec)
-    const dib = 
-    `
-    <div class="accordion" id="accordionAnomaliKec">
-      <div class="accordion-item">
-        <h2 class="accordion-header">
-          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1311010" aria-expanded="false" aria-controls="collapse1311010">
-              010 SUNGAI RUMBAI (1)                                    </button>
-        </h2>
-      <div id="collapse1311010" class="accordion-collapse collapse" data-bs-parent="#accordionAnomaliKec">
-        <div class="accordion-body data-load-container p-2">
-          <p class="fst-italic">Memuat data ...</p>
-        </div>
-      </div>
-    </div>`;
+    // console.log('tombol filter ditekan')
+    // console.log('flagFilter value',flagFilter)
+    
+    // Mendapatkan apakah di request dari edit atau list
+    const url = window.location.pathname;
+    var isEdit = url.includes('Edit')
+    // kodeFilter[0].value
 
-    parentAccordionKec.innerHTML=dib;
-  
+    // loader awal
+    parentAccordionKec.innerHTML=loadingContent;
+
+    // Panggil Endpoint CI4 via AJAX
+      fetch(`/anomali/list-filter/?isEdit=${isEdit}&kdAnomali=${kodeFilter[0].value}&flag=${flagFilter[0].value}`)
+        // fetch(`/anomali/getListKec`)
+        .then((response) => response.text())
+        .then((htmlContent) => {
+          // Render konten accordion bersarang
+          parentAccordionKec.innerHTML = htmlContent;
+          // targetElement.setAttribute("data-loaded", "true");
+        })
+        .catch((error) => {
+          parentAccordionKec.innerHTML = loadingContent;
+        }); 
     
   })
 

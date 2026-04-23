@@ -116,7 +116,6 @@ class ManajAnom extends BaseController
 
 
         if ($this->katAnomaliModel->update($id, $data) === false) {
-            dd($this->katAnomaliModel->errors());
             session()->setFlashdata($this->katAnomaliModel->errors());
             return redirect()->back()
                 ->withInput()

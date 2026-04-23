@@ -18,10 +18,11 @@ class Anom extends BaseController
         $this->katAnomaliModel = new KatAnomaliModel();
     }
 
-    public function list()
+    public function list($isEdit = false)
     {
         $data = [
             'title' => 'List Anomali',
+            'isEdit' => $isEdit,
             'listAnom' => [
                 [
                     'nmKec' => 'Sungai Rumbai',
@@ -89,32 +90,64 @@ class Anom extends BaseController
                     'kd' => '041',
                     'jmlAnom' => 45
                 ],
-            ]
+            ],
+            'listSelKdAnom' => [
+                [
+                    'value' => '',
+                    'nama' => 'Semua Anomali',
+                ],
+            ],
+            'listSelFlag' => [
+                [
+                    'value' => '',
+                ],
+            ],
         ];
 
-        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', true);
+        $listSelKdAnom = $this->anomaliModel->getKdAnomaliByUser();
+        $listSelFlag = $this->anomaliModel->getFlagByUser();
+        $data['listSelKdAnom'] = array_merge($data['listSelKdAnom'], $listSelKdAnom);
+        $data['listSelFlag'] = array_merge($data['listSelFlag'], $listSelFlag);
+
+        // $data['listSelKdAnom'] .
+
+        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', $isEdit);
         $data['listAnom'] = $dat;
 
         return view('anomali/listAnomali', $data);
     }
 
-    public function listEdit()
-    {
-        $data = [
-            'title' => 'Edit Konfirmasi Anomali',
-            'listAnom' => ''
-        ];
+    // public function listEdit()
+    // {
+    //     $data = [
+    //         'title' => 'Edit Konfirmasi Anomali',
+    //         'listAnom' => ''
+    //     ];
 
-        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', true);
-        $data['listAnom'] = $dat;
+    //     $dat = $this->anomaliModel->getAnomaliByWilayah('1311', true);
+    //     $data['listAnom'] = $dat;
 
-        return view('anomali/listAnomaliEdit', $data);
-    }
+    //     return view('anomali/listAnomaliEdit', $data);
+    // }
 
     public function listFilter()
     {
-        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', false);
-        $data['listAnom'] = $dat;
+        $data = [
+            'title' => 'Edit Konfirmasi Anomali',
+            // 'idEdit' => $isEdit,
+            // 'kdAnomali' => $kdAnomali,
+            // 'flag' => $flag,
+            'listAnom' => '',
+            'jenis' => 'Kec'
+        ];
+        $isEdit = $this->request->getGet('isEdit');
+        $kdAnomali = $this->request->getGet('kdAnomali');
+        $flag = $this->request->getGet('flag');
+
+        $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah('1311', $isEdit, $kdAnomali, $flag);
+
+
+        return view('anomali/listAnomaliPart', $data);
     }
 
     public function listWilAnom($idKec, $isEdit = false)

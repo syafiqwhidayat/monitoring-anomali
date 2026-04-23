@@ -9,8 +9,10 @@ $routes->get('/', 'Home::index');
 $routes->get('/anomali', 'Anom::list');
 $routes->get('/anomali/getListWilAnom/(:any)/(:num)', 'Anom::listWilAnom/$1/$2');
 $routes->post('/anomali/updateKonfirmasi', 'Anom::updateKonfirmasi');
-$routes->get('/anomali/listEdit', 'Anom::listEdit');
+// $routes->get('/anomali/listEdit', 'Anom::listEdit');
+$routes->get('/anomali/listEdit', 'Anom::list/true');
 $routes->get('/anomali/konfirmasiBulk', 'Anom::konfirmasiBulk');
+$routes->get('/anomali/list-filter', 'Anom::listFilter');
 
 $routes->get('/manajemen-anomali/list', 'ManajAnom::manajemenList');
 $routes->post('/manajemen-anomali/action', 'ManajAnom::manajemenAction');

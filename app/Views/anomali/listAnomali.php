@@ -9,24 +9,25 @@
         <!-- <div class="card-body"> -->
         <div class="hr-text hr-text-left fs-5 mb-3">Filter Anomali</div>
         <div class="mb-3">
-            <form action="<?= base_url('anomali/filter') ?>" method="get">
+            <form action="<?= base_url('/anomali/list-filter') ?>" method="post">
+                <input type="hidden" name="isEdit" value=<?= $isEdit; ?>>
                 <div class="row g-3">
                     <div class="col-md-5">
                         <label class="form-label">Kode Anomali</label>
-                        <select name="selected-kode-anomali" class="form-select" id="filterKode">
-                            <option value="">Semua Anomali</option>
-                            <option value="1">AN01</option>
-                            <option value="2">AN02</option>
+                        <select name="sel-kdanomali" class="form-select" id="filterKode">
+                            <?php foreach ($listSelKdAnom as $l): ?>
+                                <option value=<?= $l['value']; ?>><?= $l['nama']; ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
 
                     <div class="col-md-5">
                         <label class="form-label">Flag Prioritas</label>
-                        <select name="selected-flag" class="form-select" id="filterFlag">
+                        <select name="sel-flag" class="form-select" id="filterFlag">
                             <option value="">Semua Jenis</option>
-                            <option value="1">Flag 1</option>
-                            <option value="2">Flag 1</option>
-                            <option value="3">Flag 3</option>
+                            <?php foreach ($listSelFlag as $l): ?>
+                                <option value=<?= $l['value']; ?>> Flag-<?= $l['value']; ?></option>
+                            <?php endforeach ?>
                         </select>
                     </div>
 
@@ -62,7 +63,7 @@
                             <div class="accordion-item">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $d['id']; ?>" aria-expanded="false" aria-controls="collapse<?= $d['id']; ?>">
-                                        <?= $d['kd'] . ' ' . $d['nmKec'] . ' (' . $d['jmlAnom'] . ')'; ?>
+                                        <?= $d['kd'] . ' ' . $d['nm'] . ' (' . $d['jmlAnom'] . ')'; ?>
                                     </button>
                                 </h2>
                                 <div id="collapse<?= $d['id']; ?>" class="accordion-collapse collapse" data-bs-parent="#accordionAnomaliKec">

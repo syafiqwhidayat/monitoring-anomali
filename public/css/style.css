@@ -11,6 +11,9 @@
     --tblr-primary-rgb: 6, 78, 59;
     --tblr-secondary: #f76707;  /* Contoh warna sekunder */
     --tblr-secondary-rgb: 247, 103, 7;
+    /* --tblr-gradasi-rgb:81, 209, 175; */
+    --tblr-gradasi-rgb:114, 202, 253;
+    --tblr-gradasi:rgb(114, 202, 253);
 
 }
 
@@ -73,6 +76,26 @@ body.sidebar-collapsed .page-wrapper {
     width: 32px !important;  /* Ganti angka sesuai selera */
     height: 32px !important;
     stroke-width: 1.5;       /* Agar garis tidak terlihat tipis saat membesar */
+}
+
+/* Halaman Daftar Anomali */
+.accordionKec{
+    background-color: rgba(var(--tblr-gradasi-rgb), 0);
+}
+.accordionDes{
+    background-color: rgba(var(--tblr-gradasi-rgb),0.15) !important;
+}
+.accordionSLS{
+    background-color: rgba(var(--tblr-gradasi-rgb),0.40) !important;
+}
+.accordionRuta{
+    background-color: rgba(var(--tblr-gradasi-rgb),0.65) !important;
+}
+.accordionRuta{
+    background-color: rgba(var(--tblr-gradasi-rgb),0.80) !important;
+}
+.accordionArt{
+    background-color: rgba(var(--tblr-gradasi-rgb),1) !important;
 }
 
 

@@ -1,4 +1,4 @@
-<div class="accordion" id="accordionAnomali<?= $jenis; ?>">
+<div class="accordion accordion<?= $jenis; ?>" id="accordionAnomali<?= $jenis; ?>">
     <?php if (!$listAnom): ?>
         <div class="accordion-item">
             <div class="p-2 container-<?= $jenis; ?>">

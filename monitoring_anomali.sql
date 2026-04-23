@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 22, 2026 at 03:17 PM
+-- Generation Time: Apr 23, 2026 at 11:06 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -476,7 +476,7 @@ CREATE TABLE `auth_identities` (
 --
 
 INSERT INTO `auth_identities` (`id`, `user_id`, `type`, `name`, `secret`, `secret2`, `expires`, `extra`, `force_reset`, `last_used_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'email_password', NULL, 'admin@bps.go.id', '$2y$12$ABTl6j3cU0nUnYQX8ZtduueuhxFnl90kTNFCvR7aKJW07rndP0gRi', NULL, NULL, 0, '2026-04-22 00:26:52', '2026-04-21 10:37:34', '2026-04-22 00:26:52');
+(1, 1, 'email_password', NULL, 'admin@bps.go.id', '$2y$12$ABTl6j3cU0nUnYQX8ZtduueuhxFnl90kTNFCvR7aKJW07rndP0gRi', NULL, NULL, 0, '2026-04-23 07:29:52', '2026-04-21 10:37:34', '2026-04-23 07:29:52');
 
 -- --------------------------------------------------------
 
@@ -501,7 +501,10 @@ CREATE TABLE `auth_logins` (
 
 INSERT INTO `auth_logins` (`id`, `ip_address`, `user_agent`, `id_type`, `identifier`, `user_id`, `date`, `success`) VALUES
 (1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-04-21 10:38:37', 1),
-(2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-04-22 00:26:52', 1);
+(2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-04-22 00:26:52', 1),
+(3, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', NULL, '2026-04-23 00:15:24', 0),
+(4, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-04-23 00:15:31', 1),
+(5, '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-04-23 07:29:52', 1);
 
 -- --------------------------------------------------------
 
@@ -737,7 +740,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `status`, `status_message`, `active`, `last_active`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'admin', NULL, NULL, 0, '2026-04-22 13:16:15', '2026-04-21 10:37:33', '2026-04-21 10:37:33', NULL);
+(1, 'admin', NULL, NULL, 0, '2026-04-23 08:30:28', '2026-04-21 10:37:33', '2026-04-21 10:37:33', NULL);
 
 -- --------------------------------------------------------
 
@@ -1627,7 +1630,7 @@ ALTER TABLE `auth_identities`
 -- AUTO_INCREMENT for table `auth_logins`
 --
 ALTER TABLE `auth_logins`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `auth_permissions_users`
