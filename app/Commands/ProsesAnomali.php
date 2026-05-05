@@ -82,18 +82,18 @@ class ProsesAnomali extends BaseCommand
         $this->anomaliModel = new AnomaliModel();
         $this->kategoriModel = new KatAnomaliModel();
         $this->kegiatanModel = new KegiatanModel();
-        $this->listKategori = $this->kategoriModel->getIdKategori($this->idKegiatan);
-
-        $kegiatan = $this->kegiatanModel->find($this->idKegiatan);
 
         $fileName           = $params[0] ?? null;
         $logId              = $params[1] ?? null;
         $this->idKegiatan   = $params[2] ?? null;
         $this->levelAnomali = $params[3] ?? null;
+        $this->listKategori = $this->kategoriModel->getIdKategori($this->idKegiatan);
+        $kegiatan = $this->kegiatanModel->find($this->idKegiatan);
         $isRT               = $kegiatan['is_rt'] ?? null;
         $levelWilayah       = $kegiatan['level_wilayah'] ?? 4;
 
-        if (!$fileName || !$logId || !$this->idKegiatan) {
+
+        if (!$fileName || !$logId || !$this->idKegiatan || !$this->levelAnomali) {
             CLI::error("Nama file atau ID Log atau ID Kegiatan tidak ditemukan.");
             return;
         }
@@ -106,7 +106,6 @@ class ProsesAnomali extends BaseCommand
         $this->logModel->update($logId, ['status' => 'proses']);
 
         $db = \Config\Database::connect();
-        $db->transStart(); // Mulai Transaksi
 
         try {
             $filePath = WRITEPATH . 'uploads/' . $fileName;
@@ -119,9 +118,26 @@ class ProsesAnomali extends BaseCommand
             $errorDetails = [];
             $totalSuccess = 0;
 
-            $this->anomaliModel->where('id_kegiatan', session()->get('aktif_kegiatan'))->set('is_insert', 0)->update();
+            // Cari semua ID di tabel anomali yang kategorinya punya id_kegiatan tertentu
+            $ids = $this->anomaliModel
+                ->select('anomali.id')
+                ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali')
+                ->where('k.id_kegiatan', $this->idKegiatan)
+                ->findAll();
+
+            // Ambil array ID-nya saja
+            $idsArray = array_column($ids, 'id');
+
+            // Jika ada data, lakukan update berdasarkan ID
+            if (!empty($idsArray)) {
+                $this->anomaliModel->whereIn('id', $idsArray)
+                    ->set(['is_insert' => 0])
+                    ->update();
+            }
 
             // 2. Mulai membaca data (Skip baris 0/header)
+
+            $db->transStart(); // Mulai Transaksi
 
             for ($i = 1; $i <= $totalBaris; $i++) {
                 $row = $sheetData[$i];
@@ -199,18 +215,29 @@ class ProsesAnomali extends BaseCommand
                     $errorDetails[] = [
                         'baris' => $rowNum,
                         'data' => $data['id_assigment'],
-                        'messages' => $validation->getErrors()
+                        'messages' => $validation->getErrors(),
                     ];
                     $gagal++;
-                    // $error = json_encode($errorDetails);
-                    // CLI::write("gagal validasi $error", 'green');
 
                     // continue;
                 } else {
                     // 3. Jika lolos validasi, simpan ke database
 
                     // mendapatkan id assigment
-                    $id_assigment = $this->assigmentModel->getOrInsert($data);
+                    $id_assigment = $this->assigmentModel->getOrInsert($data, $this->idKegiatan);
+                    $ass = $data['nama_nrt'];
+                    CLI::write("id assigment : $id_assigment");
+
+                    // cek berhasil dapat id_assigment
+                    if (!$id_assigment) {
+                        $errorDetails[] = [
+                            'baris' => $rowNum,
+                            'data' => $data['id_assigment'],
+                            'messages' => $this->assigmentModel->errors(),
+                        ];
+                        $gagal++;
+                        continue;
+                    }
 
                     //  mendapatkan daftar anomali pada assigment tersebut
                     $listAnomali = $this->anomaliModel->getAnomaliByAssigment($id_assigment);
@@ -219,9 +246,18 @@ class ProsesAnomali extends BaseCommand
                     $anomaliTambahan = explode(',', $data['anomali']);
                     $anomaliTambahan = array_map('trim', $anomaliTambahan);
 
-                    $id_wilayah = substr($id_assigment, 0, 16);
+                    $id_wilayah = $data['id_wilayah'];
 
-                    $this->insertAnomali($listAnomali, $anomaliTambahan, $id_assigment, $id_wilayah);
+                    $status = $this->insertAnomali($listAnomali, $anomaliTambahan, $id_assigment, $id_wilayah) ?? null;
+                    if ($status) {
+                        $errorDetails[] = [
+                            'baris' => $rowNum,
+                            'data' => $data['id_assigment'],
+                            'messages' => $status,
+                        ];
+                        $gagal++;
+                        continue;
+                    }
 
                     // Kelompokkan sukses per id_wilayah
                     if (!isset($successReport[$id_wilayah])) {
@@ -231,9 +267,10 @@ class ProsesAnomali extends BaseCommand
                     $totalSuccess++;
                     $berhasil++;
 
-                    $db->transComplete(); // Commit Transaksi
+                    // $db->transComplete(); // Commit Transaksi
                 }
             }
+            $db->transComplete();
             // 5. Update Log saat Selesai
             $datum = [
                 'status'        => 'selesai',
@@ -242,29 +279,7 @@ class ProsesAnomali extends BaseCommand
                 'gagal'         => $gagal,
                 'error_details' => json_encode($errorDetails)
             ];
-            $datum = json_encode($datum);
-            CLI::write("Datum: $datum");
-
-            // CLI::write("Mencoba update ID: " . $logId);
-
-            // $db = \Config\Database::connect();
-
-            // $db->table('log_upload')
-            //     ->where('id', $logId)
-            //     ->update($datum);
-            // if ($db->affectedRows() > 0) {
-            //     CLI::write("Update Berhasil!", 'green');
-            // } else {
-            //     CLI::error("Update Gagal atau tidak ada data yang berubah.");
-            // }
             $this->logModel->update($logId, $datum);
-
-            // if (!$this->logModel->update($logId, $datum)) {
-            //     $error = $this->logModel->errors();
-            //     foreach ($error as $field => $message) {
-            //         CLI::write("- $field: $message", 'red');
-            //     }
-            // };
 
             CLI::write("Proses selesai. Berhasil: $berhasil, Gagal: $gagal", 'green');
         } catch (\Throwable $th) {
@@ -323,6 +338,8 @@ class ProsesAnomali extends BaseCommand
         if (!empty($listAnomali)) {
             foreach ($listAnomali as $list) {
                 $mappedExisting[$list['id_kategori_anomali']] = $list['id'];
+                $l = $list['id_kategori_anomali'];
+                CLI::write("listAnomali : $l");
             }
         }
 
@@ -331,30 +348,53 @@ class ProsesAnomali extends BaseCommand
             $idKat = null;
             if (!isset($this->mappedKategori[$kodeAnom])) {
                 $data = [
-                    'id_kegiatan' => $this->id_kegiatan,
+                    'id_kegiatan' => $this->idKegiatan,
                     'kode_anomali' => $kodeAnom,
                     'is_show' => 0,
                     'level_anomali' => $this->levelAnomali,
                 ];
                 $idKat = $this->kategoriModel->insert($data);
+                $erro = $this->kategoriModel->errors();
+                if (!$idKat) {
+                    $existing = $this->kategoriModel
+                        ->where('id_kegiatan', $this->idKegiatan)
+                        ->where('kode_anomali', $kodeAnom)
+                        ->first();
+                    $idKat = $existing['id'] ?? null;
+                }
                 // Simpan ke cache agar tidak double insert di baris berikutnya
-                $this->mappedKategori[$kodeAnom] = $idKat;
+                if ($idKat) {
+                    $this->mappedKategori[$kodeAnom] = $idKat;
+                }
             } else {
                 $idKat = $this->mappedKategori[$kodeAnom];
             }
+            $dataSave = null;
+
+            if ($idKat) {
+                $dataSave = [
+                    'id_kategori_anomali' => $idKat,
+                    'id_wilayah'          => $id_wilayah,
+                    'id_assigment'        => $id_assigment,
+                    'is_insert'           => 1,
+                ];
+            } else {
+                // Log atau tampilkan pesan jika kategori benar-benar tidak bisa ditemukan/dibuat
+                $pesan = "Gagal mendapatkan ID Kategori untuk kode: $this->idKegiatan";
+                CLI::error($pesan);
+                foreach ($erro as $er) {
+                    CLI::write($er);
+                }
+                return $pesan;
+            };
 
 
-            $dataSave = [
-                'id_kategori_anomali' => $idKat,
-                'id_wilayah'          => $id_wilayah,
-                'id_assigment'        => $id_assigment,
-                'is_insert'           => 1,
-            ];
 
             // jika sudah ada, maka tinggal update. jika belum maka insert.
             if (isset($mappedExisting[$idKat])) {
                 // UPDATE: Menggunakan ID unik dari tabel anomali (primary key)
                 $idAnomaliTabel = $mappedExisting[$idKat];
+                CLI::write("id anomali : $idAnomaliTabel");
                 $this->anomaliModel->update($idAnomaliTabel, $dataSave);
             } else {
                 // INSERT baru

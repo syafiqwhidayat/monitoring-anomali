@@ -11,9 +11,9 @@ class AssigmentModel extends Model
     protected $table = 'assigment';
     protected $useTimestamps = false;
     protected $primaryKey = 'id';
-    protected $allowedFields = ['id', 'id_wilayah', 'id_kegiatan', 'kd_krt', 'kd_art', 'nm_krt', 'nm_art', 'id_bs'];
+    protected $allowedFields = ['id_wilayah', 'id_kegiatan', 'kd_krt', 'kd_art', 'nm_krt', 'nm_art', 'id_bs', 'kd_assigment', 'kd_nrt', 'nm_nrt'];
     protected $validationRules = [
-        'id_wilayah' => 'required|is_not_unique[wilayah.id]',
+        'id_wilayah' => 'required',
 
     ];
     protected $validationMessages = [
@@ -22,10 +22,13 @@ class AssigmentModel extends Model
         ],
     ];
 
-    public function getOrInsert($data)
+    public function getOrInsert($data, $idKegiatan)
     {
         // 1. Cek apakah id_rtart sudah ada
-        $existing = $this->where('id', $data['id_assigment'])->first();
+        $existing = $this->where('kd_assigment', $data['id_assigment'])
+            ->where('id_wilayah', $data['id_wilayah'])
+            ->first();
+
         if ($existing) {
             // Jika ada, kembalikan primary key (id)-nya
             return $existing['id'];
@@ -33,9 +36,9 @@ class AssigmentModel extends Model
         // 2. Jika belum ada, insert data baru
         // dd($data);
         $dataBaru = [
-            'id' => $data['id_assigment'],
+            'kd_assigment' => $data['id_assigment'],
             'id_wilayah' => $data['id_wilayah'],
-            'id_kegiatan' => 1,
+            'id_kegiatan' => $idKegiatan,
             'kd_krt' => $data['nurt'] ?? null,
             'kd_art' => $data['nuart'] ?? null,
             'nm_krt' => $data['nama_krt'] ?? null,

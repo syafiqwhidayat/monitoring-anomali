@@ -25,36 +25,42 @@ class ManajAnom extends BaseController
     {
         $perPage = 10;
         $idKegiatanAktif = session()->get('aktif_kegiatan');
+        $data['title'] = "Manajemen Anomali";
 
-        $data = [
-            "title" => "Manajemen Anomali",
-            "listAnom" => [
-                [
-                    'id' => 1,
-                    'kdAnom' => 'AN21',
-                    'desAnom' => 'Lorem ipsum dolor sit amet consectetur, adipisicing elit. Id blanditiis, modi maiores ducimus nulla harum veritatis, facere pariatur ipsa magnam ipsum deleniti, vel odio eligendi veniam iusto accusantium quo fugiat?',
-                    'detAnom' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum architecto magnam hic quod assumenda, cumque veritatis iure nobis at ut.',
-                    'isSee' => true,
-                ],
-                [
-                    'id' => 2,
-                    'kdAnom' => 'AN22',
-                    'desAnom' => 'Lorem ipsum dolor sit amet consectetur, adipisicing elit. Id blanditiis, modi maiores ducimus nulla harum veritatis, facere pariatur ipsa magnam ipsum deleniti, vel odio eligendi veniam iusto accusantium quo fugiat?',
-                    'detAnom' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum architecto magnam hic quod assumenda, cumque veritatis iure nobis at ut.',
-                    'isSee' => false,
-                ],
-                [
-                    'id' => 3,
-                    'kdAnom' => 'AN24',
-                    'desAnom' => 'Lorem ipsum dolor sit amet consectetur, adipisicing elit. Id blanditiis, modi maiores ducimus nulla harum veritatis, facere pariatur ipsa magnam ipsum deleniti, vel odio eligendi veniam iusto accusantium quo fugiat?',
-                    'detAnom' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolorum architecto magnam hic quod assumenda, cumque veritatis iure nobis at ut.',
-                    'isSee' => true,
-                ],
+        $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
+        $data['filterFlag'] = $this->request->getGet('fil-flag') ?? '';
+        $data['message'] = null;
+        $isRT = (session()->get('is_rt') == 1);
+
+        // data filter
+        $data['listLevel'] = [
+            [
+                'id' => '',
+                'nama' => "Semua Anomali",
             ],
         ];
-        $data['listAnom'] = $this->katAnomaliModel->where('id_kegiatan', $idKegiatanAktif)->paginate($perPage, 'default');
-        $data['pager'] = $this->katAnomaliModel->where('id_kegiatan', $idKegiatanAktif)->pager;
-        $data['currentPage'] = $this->katAnomaliModel->where('id_kegiatan', $idKegiatanAktif)->pager->getCurrentPage();
+        $data['listSelFlag'] = [];
+        $data['listSelKdAnom'] = [
+            [
+                'id' => '',
+                'nama' => 'Semua Anomali',
+            ],
+        ];
+
+        $listSelKdAnom = $this->anomaliModel->getKdAnomaliByUser() ?? [];
+        $listSelFlag = $this->anomaliModel->getFlagByUser() ?? [];
+        $listSelLevel = $this->anomaliModel->getLevelAnomByUser() ?? [];
+
+        $data['listSelKdAnom'] = array_merge($data['listSelKdAnom'], $listSelKdAnom ?? []);
+        $data['listSelFlag'] = array_merge($data['listSelFlag'], $listSelFlag ?? []);
+        $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel ?? []);
+
+        // data isian
+        $model = $this->katAnomaliModel->getFilterKategori($idKegiatanAktif, $data['filterLevel'], $data['filterFlag']);
+
+        $data['listAnom'] = $model->paginate($perPage, 'default');
+        $data['pager'] = $model->pager;
+        $data['currentPage'] = $model->pager->getCurrentPage();
 
         return view('manajAnom/manajemen', $data);
     }
@@ -192,5 +198,54 @@ class ManajAnom extends BaseController
 
             return redirect()->to('/manajemen-anomali/log')->with('message', 'Upload berhasil! Sistem sedang memproses data di latar belakang.');
         }
+    }
+
+    public function logDetil($id)
+    {
+        $log = $this->logModel->find($id);
+        $errors = json_decode($log['error_details'], true);
+        // dd($errors);
+        $data['errors'] = $errors;
+
+        if (empty($errors)) {
+            return '
+        <div class="text-center p-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg>
+            <p class="text-secondary">Tidak ada rincian kesalahan untuk ID ini atau proses berhasil 100%.</p>
+        </div>';
+        }
+
+        // Susun Tabel HTML dengan format Tabler
+        $html = '<div class="table-responsive">
+                <table class="table table-vcenter card-table table-striped">
+                    <thead>
+                        <tr>
+                            <th class="w-1">Baris</th>
+                            <th>Nama/Data</th>
+                            <th>Keterangan Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+
+        // dd($errors);
+        foreach ($errors as $err) {
+            $pesanTampil = '';
+            if (is_array($err['messages'])) {
+                $pesanTampil = implode(', ', $err['messages']);
+            } else {
+                $pesanTampil = $err['messages'];
+            }
+            $html .= '<tr>
+                    <td><span class="badge bg-red-lt">' . $err['baris'] . '</span></td>
+                    <td class="small fw-bold text-uppercase">' . $err['data'] . '</td>
+                    <td class="text-danger small">' . $pesanTampil . '</td>
+                  </tr>';
+        }
+
+        $html .= '    </tbody>
+                </table>
+            </div>';
+
+        return view('log_upload/log_comp_error', $data);
     }
 }

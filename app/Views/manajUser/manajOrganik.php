@@ -33,7 +33,7 @@
                 <div class="col-md-3">
                     <label class="form-label">Kabupaten</label>
                     <select name="kec" class="form-select">
-                        <option value="">Semua Kecamatan</option>
+                        <option value="">Kabupaten</option>
                     </select>
                 </div>
                 <div class="col-md-4">

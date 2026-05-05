@@ -27,9 +27,10 @@ $routes->post('/manajemen-anomali/updateKategori', 'ManajAnom::updateKategori');
 $routes->get('/manajemen-anomali/log', 'ManajAnom::log');
 $routes->get('/manajemen-anomali/template', 'ManajAnom::downloadTemplate');
 $routes->post('/manajemen-anomali/store', 'ManajAnom::store');
+$routes->get('/manajemen-anomali/log-detil/(:num)', 'ManajAnom::logDetil/$1');
 
 $routes->get('monitoring/', 'Monitoring::index');
-$routes->get('monitoringSelc/(:num)', 'Monitoring::view/$1');
+$routes->get('monitoring-sel/(:num)', 'Monitoring::view/$1');
 
 $routes->get('se/monitoring', 'SeMonitoring::index');
 $routes->get('se/upload', 'SeMonitoring::logs');
@@ -37,9 +38,9 @@ $routes->get('se/downloadTemplate', 'SeMonitoring::downloadTemplate');
 $routes->post('se/store', 'SeMonitoring::store');
 $routes->post('se/hapus', 'SeMonitoring::hapus');
 
-$routes->get('/upload', 'Upload::index');
-$routes->get('/upload/download-template', 'Upload::downloadTemplate');
-$routes->post('/uploadFile', 'Upload::import');
+// $routes->get('/upload', 'Upload::index');
+// $routes->get('/upload/download-template', 'Upload::downloadTemplate');
+// $routes->post('/uploadFile', 'Upload::import');
 
 $routes->get('/pages', 'Pages::index');
 $routes->get('/about', 'Pages::about');

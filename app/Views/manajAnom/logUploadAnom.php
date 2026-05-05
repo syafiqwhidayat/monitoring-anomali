@@ -158,9 +158,10 @@
     function showError(id) {
         const modal = new bootstrap.Modal(document.getElementById('modal-error'));
         modal.show();
+        console.log('ini dijalankan');
 
         // Ambil detail error via AJAX ke controller detail
-        fetch('<?= base_url('/wilayah/log-detil/') ?>' + id)
+        fetch('<?= base_url('/manajemen-anomali/log-detil/') ?>' + id)
             .then(response => response.text())
             .then(html => {
                 document.getElementById('error-content').innerHTML = html;

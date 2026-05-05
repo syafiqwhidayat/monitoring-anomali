@@ -85,6 +85,10 @@ class CustomRules extends BaseConfig
     // }
     public function uniqueWith(string $value, string $params, array $data): bool
     {
+        // params: table.scopeField.uniqueField
+        $p = explode('.', $params);
+        if (count($p) < 3) return false;
+
         // [table, scopeField, uniqueField]
         [$table, $scopeField, $uniqueField] = explode('.', $params);
 

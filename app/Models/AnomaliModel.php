@@ -206,13 +206,16 @@ class AnomaliModel extends Model
     {
         // $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
         $id_kegiatan = session()->get('aktif_kegiatan');
+
         $hasil = $this
             ->select("LEFT(id_wilayah,10) as 'id_kec'")
             ->select('COUNT(*) as jumlah_total')
             ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi")
+            ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
             ->where('id_kategori_anomali', $idKat)
             ->where('id_kegiatan', $id_kegiatan)
             ->groupBy("id_kec");
+
         $hasil = $hasil->findAll();
         // dd($hasil);
         return ($hasil);
@@ -362,7 +365,7 @@ class AnomaliModel extends Model
     public function getAnomaliByAssigment($kd_assigment)
     {
         $query = $this
-            ->select('anomali.id AS id, art.kd_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi')
+            ->select('anomali.id AS id, art.kd_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi, anomali.id_kategori_anomali AS id_kategori_anomali')
             ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             ->where('art.kd_assigment', $kd_assigment);

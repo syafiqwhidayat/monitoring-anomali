@@ -139,7 +139,6 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="/upload">Upload Anomali</a>
                                     <a class="dropdown-item" href="/manajemen-anomali/list">Manajemen Anomali</a>
                                     <a class="dropdown-item" href="/manajemen-anomali/log">Log Upload Anomali</a>
                                 </div>
@@ -162,7 +161,7 @@
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
                                     <a class="dropdown-item" href="/monitoring">Monitoring Anomali All</a>
-                                    <a class="dropdown-item" href="monitoringSelc/1">Monitoring Anomali Tertentu</a>
+                                    <a class="dropdown-item" href="<?= base_url('monitoring-sel/2') ?>">Monitoring Anomali Tertentu</a>
                                 </div>
                             </div>
                         </div>

@@ -28,6 +28,7 @@ class Anom extends BaseController
         $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
         $data['filterKategori'] = $this->request->getGet('fil-kategori') ?? '';
         $data['filterFlag'] = $this->request->getGet('fil-flag') ?? '';
+        $data['message'] = null;
         $isRT = (session()->get('is_rt') == 1);
 
         // cek filter wilayah inisial value

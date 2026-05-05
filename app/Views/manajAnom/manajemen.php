@@ -4,13 +4,48 @@
 <div class="container">
     <div class="card card-body">
         <h1>Manajemen Anomali</h1>
-        <?php if (session()->getFlashdata('message')) : ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <?= session()->getFlashdata('message'); ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        <?php endif; ?>
     </div>
+
+    <!-- filter -->
+    <div class="card card-body">
+        <div class="hr-text hr-text-left fs-5 mb-3">Filter Anomali</div>
+        <div class="mb-3">
+            <form action="<?= base_url('/manajemen-anomali/list') ?>" method="get">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Level Anomali</label>
+                        <select name="fil-level" class="form-select" id="filter-level">
+                            <?php foreach ($listLevel as $l): ?>
+                                <option value="<?= $l['id']; ?>" <?= ($l['id'] == $filterLevel) ? 'selected' : ''; ?>>Anomali <?= ($l['id'] == null) ? "Semua" : $l['id']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label class="form-label">Flag Prioritas</label>
+                        <select name="fil-flag" class="form-select" id="filter-flag">
+                            <option value="">Semua Jenis</option>
+                            <?php foreach ($listSelFlag as $l): ?>
+                                <option value="<?= $l['value']; ?>" <?= ($l['value'] == $filterFlag) ? 'selected' : ''; ?>> Flag <?= $l['value']; ?></option>
+                            <?php endforeach ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100" id="tombolFilterEdit">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-filter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-4 2v-8.5l-4.414 -4.414a2 2 0 0 1 -.586 -1.414v-2.172z" />
+                            </svg>
+                            Terapkan
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ini tabel -->
     <div class="card card-body">
         <table class="table">
             <thead>
