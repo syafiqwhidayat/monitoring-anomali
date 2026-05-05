@@ -181,7 +181,7 @@ class Monitoring extends BaseController
             $dataModel = $this->anomaliModel->jumlahKonfirmasiByWiayah($id_kat);
             $judulBaris = array_column($dataModel, 'id_kec');
         } else {
-            $dataModel = $this->anomaliModel->jumlahKonfirmasiByAnoamli();
+            $dataModel = $this->anomaliModel->jumlahKonfirmasiByAnoamli(session()->get('aktif_kegiatan'));
             $judulBaris = array_column($dataModel, 'kode_anomali');
         };
         $jumlah_terisi = array_column($dataModel, 'jumlah_terisi');

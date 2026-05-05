@@ -33,7 +33,7 @@ Events::on('pre_system', static function (): void {
             ob_end_flush();
         }
 
-        ob_start(static fn ($buffer) => $buffer);
+        ob_start(static fn($buffer) => $buffer);
     }
 
     /*
@@ -51,5 +51,17 @@ Events::on('pre_system', static function (): void {
                 (new HotReloader())->run();
             });
         }
+    }
+});
+
+Events::on('login', function ($user) {
+    $kegiatanModel = new \App\Models\KegiatanModel();
+    $daftarKegiatan = $kegiatanModel->getKegiatanDesc();
+    $terbaru = $daftarKegiatan[0];
+
+    if ($daftarKegiatan) {
+        // Simpan ke session otomatis setelah login
+        session()->set('aktif_kegiatan', $terbaru['id']);
+        session()->set('nama_kegiatan', $terbaru['nama']);
     }
 });

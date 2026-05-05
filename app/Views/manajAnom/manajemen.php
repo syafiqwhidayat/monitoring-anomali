@@ -32,7 +32,7 @@
                                 <button type=" button" class="btn btn-primary rounded-pill"><?= $l['kode_anomali']; ?></button>
                             </div>
                         </td>
-                        <td><button type=" button" class="btn btn-warning p-1 "><i class="fas fa-flag"></i><?= $l['flag']; ?></button></td>
+                        <td><button type=" button" class="btn btn-warning p-1 "><i class="fas fa-flag"> <?= $l['flag']; ?> </i></button></td>
                         <td><?= $l['definisi_anomali']; ?></td>
                         <td><?= $l['detil_anomali']; ?></td>
                         <td>

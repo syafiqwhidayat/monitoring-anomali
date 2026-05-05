@@ -1,12 +1,22 @@
 document.addEventListener("DOMContentLoaded", function () {
   // untuk halaman daftar anomali
   const parentAccordionKec = document.getElementById("accordionAnomaliKec");
-  const deleteModal = document.getElementById("deleteModal");
-  const isEdit = window.location.href.includes("listEdit") ? "1" : "0";
-  const tombolFilter = document.getElementById("tombolFilter");
-  const kodeFilter = document.getElementsByName('sel-kdanomali');
-  const flagFilter = document.getElementsByName('sel-flag');
-  const loadingContent = '<div class="d-flex justify-content-center"><h1>Loading<span class="animated-dots"></span></h1></div></div>'
+  const isEdit = document.getElementById("isEdit");
+  const filterLevel = document.getElementById("filter-level");
+  // const filterWilayah = document.getElementsById("filter-wilayah");
+  const filterKode = document.getElementById("filter-kategori");
+  const filterFlag = document.getElementById("filter-flag");
+  console.log(
+    isEdit.value,
+    filterLevel.value,
+    filterKode.value,
+    filterFlag.value,
+  );
+
+  const loadingContent =
+    '<div class="d-flex justify-content-center"><h1>Loading<span class="animated-dots"></span></h1></div></div>';
+  const savedContent =
+    '<i class="text-success bi bi-check-circle-fill"></i> Saved!';
 
   //untuk halaman manajemen anomali
   // cont;
@@ -14,15 +24,31 @@ document.addEventListener("DOMContentLoaded", function () {
   // untuk hamanan daftar anomali
   if (parentAccordionKec) {
     // --- A. Logic saat Accordion DIBUKA (Uncollapse) ---
+    // Gunakan event delegation atau listen langsung ke event Bootstrap
     parentAccordionKec.addEventListener("show.bs.collapse", function (event) {
+      event.stopPropagation();
       // target elemen adalah, elemen yg di klik
+      // target elemen adalah accordion-collaps yg dibuka.
       const targetElement = event.target;
+      if (!targetElement.classList.contains("accordion-collapse")) {
+        return;
+      }
       // mendapatkan id elemen yg di klik
-      const anomaliId = targetElement.getAttribute("id");
-      console.log(anomaliId);
+      // const anomaliId = targetElement.getAttribute("id");
+      // console.log(anomaliId);
+      // Ambil elemen pembungkus (accordion-item) untuk mendapatkan data-id
+      const item = targetElement.closest(".accordion-item");
+      if (!item) return;
+      const id = item.getAttribute("data-id");
+      const isCompleted = item.getAttribute("data-is-completed");
+
+      // const anomaliId = targetElement.getAttribute("id");
+      // console.log(anomaliId);
+
       // mendapatkan container untuk mengisi isian
       const loadContainer = targetElement.querySelector(".data-load-container");
       const anomContainer = "";
+      console.log(id);
 
       // 1. Periksa apakah data sudah dimuat sebelumnya
       if (targetElement.getAttribute("data-loaded") === "true") {
@@ -30,10 +56,18 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       // 2. Tampilkan pesan loading
-      loadContainer.innerHTML =loadingContent;
+      loadContainer.innerHTML = loadingContent;
 
       // 3. Panggil Endpoint CI4 via AJAX
-      fetch(`/anomali/getListWilAnom/${anomaliId}/${isEdit}`)
+      param = new URLSearchParams({
+        "fil-level": filterLevel.value,
+        "id-anomali": id,
+        "fil-kategori": filterKode.value,
+        "fil-flag": filterFlag.value,
+        "is-edit": isEdit.value,
+        "is-completed": isCompleted,
+      });
+      fetch(`/anomali/listDetil?${param}`)
         // fetch(`/anomali/getListKec`)
         .then((response) => response.text())
         .then((htmlContent) => {
@@ -42,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
           targetElement.setAttribute("data-loaded", "true");
         })
         .then(() => {
-          const anomContainer = targetElement.querySelector(".container-Art");
+          const anomContainer = targetElement.querySelector(".container-Anom");
           if (anomContainer) {
             setupFormListeners(anomContainer);
           }
@@ -50,84 +84,20 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch((error) => {
           loadContainer.innerHTML = loadingContent;
         });
-
-      // // C. Logic ketika sudah dapat accordion-anomali
-      // this.anomContainer = targetElement.querySelector(".container-Ruta");
-      // // console.log(anomContainer);
-      // if (anomContainer) {
-      //   // --- C. Logic saat Pencet Submit ---
-      //   const forms = document.querySelectorAll(".anomali-form-submit");
-      //   // anomContainer.addEventListener("submit", function (event) {
-      //   console.log(forms);
-      //   //   event.preventDefault(); // Mencegah submit form tradisional (refresh halaman)
-
-      //   forms.forEach((form) => {
-      //     form.addEventListener("submit", function (event) {
-      //       event.preventDefault(); // Mencegah submit form tradisional (refresh halaman)
-
-      //       const formData = new FormData(form);
-      //       const anomaliId = formData.get("id"); // Ambil ID dari hidden input
-      //       console.log(anomaliId);
-      //       const anomaliKonfirmasi = formData.get("konfirmasi"); // Ambil ID dari hidden input
-      //       console.log(anomaliKonfirmasi);
-      //       const saveButton = form.querySelector("#submit-button");
-      //       const feedbackElement = document.getElementById(
-      //         `feedback-${anomaliId}`
-      //       );
-
-      //       // Tampilkan status loading
-      //       saveButton.disabled = true;
-      //       saveButton.textContent = "Saving...";
-      //       feedbackElement.innerHTML = ""; // Kosongkan feedback sebelumnya
-
-      //       // 2. Kirim data menggunakan Fetch API
-      //       fetch("/anomali/updateKonfirmasi", {
-      //         method: "POST",
-      //         body: formData, // Langsung kirim FormData
-      //         // Anda mungkin perlu menambahkan headers jika menggunakan CSRF protection
-      //       })
-      //         .then((response) => response.json()) // Asumsikan Controller mengembalikan JSON
-      //         .then((data) => {
-      //           // 3. Handle Feedback Berhasil
-      //           console.log(data);
-      //           if (data.status === "success") {
-      //             feedbackElement.innerHTML =
-      //               '<i class="text-success bi bi-check-circle-fill"></i> Saved!';
-      //             // Optional: Highlight baris yang sukses
-      //             form.classList.add("bg-success", "bg-opacity-10");
-      //             setTimeout(
-      //               () => form.classList.remove("bg-success", "bg-opacity-10"),
-      //               2000
-      //             );
-      //           } else {
-      //             // 4. Handle Feedback Gagal (Validasi)
-      //             feedbackElement.innerHTML = `<span class="text-danger">Error: ${data.message}</span>`;
-      //           }
-      //         })
-      //         .catch((error) => {
-      //           // Handle kesalahan koneksi
-      //           feedbackElement.innerHTML =
-      //             '<span class="text-danger">Koneksi Error.</span>';
-      //           console.error("Error:", error);
-      //         })
-      //         .finally(() => {
-      //           // 5. Kembalikan tombol ke keadaan normal
-      //           saveButton.disabled = false;
-      //           saveButton.textContent = "Save";
-      //         });
-      //     });
-      //     // });
-      //   });
-      // }
     });
 
     // --- B. Logic saat Accordion DITUTUP (Collapse) ---
     parentAccordionKec.addEventListener("hide.bs.collapse", function (event) {
+      event.stopPropagation();
       const targetElement = event.target;
       const loadContainer = targetElement.querySelector(".data-load-container");
 
       // 1. Hapus isi (Clear Content)
       loadContainer.innerHTML = loadingContent;
+      if (loadContainer) {
+        loadContainer.innerHTML = loadingContent;
+        targetElement.setAttribute("data-loaded", "false");
+      }
 
       // 2. Reset status loaded
       targetElement.setAttribute("data-loaded", "false");
@@ -136,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function setupFormListeners(container) {
     // 1. Cari form HANYA di dalam container yang diberikan
-    console.log(container);
+    // console.log(container);
     const forms = container.querySelectorAll(".anomali-form-submit");
 
     console.log(`Menemukan ${forms.length} form untuk dipasangi listener.`);
@@ -156,7 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // Pastikan feedbackElement juga dicari secara dinamis,
         // karena ID-nya bergantung pada anomaliId
         const feedbackElement = document.getElementById(
-          `feedback-${anomaliId}`
+          `feedback-${anomaliId}`,
         );
 
         // Periksa apakah saveButton dan feedbackElement ditemukan sebelum melanjutkan
@@ -169,6 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
         saveButton.disabled = true;
         saveButton.textContent = "Saving...";
         feedbackElement.innerHTML = ""; // Kosongkan feedback sebelumnya
+        feedbackElement.innerHTML = "Mencoba Mengirim"; // Kosongkan feedback sebelumnya
 
         // 2. Kirim data menggunakan Fetch API
         fetch("/anomali/updateKonfirmasi", {
@@ -179,12 +150,11 @@ document.addEventListener("DOMContentLoaded", function () {
           .then((data) => {
             // 3. Handle Feedback Berhasil/Gagal
             if (data.status === "success") {
-              feedbackElement.innerHTML =
-                '<i class="text-success bi bi-check-circle-fill"></i> Saved!';
+              feedbackElement.innerHTML = savedContent;
               form.classList.add("bg-success", "bg-opacity-10");
               setTimeout(
                 () => form.classList.remove("bg-success", "bg-opacity-10"),
-                2000
+                2000,
               );
             } else {
               feedbackElement.innerHTML = `<span class="text-danger">Error: ${data.message}</span>`;
@@ -203,55 +173,4 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     });
   }
-
-  // untuk halaman manajemen anomali
-  // if (deleteModal) {
-  //   // Tangkap event saat Modal mulai ditampilkan (Bootstrap Event)
-  //   deleteModal.addEventListener("show.bs.modal", function (event) {
-  //     // Dapatkan tombol yang memicu modal
-  //     const button = event.relatedTarget;
-
-  //     // Ambil ID dari atribut data-id tombol
-  //     const anomaliKode = button.getAttribute("data-kode");
-
-  //     // 1. Masukkan ID ke hidden input di dalam Modal
-  //     const modalInput = deleteModal.querySelector("#delete_id_input");
-  //     modalInput.value = anomaliKode;
-
-  //     // 2. Tampilkan ID di badan modal untuk konfirmasi
-  //     const modalDisplay = deleteModal.querySelector("#anomali-id-display");
-  //     modalDisplay.textContent = anomaliKode;
-  //   });
-  // }
-
-  
-  // untuk filter
-  tombolFilter.addEventListener('click',function(){
-    // console.log('tombol filter ditekan')
-    // console.log('flagFilter value',flagFilter)
-    
-    // Mendapatkan apakah di request dari edit atau list
-    const url = window.location.pathname;
-    var isEdit = url.includes('Edit')
-    // kodeFilter[0].value
-
-    // loader awal
-    parentAccordionKec.innerHTML=loadingContent;
-
-    // Panggil Endpoint CI4 via AJAX
-      fetch(`/anomali/list-filter/?isEdit=${isEdit}&kdAnomali=${kodeFilter[0].value}&flag=${flagFilter[0].value}`)
-        // fetch(`/anomali/getListKec`)
-        .then((response) => response.text())
-        .then((htmlContent) => {
-          // Render konten accordion bersarang
-          parentAccordionKec.innerHTML = htmlContent;
-          // targetElement.setAttribute("data-loaded", "true");
-        })
-        .catch((error) => {
-          parentAccordionKec.innerHTML = loadingContent;
-        }); 
-    
-  })
-
-
 });

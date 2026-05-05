@@ -220,6 +220,4 @@ document.addEventListener("DOMContentLoaded", function () {
       modalDisplay.textContent = anomaliKode;
     });
   }
-
-
 });

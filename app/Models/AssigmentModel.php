@@ -34,12 +34,14 @@ class AssigmentModel extends Model
         // dd($data);
         $dataBaru = [
             'id' => $data['id_assigment'],
-            'id_wilayah' => substr($data['id_assigment'], 0, 16),
+            'id_wilayah' => $data['id_wilayah'],
             'id_kegiatan' => 1,
-            'kd_krt' => $data['nurt'],
-            'kd_art' => $data['nuart'],
-            'nm_krt' => $data['nama_krt'],
-            'nm_art' => $data['nama_art'],
+            'kd_krt' => $data['nurt'] ?? null,
+            'kd_art' => $data['nuart'] ?? null,
+            'nm_krt' => $data['nama_krt'] ?? null,
+            'nm_art' => $data['nama_art'] ?? null,
+            'kd_nrt' => $data['kode_nrt'] ?? null,
+            'nm_nrt' => $data['nama_nrt'] ?? null,
         ];
         $this->insert($dataBaru);
 

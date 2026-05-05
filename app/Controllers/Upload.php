@@ -67,6 +67,9 @@ class Upload extends BaseController
         $successReport = []; // Mengelompokkan sukses berdasarkan id_wilayah
         $totalSuccess = 0;
 
+        // Reset kolom is insert
+        $this->anomaliModel->where('id_kegiatan', session()->get('aktif_kegiatan'))->set('is_insert', 0);
+
         // Loop mulai dari baris ke-2 (asumsi baris 1 adalah header)
         foreach ($sheetData as $index => $row) {
             if ($index === 0) continue;
@@ -148,9 +151,6 @@ class Upload extends BaseController
 
     public function insertAnomali($listAnomali, $anomaliTambahan, $id_assigment, $id_wilayah)
     {
-        // Reset kolom is insert
-        $this->anomaliModel->set('is_insert', 0);
-
         // cek apakah kategori sudah ada
         // mengembalikan map nilainya
         $mappedKategori = $this->cekOrInsertKategori(1, $anomaliTambahan);

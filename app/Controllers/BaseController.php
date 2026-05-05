@@ -36,7 +36,9 @@ abstract class BaseController extends Controller
      * @var list<string>
      */
     protected $helpers = [];
+    protected $data = [];
     var $nama = null;
+    var $daftarKegiatan = null;
 
     /**
      * Be sure to declare properties for any property fetch you initialized.
@@ -52,9 +54,37 @@ abstract class BaseController extends Controller
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
+        //  memnggunakan base_url
+        helper(['url', 'auth']); // Memuat helper URL
+
         // Preload any models, libraries, etc, here.
+
+        // inisiasi model
 
         // E.g.: $this->session = service('session');
         $this->nama = 'Syafiq';
+        $daftarKegiatan = null;
+        // fallback untuk kegiatan aktif kalau sessionya masih ada.
+        if (auth()->loggedIn() && !session()->has('aktif_kegiatan')) {
+            $wilayahTugasModel = new \App\Models\WilayahTugasModel();
+            $kegiatanModel = new \App\Models\KegiatanModel();
+            $terbaru = null;            // cek role user. apakah mitra
+            $daftarKegiatan = null;
+            if (auth()->getGroups()[0] == 'mitra') {
+                $daftarKegiatan = $wilayahTugasModel->getKegiatanByUser(auth()->id());
+                $terbaru = $daftarKegiatan[0];
+            } else {
+                $daftarKegiatan = $kegiatanModel->getKegiatanDesc();
+                $terbaru = $daftarKegiatan[0];
+            }
+
+            if ($daftarKegiatan) {
+                // Simpan ke session otomatis setelah login
+                session()->set('aktif_kegiatan', $terbaru['id']);
+                session()->set('nama_kegiatan', $terbaru['nama_kegiatan']);
+                session()->set('is_rt', $terbaru['is_rt']);
+                session()->set('level_wilayah', $terbaru['level_wilayah']);
+            }
+        }
     }
 }

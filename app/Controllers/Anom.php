@@ -7,6 +7,8 @@ use App\Models\KatAnomaliModel;
 use Config\Services;
 use Faker\Provider\Lorem;
 
+use function PHPUnit\Framework\returnArgument;
+
 class Anom extends BaseController
 {
     protected $anomaliModel;
@@ -20,352 +22,151 @@ class Anom extends BaseController
 
     public function list($isEdit = false)
     {
-        $data = [
-            'title' => 'List Anomali',
-            'isEdit' => $isEdit,
-            'listAnom' => [
-                [
-                    'nmKec' => 'Sungai Rumbai',
-                    'id' => '1311010',
-                    'kd' => '010',
-                    'jmlAnom' => 63
-                ],
-                [
-                    'nmKec' => 'Koto Besar',
-                    'id' => '1311011',
-                    'kd' => '011',
-                    'jmlAnom' => 12
-                ],
-                [
-                    'nmKec' => 'Asam Jujuhan',
-                    'id' => '1311012',
-                    'kd' => '012',
-                    'jmlAnom' => 7
-                ],
-                [
-                    'nmKec' => 'Koto Baru',
-                    'id' => '1311020',
-                    'kd' => '020',
-                    'jmlAnom' => 6
-                ],
-                [
-                    'nmKec' => 'Koto Salak',
-                    'id' => '1311021',
-                    'kd' => '021',
-                    'jmlAnom' => 18
-                ],
-                [
-                    'nmKec' => 'Tiumang',
-                    'id' => '1311022',
-                    'kd' => '022',
-                    'jmlAnom' => 47
-                ],
-                [
-                    'nmKec' => 'Padang Laweh',
-                    'id' => '1311023',
-                    'kd' => '023',
-                    'jmlAnom' => 35
-                ],
-                [
-                    'nmKec' => 'Sitiung',
-                    'id' => '1311030',
-                    'kd' => '030',
-                    'jmlAnom' => 14
-                ],
-                [
-                    'nmKec' => 'Timpeh',
-                    'id' => '1311031',
-                    'kd' => '031',
-                    'jmlAnom' => 32
-                ],
-                [
-                    'nmKec' => 'Pulau Punjung',
-                    'id' => '1311040',
-                    'kd' => '040',
-                    'jmlAnom' => 74
-                ],
-                [
-                    'nmKec' => 'IX Koto',
-                    'id' => '1311041',
-                    'kd' => '041',
-                    'jmlAnom' => 45
-                ],
+        // cek is edit jika ada inisial value
+        $data['isEdit'] = $isEdit ?: ($this->request->getGet('is-edit') ?? false);
+        $data['filterWilayah'] = null;
+        $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
+        $data['filterKategori'] = $this->request->getGet('fil-kategori') ?? '';
+        $data['filterFlag'] = $this->request->getGet('fil-flag') ?? '';
+        $isRT = (session()->get('is_rt') == 1);
+
+        // cek filter wilayah inisial value
+        $userWilayah = auth()->user()->wilayah_kerja;
+        $data['filterWilayah'] = ($userWilayah != '1300')
+            ? $userWilayah
+            : ($this->request->getGet('fil-wilayah') ?? '1300');
+
+        // Persiapan data dropdown
+
+        $data['title'] = 'List Anomali';
+        $data['listLevel'] = [
+            [
+                'id' => '',
+                'nama' => "Semua Anomali",
             ],
-            'listSelKdAnom' => [
-                [
-                    'value' => '',
-                    'nama' => 'Semua Anomali',
-                ],
+        ];
+        $data['listWilayah'] = [
+            [
+                'value' => '1300',
+                'nama' => "Sumatera Barat",
             ],
-            'listSelFlag' => [
-                [
-                    'value' => '',
-                ],
+        ];
+        $data['listSelFlag'] = [];
+        $data['listSelKdAnom'] = [
+            [
+                'id' => '',
+                'nama' => 'Semua Anomali',
             ],
         ];
 
-        $listSelKdAnom = $this->anomaliModel->getKdAnomaliByUser();
-        $listSelFlag = $this->anomaliModel->getFlagByUser();
-        $data['listSelKdAnom'] = array_merge($data['listSelKdAnom'], $listSelKdAnom);
-        $data['listSelFlag'] = array_merge($data['listSelFlag'], $listSelFlag);
+        $listSelKdAnom = $this->anomaliModel->getKdAnomaliByUser() ?? [];
+        $listSelFlag = $this->anomaliModel->getFlagByUser() ?? [];
+        $listSelLevel = $this->anomaliModel->getLevelAnomByUser() ?? [];
+        $listSelWilayah = $this->anomaliModel->getWilayahAnomByUser() ?? [];
 
-        // $data['listSelKdAnom'] .
+        $data['listSelKdAnom'] = array_merge($data['listSelKdAnom'], $listSelKdAnom ?? []);
+        $data['listSelFlag'] = array_merge($data['listSelFlag'], $listSelFlag ?? []);
+        $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel ?? []);
+        $data['listWilayah'] = $listSelWilayah;
 
-        $dat = $this->anomaliModel->getAnomaliByWilayah('1311', $isEdit);
-        $data['listAnom'] = $dat;
+        try {
+            $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah(
+                $data['filterWilayah'],
+                $data['isEdit'],
+                $data['filterKategori'],
+                $data['filterFlag'],
+                $data['filterLevel'],
+                $isRT
+            );
+        } catch (\Throwable $th) {
+            $data['listAnom'] = [];
+            $data['message'] = "Gagal memuat data: " . $th->getMessage();
+        };
 
         return view('anomali/listAnomali', $data);
     }
 
-    // public function listEdit()
-    // {
-    //     $data = [
-    //         'title' => 'Edit Konfirmasi Anomali',
-    //         'listAnom' => ''
-    //     ];
-
-    //     $dat = $this->anomaliModel->getAnomaliByWilayah('1311', true);
-    //     $data['listAnom'] = $dat;
-
-    //     return view('anomali/listAnomaliEdit', $data);
-    // }
-
-    public function listFilter()
+    public function listDetil()
     {
-        $data = [
-            'title' => 'Edit Konfirmasi Anomali',
-            // 'idEdit' => $isEdit,
-            // 'kdAnomali' => $kdAnomali,
-            // 'flag' => $flag,
-            'listAnom' => '',
-            'jenis' => 'Kec'
-        ];
-        $isEdit = $this->request->getGet('isEdit');
-        $kdAnomali = $this->request->getGet('kdAnomali');
-        $flag = $this->request->getGet('flag');
+        $data['title'] = 'List Anomali';
+        $data['listAnom'] = null;
+        $data['id'] = null;
+        $data['jenis'] = null;
+        $isRT = (session()->get('is_rt') == 1);
+        // dd(session()->get('is_rt') == 1);
 
-        $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah('1311', $isEdit, $kdAnomali, $flag);
-
-
-        return view('anomali/listAnomaliPart', $data);
-    }
-
-    public function listWilAnom($idKec, $isEdit = false)
-    {
-        $id = substr($idKec, 8);
-        $data = [
-            'title' => 'List Anomali',
-            'listAnom' => null,
-            'id' => null,
-            'jenis' => null
-
-        ];
-
-        $dataDesa = [
-            [
-                'nm' => 'Desa Sungai Rumbai',
-                'id' => '1311010001',
-                'kd' => '001',
-                'jmlAnom' => 12
-            ],
-            [
-                'nm' => 'Desa Koto Besar',
-                'id' => '1311011002',
-                'kd' => '002',
-                'jmlAnom' => 45
-            ],
-            [
-                'nm' => 'Desa Asam Jujuhan',
-                'id' => '1311012003',
-                'kd' => '003',
-                'jmlAnom' => 13
-            ],
-            [
-                'nm' => 'Desa Koto Baru',
-                'id' => '1311020004',
-                'kd' => '004',
-                'jmlAnom' => 22
-            ],
-            [
-                'nm' => 'Desa Koto Salak',
-                'id' => '1311021005',
-                'kd' => '005',
-                'jmlAnom' => 21
-            ],
-            [
-                'nm' => 'Desa Tiumang',
-                'id' => '1311022006',
-                'kd' => '006',
-                'jmlAnom' => 14
-            ],
-            [
-                'nm' => 'Desa Padang Laweh',
-                'id' => '1311023007',
-                'kd' => '007',
-                'jmlAnom' => 23
-            ],
-            [
-                'nm' => 'Desa Sitiung',
-                'id' => '1311030008',
-                'kd' => '008',
-                'jmlAnom' => 27
-            ],
-            [
-                'nm' => 'Desa Timpeh',
-                'id' => '1311031009',
-                'kd' => '009',
-                'jmlAnom' => 22
-            ],
-            [
-                'nm' => 'Desa Pulau Punjung',
-                'id' => '13110400010',
-                'kd' => '010',
-                'jmlAnom' => 17
-            ],
-            [
-                'nm' => 'Desa IX Koto',
-                'id' => '13110410011',
-                'kd' => '011',
-                'jmlAnom' => 34
-            ],
-        ];
-        $dataSLS = [
-            [
-                'nm' => 'Jorong Sungai Rumbai',
-                'id' => '1311010001000100',
-                'kd' => '000100',
-                'jmlAnom' => 12
-            ],
-            [
-                'nm' => 'Jorong Koto Besar',
-                'id' => '1311011001000200',
-                'kd' => '000200',
-                'jmlAnom' => 14
-            ],
-            [
-                'nm' => 'Jorong Asam Jujuhan',
-                'id' => '1311012001000300',
-                'kd' => '000300',
-                'jmlAnom' => 20
-            ],
-            [
-                'nm' => 'Jorong Koto Baru',
-                'id' => '1311020001000400',
-                'kd' => '000400',
-                'jmlAnom' => 24
-            ],
-            [
-                'nm' => 'Jorong Koto Salak',
-                'id' => '1311021001000500',
-                'kd' => '000500',
-                'jmlAnom' => 33
-            ],
-            [
-                'nm' => 'Jorong Tiumang',
-                'id' => '1311022001000600',
-                'kd' => '000600',
-                'jmlAnom' => 2
-            ],
-            [
-                'nm' => 'Jorong Padang Laweh',
-                'id' => '1311023001000700',
-                'kd' => '000700',
-                'jmlAnom' => 14
-            ],
-            [
-                'nm' => 'Jorong Sitiung',
-                'id' => '1311030001000800',
-                'kd' => '000800',
-                'jmlAnom' => 22
-            ],
-            [
-                'nm' => 'Jorong Timpeh',
-                'id' => '1311031001000900',
-                'kd' => '00900',
-                'jmlAnom' => 11
-            ],
-            [
-                'nm' => 'Jorong Pulau Punjung',
-                'id' => '1311040001001000',
-                'kd' => '001000',
-                'jmlAnom' => 32
-            ],
-            [
-                'nm' => 'Jorong IX Koto',
-                'id' => '1311041001001100',
-                'kd' => '001100',
-                'jmlAnom' => 35
-            ],
-        ];
-        $dataRuta = [
-            [
-                'nm' => 'Syafiq',
-                'id' => '1311010001000100001',
-                'kd' => '001',
-                'jmlAnom' => 2
-            ],
-            [
-                'nm' => 'Taufiq',
-                'id' => '1311010001000100004',
-                'kd' => '004',
-                'jmlAnom' => 1
-            ],
-
-        ];
-        $dataArt = [
-            [
-                'nm' => 'Rahma',
-                'id' => '131101000100010000102',
-                'kd' => '02',
-                'jmlAnom' => 1
-            ],
-            [
-                'nm' => 'Tifa',
-                'id' => '131101000100010000402',
-                'kd' => '02',
-                'jmlAnom' => 3
-            ],
-
-        ];
-
-        $ids = strlen($id);
-        $data['id'] = $ids;
-        switch ($ids) {
-            case 4:
-                // $data['listAnom'] = $dataDesa;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
-                $data['jenis'] = 'Kec';
-                break;
-            case 7:
-                // $data['listAnom'] = $dataDesa;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
-                $data['jenis'] = 'Des';
-                break;
-            case 10:
-                // $data['listAnom'] = $dataSLS;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
-                $data['jenis'] = 'SLS';
-                break;
-            case 16:
-                // $data['listAnom'] = $dataRuta;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
-                $data['jenis'] = 'Ruta';
-                break;
-            case 19:
-                // $data['listAnom'] = $dataArt;
-                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
-                $data['jenis'] = 'Art';
-                break;
-            case 21:
-                // $data['listAnom'] = $dataArt;
-                // $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah($id, $isEdit);
-                // $data['listAnom'] = $this->anomaliModel->getListAnomali($id, $isEdit);
-                $data['jenis'] = 'Anom';
-                // return view('anomali/listAnomaliDetil', $data);
-                return $this->listAnom($id, $isEdit);
-                break;
+        $filterLevel = $this->request->getGet('fil-level');
+        $id = $this->request->getGet('id-anomali');
+        $filterKategori = $this->request->getGet('fil-kategori');
+        $filterFlag = $this->request->getGet('fil-flag');
+        $isEdit = $this->request->getGet('is-edit');
+        // dd($isRT);
+        try {
+            $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah(
+                $id,
+                $isEdit,
+                $filterKategori,
+                $filterFlag,
+                $filterLevel,
+                $isRT
+            );
+        } catch (\Throwable $e) {
+            $data['listAnom'] = null;
+            // dd($e->getMessage());
         }
-        // dd($data);
+        // dd($data['listAnom']);
+
+        if ($isRT) {
+            switch (strlen($id)) {
+                case 4:
+                    // $data['listAnom'] = $dataDesa;q
+                    $data['jenis'] = 'Kec';
+                    break;
+                case 7:
+                    $data['jenis'] = 'Des';
+                    break;
+                case 10:
+                    $data['jenis'] = 'SLS';
+                    break;
+                case 16:
+                    $data['jenis'] = 'Ruta';
+                    break;
+                case 19:
+                    $data['jenis'] = 'Art';
+                    break;
+                case 21:
+                    $data['jenis'] = 'Anom';
+                    return $this->listAnom($id, $isEdit);
+                    break;
+            }
+        } else {
+            if (strlen($id) == session('level_wilayah')) {
+                $data['jenis'] = 'Nrt';
+                // return $this->listAnom($id, $isEdit);
+            } elseif (strlen($id) > session('level_wilayah')) {
+                $data['jenis'] = 'Anom';
+                return $this->listAnom($id, $isEdit);
+            } else {
+                switch (session('level_wilayah')) {
+                    case 4:
+                        // $data['listAnom'] = $dataDesa;q
+                        $data['jenis'] = 'Kec';
+                        break;
+                    case 7:
+                        $data['jenis'] = 'Des';
+                        break;
+                    case 10:
+                        $data['jenis'] = 'SLS';
+                        break;
+                    case 16:
+                        $data['jenis'] = 'Ruta';
+                        break;
+                    case 19:
+                        $data['jenis'] = 'Art';
+                        break;
+                };
+            };
+        };
 
         return view('anomali/listAnomaliPart', $data);
     }
@@ -388,7 +189,7 @@ class Anom extends BaseController
         ];
 
         $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt, $isEdit);
-        // dd($data['listAnom']);
+
 
         return view('anomali/listAnomaliDetil', $data);
     }
@@ -511,10 +312,42 @@ class Anom extends BaseController
             ],
         ];
 
-        $data['listKodeAnom'] = $this->katAnomaliModel->select('kode_anomali , id')->findAll();
+        $data['listKodeAnom'] = $this->anomaliModel->getKdAnomaliByUser() ?? [];
+        // dd($data['listKodeAnom']);
 
         // dd($data['listKodeAnom']);
 
         return view('anomali/konfirmasiBulk', $data);
+    }
+
+    public function hasAksesView($wilayahAnomali = null): bool
+    {
+        $currentUser = auth()->user();
+        if ($currentUser->inGroup('superadmin')) {
+            // jika super admin punya akses untuk seluruh wilayah dan seluruh level anomali.
+            return true;
+        } else {
+            if ($currentUser->wilayah_kerja === $wilayahAnomali) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public function hasAksesEdit($levelAnomali, $wilayahAnomali)
+    {
+        $currentUser = auth()->user();
+        if ($currentUser->inGroup('superadmin')) {
+            return true;
+        } elseif ($currentUser->inGroup('admin')) {
+            if ($currentUser->wilayah_kerja == $wilayahAnomali) {
+                return true;
+            } else {
+                return false;
+            }
+        } elseif ($currentUser->inGroup('operator', 'mitra')) {
+            return false;
+        }
     }
 }

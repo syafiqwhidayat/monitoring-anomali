@@ -7,13 +7,13 @@
         </div>
     <?php else:  ?>
         <?php foreach ($listAnom as $d): ?>
-            <div class="accordion-item">
+            <div class="accordion-item" data-id="<?= $d['id']; ?>">
                 <h2 class="accordion-header">
                     <button class="accordion-button collapsed text-end" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $d['id']; ?>" aria-expanded="false" aria-controls="collapse<?= $d['id']; ?>">
                         <?= $d['kd'] . ' ' . $d['nm'] . ' (' . $d['jmlAnom'] . ')'; ?>
                     </button>
                 </h2>
-                <div id="collapse<?= $d['id']; ?>" class="accordion-collapse collapse" data-bs-parent="#accordionAnomali<?= $jenis; ?>">
+                <div id="collapse<?= $d['id']; ?>" class="accordion-collapse collapse">
                     <div class="accordion-body data-load-container p-2 container-<?= $jenis; ?>">
                         <p class="fst-italic">Memuat data ...</p>
                     </div>

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use \App\Models\AnomaliModel;
 use App\Models\KatAnomaliModel;
+use App\Models\LogUploadModel;
 use Config\Services;
 use Faker\Provider\Lorem;
 
@@ -11,16 +12,19 @@ class ManajAnom extends BaseController
 {
     protected $anomaliModel;
     protected $katAnomaliModel;
+    protected $logModel;
 
     public function __construct()
     {
         $this->anomaliModel = new AnomaliModel();
         $this->katAnomaliModel = new KatAnomaliModel();
+        $this->logModel = new LogUploadModel();
     }
 
     public function manajemenList()
     {
         $perPage = 10;
+        $idKegiatanAktif = session()->get('aktif_kegiatan');
 
         $data = [
             "title" => "Manajemen Anomali",
@@ -48,13 +52,28 @@ class ManajAnom extends BaseController
                 ],
             ],
         ];
-        $data['listAnom'] = $this->katAnomaliModel->where('id_kegiatan', 1)->paginate($perPage, 'default');
-        $data['pager'] = $this->katAnomaliModel->where('id_kegiatan', 1)->pager;
-        $data['currentPage'] = $this->katAnomaliModel->where('id_kegiatan', 1)->pager->getCurrentPage();
+        $data['listAnom'] = $this->katAnomaliModel->where('id_kegiatan', $idKegiatanAktif)->paginate($perPage, 'default');
+        $data['pager'] = $this->katAnomaliModel->where('id_kegiatan', $idKegiatanAktif)->pager;
+        $data['currentPage'] = $this->katAnomaliModel->where('id_kegiatan', $idKegiatanAktif)->pager->getCurrentPage();
 
-        // dd($data);
-        // dd($data);
         return view('manajAnom/manajemen', $data);
+    }
+
+    public function log()
+    {
+        $data['title'] = "Log Upload";
+        $data['logs'] = [];
+
+        $datalog = $this->logModel->select('log_upload.*,idn.secret AS email')
+            ->join('auth_identities idn', 'id_user = idn.user_id')
+            ->where('id_kegiatan', session()->get('aktif_kegiatan'))
+            ->where('jenis', 'anomali')
+            ->orderBy('created_at', 'DESC');
+
+        $data['logs'] = $datalog->findAll();
+
+
+        return view('manajAnom/logUploadAnom', $data);
     }
 
     public function manajemenAction()
@@ -136,5 +155,42 @@ class ManajAnom extends BaseController
         // ]);
 
         // dd($konfirmasi);
+    }
+
+    public function downloadTemplate()
+    {
+        return $this->response->download(FCPATH . 'assets\templates\template_anomali.xlsx', null);
+    }
+
+    public function store()
+    {
+        $file = $this->request->getFile('file_anomali');
+
+        if ($file->isValid() && !$file->hasMoved()) {
+            // 1. Simpan file ke folder writable/uploads
+            $newName = $file->getRandomName();
+            $file->move(WRITEPATH . 'uploads', $newName);
+            $idKegiatan = session()->get('aktif_kegiatan');
+            $isRT = session()->get('is_rt');
+            $levelAnom = auth()->user()->wilayah_kerja;
+
+            // 2. Buat catatan awal di tabel upload_logs (status: pending)
+            $logId = $this->logModel->insert([
+                'nama_file' => $newName,
+                'status'    => 'pending',
+                'id_user'   => auth()->id(), // Siapa yang upload
+                'id_kegiatan' => session()->get('aktif_kegiatan'),
+                'jenis' => 'anomali'
+            ]);
+
+            // 3. PANGGIL COMMAND DI BACKGROUND
+            // Kita kirimkan Nama File dan ID Log sebagai parameter
+            // Tanda '&' di akhir perintah adalah kunci agar berjalan di background
+            // $command = "php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId . " > /dev/null 2>&1 &"; //command linux
+            $command = "start /B php " . FCPATH . "../spark proses:anomali " . $newName . " " . $logId . " " . $idKegiatan .  " " . $levelAnom; //command windows
+            shell_exec($command);
+
+            return redirect()->to('/manajemen-anomali/log')->with('message', 'Upload berhasil! Sistem sedang memproses data di latar belakang.');
+        }
     }
 }

@@ -4,7 +4,8 @@
 <div class="container" jenis-konf="0">
     <div class="card card-body">
         <h1>Konfirmasi Bulk</h1>
-        <p>Hati-hati, jika isian konfirmasi diisi kosong, akan menghapus semua isian sebelumnya</p>
+        <p>Akan memberikan jawaban semua anomali yang konfirmasinya masih kosong</p>
+        <p>Tidak akan mempengaruhi Konfirmasi yang sudah terisi</p>
     </div>
     <?php if (session()->getFlashdata('message')) : ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -23,7 +24,7 @@
                         <label for="kdAnom" class="form-label">Kode Anomali</label>
                         <select class="form-control form-select" name="kode_anomali" aria-label="Default select example">
                             <?php foreach ($listKodeAnom as $l) : ?>
-                                <option value="<?= $l['id']; ?>"><?= $l['kode_anomali']; ?></option>
+                                <option value="<?= $l['id']; ?>"><?= $l['nama']; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
