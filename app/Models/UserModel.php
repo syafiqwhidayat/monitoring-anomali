@@ -38,7 +38,7 @@ class UserModel extends ShieldUserModel
     // ];
 
     // fungsi untuk mengembalikan semua user berdasarkan Grup nya
-    public function findAllByGroup($groupName = null, $isNotIn = False)
+    public function findAllByGroup($groupName = null, $isNotIn = False, $idWilayah = null, $keyword = null)
     {
         $users = $this->select('users.id, users.name as nama, auth_identities.secret as email,users.wilayah_kerja , auth_groups_users.group AS role')
             ->join('auth_groups_users', 'auth_groups_users.user_id = users.id')
@@ -53,6 +53,16 @@ class UserModel extends ShieldUserModel
         } else {
             $users->where('auth_groups_users.group', $groupName);
         }
+        if ($idWilayah) {
+            $users->where('wilayah_kerja', $idWilayah);
+        }
+        if ($keyword) {
+            $users->groupStart() // Membuka kurung (
+                ->like('users.name', $keyword)
+                ->orLike('auth_identities.secret', $keyword)
+                ->groupEnd(); // Menutup kurung );
+        }
+
         return ($users->asArray());
     }
 

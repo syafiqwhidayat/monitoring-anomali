@@ -7,7 +7,7 @@
         <div class="col-8">
             <h2 class="my-3">Form Tambah Data Komik</h2>
             <?= $validation->listErrors(); ?>
-            <form action="/comics/save" method="post" enctype="multipart/form-data">
+            <form action=<?= base_url('/comics/save') ?> method="post" enctype="multipart/form-data">
                 <?= csrf_field(); ?>
                 <div class="row mb-3">
                     <label for="judul" class="col-sm-3 col-form-label">Judul Komik</label>

@@ -23,7 +23,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="navbar-brand navbar-brand-autodark">
-                <a href="#">
+                <a href="<?= base_url() ?>">
                     <img src="<?= base_url('img/logo.png') ?>"
                         width="110"
                         height="48"
@@ -34,7 +34,7 @@
             <div class="collapse navbar-collapse" id="sidebar-menu">
                 <ul class="navbar-nav pt-lg-3">
                     <li class="nav-item">
-                        <a class="nav-link " href="/">
+                        <a class="nav-link" href=<?= base_url('/') ?>>
                             <span class="nav-link-icon d-md-none d-lg-inline-block">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-home">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -66,7 +66,7 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="/se/monitoring">Moniroing Keseluruhan</a>
+                                    <a class="dropdown-item" href="<?= base_url('/se/monitoring') ?>">Moniroing Keseluruhan</a>
                                     <a class="dropdown-item" href="<?= base_url('/se/upload') ?>">Upload Monitoring SE2026</a>
                                 </div>
                             </div>
@@ -88,7 +88,7 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="/broadcast">Broadcast</a>
+                                    <a class="dropdown-item" href="<?= base_url('/broadcast') ?>">Broadcast</a>
                                 </div>
                             </div>
                         </div>
@@ -114,9 +114,9 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="/anomali">Konfirmasi Anomali</a>
-                                    <a class="dropdown-item" href="/anomali/listEdit">Edit Konfirmasi Anomali</a>
-                                    <a class="dropdown-item" href="/anomali/konfirmasiBulk">Konfirmasi Bulk Anomali</a>
+                                    <a class="dropdown-item" href="<?= base_url('/anomali') ?>">Konfirmasi Anomali</a>
+                                    <a class="dropdown-item" href="<?= base_url('/anomali/listEdit') ?>">Edit Konfirmasi Anomali</a>
+                                    <a class="dropdown-item" href="<?= base_url('/anomali/konfirmasiBulk') ?>">Konfirmasi Bulk Anomali</a>
                                     <!-- <a class="dropdown-item" href="#">Konfirmasi Menurut Anomali</a> -->
                                 </div>
                             </div>
@@ -139,8 +139,8 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="/manajemen-anomali/list">Manajemen Anomali</a>
-                                    <a class="dropdown-item" href="/manajemen-anomali/log">Log Upload Anomali</a>
+                                    <a class="dropdown-item" href="<?= base_url('/manajemen-anomali/list') ?>">Manajemen Anomali</a>
+                                    <a class="dropdown-item" href="<?= base_url('/manajemen-anomali/log') ?>">Log Upload Anomali</a>
                                 </div>
                             </div>
                         </div>
@@ -160,7 +160,7 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="/monitoring">Monitoring Anomali All</a>
+                                    <a class="dropdown-item" href="<?= base_url('/monitoring') ?>">Monitoring Anomali All</a>
                                     <a class="dropdown-item" href="<?= base_url('monitoring-sel/2') ?>">Monitoring Anomali Tertentu</a>
                                 </div>
                             </div>
@@ -180,10 +180,10 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="/user/organik">Manajemen User Organik</a>
-                                    <a class="dropdown-item" href="/user/mitra">Manajemen User Mitra</a>
-                                    <a class="dropdown-item" href="/wilayah">Manajemen Wilayah Tugas</a>
-                                    <a class="dropdown-item" href="/wilayah/logs">Log Upload Wilayah Tugas</a>
+                                    <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Manajemen User Organik</a>
+                                    <a class="dropdown-item" href="<?= base_url('/user/mitra') ?>">Manajemen User Mitra</a>
+                                    <a class="dropdown-item" href="<?= base_url('/wilayah') ?>">Manajemen Wilayah Tugas</a>
+                                    <a class=" dropdown-item" href="<?= base_url('/wilayah/logs') ?>">Log Upload Wilayah Tugas</a>
                                 </div>
                             </div>
                         </div>
@@ -205,7 +205,7 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="/user/organik">Manajemen Kegiatan</a>]
+                                    <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Manajemen Kegiatan</a>]
                                 </div>
                             </div>
                         </div>
@@ -229,7 +229,7 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="/user/organik">Genarte SQL Lab <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                                    <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Genarte SQL Lab <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
                                 </div>
                             </div>
                         </div>

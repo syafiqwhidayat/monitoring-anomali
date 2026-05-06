@@ -14,7 +14,7 @@
 </div>
 
 <div class="card card-body">
-    <form action="/uploadFile" method="post" enctype="multipart/form-data">
+    <form action="<?= base_url('/uploadFile'); ?>" method="post" enctype="multipart/form-data">
         <div class="mb-3">
             <label for="fileAnom" class="form-label">Upload File Anomali</label>
             <input class="form-control" type="file" id="fileAnom" name="fileAnom">

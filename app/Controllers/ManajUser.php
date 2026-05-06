@@ -18,58 +18,59 @@ class ManajUser extends BaseController
         return null;
     }
 
-    public function manajOrganik()
+    public function manajOrganik($isMitra = null)
     {
-        $users = $this->userModel->findAllByGroup('mitra', true);
+        $data['title'] = 'Manajemen User Organik';
+
+        $data['isMitra'] = $this->request->getGet('fil-mitra') ?? $isMitra ?? null;
+
+        $data['filterKab'] = $this->request->getGet('fil-kab') ?? '';
+        $data['filterKeyword'] = $this->request->getGet('fil-word') ?? '';
+
+        // filter
+        $data['listKab'] = [
+            ['id' => ''],
+            ['id' => '1301'],
+            ['id' => '1302'],
+            ['id' => '1303'],
+            ['id' => '1304'],
+            ['id' => '1305'],
+            ['id' => '1306'],
+            ['id' => '1307'],
+            ['id' => '1308'],
+            ['id' => '1309'],
+            ['id' => '1310'],
+            ['id' => '1311'],
+            ['id' => '1312'],
+            ['id' => '1371'],
+            ['id' => '1372'],
+            ['id' => '1373'],
+            ['id' => '1374'],
+            ['id' => '1375'],
+            ['id' => '1376'],
+            ['id' => '1377'],
+        ];
+        if ($data['isMitra']) {
+            $data['title'] = "Manajemen User Mitra";
+        }
+
         $perPage = 10;
+        $users = $this->userModel->findAllByGroup(
+            'mitra',
+            !$data['isMitra'],
+            $data['filterKab'],
+            $data['filterKeyword']
+        );
+
         $data['users'] = $users->paginate($perPage, 'default');
         $data['pager'] = $users->pager;
         $data['currentPage'] = $users->pager->getCurrentPage();
         $data['perPage'] = $perPage;
 
-        $data['title'] = 'Manajemen User Organik';
 
         return view('manajUser/manajOrganik', $data);
     }
-    public function manajMitra()
-    {
-        $users = $this->userModel->findAllByGroup('mitra');
-        $perPage = 10;
-        $data['users'] = $users->paginate($perPage, 'default');
-        $data['pager'] = $users->pager;
-        $data['currentPage'] = $users->pager->getCurrentPage();
-        $data['perPage'] = $perPage;
 
-        // $data['users'] = [
-        //     [
-        //         'id'    => 1,
-        //         'nama'  => 'Syafiq',
-        //         'email' => 'syafiq@bps.go.id',
-        //         'role'  => 'admin'
-        //     ],
-        //     [
-        //         'id'    => 2,
-        //         'nama'  => 'Rahma',
-        //         'email' => 'rahma@bps.go.id',
-        //         'role'  => 'operator'
-        //     ],
-        //     [
-        //         'id'    => 3,
-        //         'nama'  => 'Lathifah Dzakiyah',
-        //         'email' => 'lathifah@bps.go.id',
-        //         'role'  => 'operator'
-        //     ],
-        //     [
-        //         'id'    => 4,
-        //         'nama'  => 'Admin Dharmasraya',
-        //         'email' => 'bps1311@bps.go.id',
-        //         'role'  => 'admin'
-        //     ]
-        // ];
-        $data['title'] = 'Manajemen User Organik';
-
-        return view('manajUser/manajOrganik', $data);
-    }
     public function tambahOrganik()
     {
         $data['wilayah_sumbar'] = [
@@ -99,7 +100,6 @@ class ManajUser extends BaseController
             'superadmin' => 'SuperAdmin',
             'admin' => 'Admin',
             'operator' => 'Operator',
-            'mitra' => 'Mitra',
         ];
 
         return view('manajUser/tambahOrganik', $data);

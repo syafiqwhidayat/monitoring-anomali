@@ -9,36 +9,41 @@
                 <h2 class="page-title">
                     <?= $title; ?>
                 </h2>
-                <div class="text-muted mt-1">Kelola hak akses dan informasi pengguna organik aplikasi Sidik Anomali</div>
+                <div class="text-muted mt-1">Kelola hak akses dan informasi pengguna aplikasi Sidik Anomali</div>
             </div>
-            <div class="col-auto ms-auto d-print-none">
-                <div class="btn-list">
-                    <a href="<?= base_url('/user/tambah-organik'); ?>" class="btn btn-primary d-none d-sm-inline-block">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                        Tambah User Baru
-                    </a>
+            <?php if (!$isMitra) : ?>
+                <div class="col-auto ms-auto d-print-none">
+                    <div class="btn-list">
+                        <a href="<?= base_url('/user/tambah-organik'); ?>" class="btn btn-primary d-none d-sm-inline-block">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </svg>
+                            Tambah User Baru
+                        </a>
+                    </div>
                 </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 
     <!-- Card Filter -->
     <div class="card mb-3 shadow-sm" style="border-radius: 12px;">
         <div class="card-body">
-            <form action="" method="get" class="row g-3">
+            <form action="<?= base_url('/user/organik') ?>" method="get" class="row g-3">
+                <input type="hidden" name="fil-mitra" id="filte-mitra" value="<?= $isMitra; ?>">
                 <div class="col-md-3">
                     <label class="form-label">Kabupaten</label>
-                    <select name="kec" class="form-select">
-                        <option value="">Kabupaten</option>
+                    <select name="fil-kab" class="form-select" id="filter-kab">
+                        <?php foreach ($listKab as $l): ?>
+                            <option value="<?= $l['id']; ?>" <?= ($l['id'] == $filterKab) ? 'selected' : ''; ?>>Wilayah <?= ($l['id'] == null) ? "Semua" : $l['id']; ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Cari Nama User/SLS</label>
-                    <input type="text" name="keyword" class="form-control" placeholder="Ketik nama...">
+                    <input type="text" name="fil-word" id="filter-word" class="form-control" placeholder="Ketik nama..." value="<?= $filterKeyword; ?>">
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
                     <button class="btn btn-primary w-100">Cari</button>
