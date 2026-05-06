@@ -40,6 +40,8 @@ class Kegiatan extends BaseController
         }
 
         // Kembali ke halaman yang sedang dibuka (Refresh)
-        return redirect()->back()->with('message', 'Kegiatan berhasil diubah ke: ' . session()->get('nama_kegiatan'));
+        $target = $this->request->getGet('return') ?? base_url('/');
+        return redirect()->to($target)->with('message', 'Kegiatan berhasil diubah ke: ' . session()->get('nama_kegiatan'));
+        // return redirect()->back()->with('message', 'Kegiatan berhasil diubah ke: ' . session()->get('nama_kegiatan'));
     }
 }

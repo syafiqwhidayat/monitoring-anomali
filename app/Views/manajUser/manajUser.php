@@ -14,7 +14,7 @@
             <?php if (!$isMitra) : ?>
                 <div class="col-auto ms-auto d-print-none">
                     <div class="btn-list">
-                        <a href="<?= base_url('/user/tambah-organik'); ?>" class="btn btn-primary d-none d-sm-inline-block">
+                        <a href="<?= base_url('/user/tambah'); ?>" class="btn btn-primary d-none d-sm-inline-block">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                 <line x1="12" y1="5" x2="12" y2="19" />
@@ -153,7 +153,7 @@
                             </td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="<?= base_url('/user/edit-organik/' . $user['id']); ?>" class="btn btn-sm btn-outline-primary">
+                                    <a href="<?= base_url('/user/edit/' . $user['id']); ?>" class="btn btn-sm btn-outline-primary">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-edit">
                                             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                             <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
@@ -198,7 +198,7 @@
     <div class="modal modal-blur fade" id="modalKonfirHapus" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-                <form action="<?= base_url('/user/hapus-organik') ?>" method="get">
+                <form action="<?= base_url('/user/hapus') ?>" method="get">
                     <div class="modal-header">
                         <h5 class="modal-title">Konfirmasih Hapus Akun</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>

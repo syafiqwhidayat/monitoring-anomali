@@ -48,7 +48,7 @@ class KegiatanModel extends Model
     public function getKegiatanDesc()
     {
         // Mengambil kegiatan dengan ID terbesar atau tanggal terbaru
-        return $this->select('id,nama_kegiatan AS nama')
+        return $this->select('id,nama_kegiatan AS nama,is_rt,level_wilayah')
             ->orderBy('id', 'DESC')->findAll();
     }
 }

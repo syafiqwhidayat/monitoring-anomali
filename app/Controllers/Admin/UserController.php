@@ -7,7 +7,7 @@ use App\Models\UserModel;
 use CodeIgniter\Shield\Entities\User;
 use CodeIgniter\HTTP\ResponseInterface;
 
-class UserControler extends BaseController
+class UserController extends BaseController
 {
     protected $userModel;
 
@@ -45,5 +45,22 @@ class UserControler extends BaseController
         }
 
         return redirect()->back()->with('errors', $users->errors());
+    }
+
+    // fungsi untuk ganti role
+    public function gantiRole()
+    {
+        $groups = auth()->user()->getGroups();
+        $currentGrops = session()->get('aktif_role');
+        $i = null;
+        foreach ($groups as $group) {
+
+            if ($currentGrops != $group) {
+                session()->set('aktif_role', $group);
+            }
+        }
+
+        $target = $this->request->getGet('return') ?? base_url('/');
+        return redirect()->to($target)->with('message', 'Kegiatan berhasil diubah ke: ' . session()->get('nama_kegiatan'));
     }
 }

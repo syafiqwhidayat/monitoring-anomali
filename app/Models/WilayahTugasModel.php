@@ -47,12 +47,14 @@ class WilayahTugasModel extends Model
 
     public function getKegiatanByUser($userId)
     {
-        return $this->select('id_kegiatan AS id, k.nama_kegiatan as nama')
+        $data = $this->select('id_kegiatan AS id, k.nama_kegiatan as nama')
             ->join('kegiatan k', 'k.id = id_kegiatan')
-            ->where('id_user', $userId)
+            ->where('id_ppl', $userId)
+            ->orWhere('id_pml', $userId)
             ->orderBy('id_kegiatan', 'DESC') // Tetap ambil yang terbaru dari yang dia punya
-            ->distinc()
-            ->findAll();
+            ->distinct();
+
+        return $data->findAll();
     }
 
     public function getWilayahTugasByKegaitan($idKegiatan, $kdKab = null, $kdKec = null, $kdDes = null)

@@ -65,12 +65,15 @@ abstract class BaseController extends Controller
         $this->nama = 'Syafiq';
         $daftarKegiatan = null;
         // fallback untuk kegiatan aktif kalau sessionya masih ada.
-        if (auth()->loggedIn() && !session()->has('aktif_kegiatan')) {
+        // dd(auth()->user()->getIdentities()[0]->secret);
+        if (auth()->loggedIn() && !session()->has('aktif_kegiatan') && !session()->has('aktif_role')) {
             $wilayahTugasModel = new \App\Models\WilayahTugasModel();
             $kegiatanModel = new \App\Models\KegiatanModel();
-            $terbaru = null;            // cek role user. apakah mitra
+            $terbaru = null;      // cek role user. apakah mitra
             $daftarKegiatan = null;
-            if (auth()->getGroups()[0] == 'mitra') {
+            $isOrganik = str_ends_with(auth()->user()->getIdentities()[0]->secret, "@bps.go.id");
+            session()->set('aktif_role', auth()->user()->getGroups()[0]);
+            if (session()->get('aktif_role') == 'mitra') {
                 $daftarKegiatan = $wilayahTugasModel->getKegiatanByUser(auth()->id());
                 $terbaru = $daftarKegiatan[0];
             } else {
@@ -84,6 +87,9 @@ abstract class BaseController extends Controller
                 session()->set('nama_kegiatan', $terbaru['nama_kegiatan']);
                 session()->set('is_rt', $terbaru['is_rt']);
                 session()->set('level_wilayah', $terbaru['level_wilayah']);
+            }
+            if ($isOrganik) {
+                session()->set('isOrganik', $isOrganik);
             }
         }
     }

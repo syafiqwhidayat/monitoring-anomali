@@ -37,7 +37,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
                                     <path d="M5 12l5 5l10 -10" />
                                 </svg>
-                                <?php echo ucwords($user->getGroups()[0]) ?>
+                                <?php echo ucwords(session()->get('aktif_role')) ?>
                             </div>
                         </div>
                     </div>
@@ -49,6 +49,7 @@
                         </div>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                             <a href="<?= base_url('profile') ?>" class="dropdown-item">Profil</a>
+                            <a href="<?= base_url('set_role') ?>?return=<?= current_url() ?>" class="dropdown-item">Ganti Role</a>
                             <div class="dropdown-divider"></div>
                             <a href="<?= base_url('logout') ?>" class="dropdown-item text-danger">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon dropdown-item-icon text-danger" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">

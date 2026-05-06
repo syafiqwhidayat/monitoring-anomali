@@ -3,9 +3,9 @@
         Kegiatan : <strong><?= session()->get('nama_kegiatan') ?? 'Pilih...' ?></strong>
     </a>
     <div class="dropdown-menu">
-        <?php foreach ($daftar_kegiatan as $keg): ?>
-            <a href="<?= base_url('set_kegiatan/' . $keg['id']) ?>?return=<?= current_url() ?>" class="dropdown-item">
-                <?= esc($keg['nama']) ?>
+        <?php foreach ($list_role as $role): ?>
+            <a href="<?= base_url('set-role/' . $role) ?>?return=<?= current_url() ?>" class="dropdown-item">
+                <?= esc($role) ?>
             </a>
         <?php endforeach; ?>
     </div>

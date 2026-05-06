@@ -6,7 +6,7 @@
         <div class="row g-2 align-items-center">
             <div class="col">
                 <h2 class="page-title">Edit User Organik</h2>
-                <div class="text-muted mt-1">Ubah Identitas User Organik pada Sistem Sidik Anomali</div>
+                <div class="text-muted mt-1">Ubah Identitas User pada Sistem Sidik Anomali</div>
                 <?php if (session()->has('errors')) : ?>
                     <div class="alert alert-danger">
                         <ul>
@@ -22,7 +22,7 @@
 
     <div class="row row-cards">
         <div class="col-md-8">
-            <form action="<?= base_url('/user/edit-organik/store'); ?>" method="post" class="card shadow-sm" style="border-radius: 12px;">
+            <form action="<?= base_url('/user/edit/store'); ?>" method="post" class="card shadow-sm" style="border-radius: 12px;">
                 <div class="card-body">
                     <div class="row">
                         <input type="hidden" name="id" value=<?= $id; ?>>

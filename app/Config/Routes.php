@@ -53,13 +53,13 @@ $routes->post('se/hapus', 'SeMonitoring::hapus');
 // $routes->delete('/comics/(:num)', 'Comics::delete/$1');
 // $routes->get('/comics/(:any)', 'Comics::detail/$1');
 
-$routes->get('/user/organik', 'ManajUser::manajOrganik');
-$routes->get('/user/mitra', 'ManajUser::manajOrganik/1');
-$routes->get('/user/tambah-organik', 'ManajUser::tambahOrganik');
-$routes->post('/user/tambah-organik/store', 'ManajUser::simpanOrganik');
-$routes->get('/user/edit-organik/(:num)', 'ManajUser::editOrganik/$1');
-$routes->post('/user/edit-organik/store', 'ManajUser::simpanEditOrganik');
-$routes->get('/user/hapus-organik', 'ManajUser::hapusOrganik');
+$routes->get('/user/organik', 'ManajUser::list');
+$routes->get('/user/mitra', 'ManajUser::list/1');
+$routes->get('/user/tambah', 'ManajUser::tambah');
+$routes->post('/user/tambah-organik/store', 'ManajUser::simpan');
+$routes->get('/user/edit/(:num)', 'ManajUser::edit/$1');
+$routes->post('/user/edit/store', 'ManajUser::simpanEdit');
+$routes->get('/user/hapus', 'ManajUser::hapus');
 
 $routes->get('/wilayah', 'Wilayah::manajWilayahTugas');
 $routes->get('/wilayah/downloadTemplate', 'Wilayah::downloadTemplate');
@@ -73,7 +73,8 @@ $routes->group('admin', ['filter' => 'group:admin'], static function ($routes) {
     // Tambahkan route edit/delete di sini
 });
 
-$routes->get('set-kegiatan/(:any)', 'Kegiatan::set/$1'); // untuk ubah kegiatan di header
+$routes->get('set_kegiatan/(:any)', 'Kegiatan::set/$1'); // untuk ubah kegiatan di header
+$routes->get('set_role', 'Admin\UserController::gantiRole'); // untuk ubah kegiatan di header
 
 service('auth')->routes($routes);
 $routes->setAutoRoute(true);

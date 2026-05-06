@@ -18,7 +18,7 @@ class ManajUser extends BaseController
         return null;
     }
 
-    public function manajOrganik($isMitra = null)
+    public function list($isMitra = null)
     {
         $data['title'] = 'Manajemen User Organik';
 
@@ -68,10 +68,10 @@ class ManajUser extends BaseController
         $data['perPage'] = $perPage;
 
 
-        return view('manajUser/manajOrganik', $data);
+        return view('manajUser/manajUser', $data);
     }
 
-    public function tambahOrganik()
+    public function tambah()
     {
         $data['wilayah_sumbar'] = [
             '1300' => '[1300] SUMATERA BARAT',
@@ -102,14 +102,15 @@ class ManajUser extends BaseController
             'operator' => 'Operator',
         ];
 
-        return view('manajUser/tambahOrganik', $data);
+        return view('manajUser/tambahUser', $data);
     }
 
-    public function simpanOrganik()
+    public function simpan()
     {
         $userData = $this->request->getPost();
         $userData['username'] = strtok($userData['email'], '@');
         $userData['name'] = ucwords($userData['name']);
+        $isOrganik = str_ends_with($userData['email'], "@bps.go.id");
 
         // Rule untuk tambah organik
         $rule = [
@@ -142,14 +143,36 @@ class ManajUser extends BaseController
             $this->userModel->save($userEntitas);
             $userBaru = $this->userModel->findById($this->userModel->getInsertID());
             $userBaru->addGroup($userData['role']); // Menentukan role default
+            if ($isOrganik) {
+                $userBaru->addGroup('mitra');
+            }
             return redirect()->back()->with('message', 'User berhasil ditambahkan');
         } else {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         };
     }
 
-    public function editOrganik($id)
+    public function edit($id)
     {
+        $data['title'] = 'Edit User Mitra';
+        $data['isOrganik'] = false;
+
+        $user = $this->userModel->findById($id);
+        $userEmail = $user->getIdentities()[0]->secret;
+        if (str_ends_with($userEmail, '@bps.go.id')) {
+            $data['isOrganik'] = true;
+            $data['title'] = 'Edit User Oganik';
+            $data['roles'] = [
+                'superadmin' => 'SuperAdmin',
+                'admin' => 'Admin',
+                'operator' => 'Operator',
+            ];
+        } else {
+            $data['roles'] = [
+                'mitra' => 'Mitra',
+            ];
+        }
+
         $data['wilayah_sumbar'] = [
             '1300' => '[1300] SUMATERA BARAT',
             '1301' => '[1301] KEPULAUAN MENTAWAI',
@@ -172,32 +195,26 @@ class ManajUser extends BaseController
             '1376' => '[1376] PAYAKUMBUH',
             '1377' => '[1377] PARIAMAN',
         ];
-        $data['title'] = 'Tambah User Organik';
-        $data['roles'] = [
-            'superadmin' => 'SuperAdmin',
-            'admin' => 'Admin',
-            'operator' => 'Operator',
-            'mitra' => 'Mitra',
-        ];
-        $user = $this->userModel->findById($id);
+
         if ($user) {
             $data['id'] = $id;
-            $data['email'] = $user->getIdentities()[0]->secret;
+            $data['email'] = $userEmail;
             $data['name'] = $user->name;
             $data['role'] = $user->getGroups()[0];
             $data['wilayah_kerja'] = $user->wilayah_kerja;
-            return view('manajUser/editOrganik', $data);
+            return view('manajUser/editUser', $data);
         } else {
             return redirect()->back()->with('message_errors', 'User tidak ditemukan');
         }
     }
 
-    public function simpanEditOrganik()
+    public function simpanEdit()
     {
         $userData = $this->request->getPost();
         $userData['username'] = strtok($userData['email'], '@');
         $userData['name'] = ucwords($userData['name']);
         $id = $userData['id'];
+
 
         // Logika simpan ke database di sini
         $userEntitas = new \App\Entities\User();
@@ -209,25 +226,31 @@ class ManajUser extends BaseController
             'id'          => 'required',
         ];
 
-        // dd($userEntitas->getIdentities());
-
         $isValid = $this->validate($rule);
         if ($isValid) {
             $user = $this->userModel->findById($id);
-            if ($user->getGroups()) {
-                $grup = $user->getGroups()[0];
-                $user->removeGroup($grup);
+            $isOldOrganik = str_ends_with($user->getIdentity('email')->secret, '@bps.go.id');
+            $isNewOrganik = str_ends_with($userData['email'], '@bps.go.id');
+            if ($isOldOrganik == $isNewOrganik) {
+            } else {
+                return redirect()->back()->withInput()->with('errors', "tidak boleh ganti domain email");
             }
-            $userEntitas->addGroup($userData['role']);
+            if (!$user->inGroup($userData['role'])) {
+                foreach ($user->getGroups() as $grup) {
+                    if ($grup != 'mitra') {
+                        $user->removeGroup($grup);
+                    }
+                }
+                $user->addGroup($userData['role']);
+            }
             $this->userModel->update($id, $userEntitas);
-            // $this->userModel->save($userEntitas);
-            return redirect()->to('/user/mitra')->with('message', 'User berhasil diedit');
+            return redirect()->back()->back()->with('message', 'User berhasil diedit');
         } else {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         };
     }
 
-    public function hapusOrganik()
+    public function hapus()
     {
         $id = $this->request->getGet('id');
         if ($this->userModel->delete($id)) {
