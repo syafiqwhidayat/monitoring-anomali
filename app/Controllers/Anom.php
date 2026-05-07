@@ -20,10 +20,10 @@ class Anom extends BaseController
         $this->katAnomaliModel = new KatAnomaliModel();
     }
 
-    public function list($isEdit = false)
+    public function list($isEdit = '0')
     {
         // cek is edit jika ada inisial value
-        $data['isEdit'] = $isEdit ?: ($this->request->getGet('is-edit') ?? false);
+        $data['isEdit'] = $isEdit == '1' ?: ($this->request->getGet('isEdit') == '1' ?? '0');
         $data['filterWilayah'] = null;
         $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
         $data['filterKategori'] = $this->request->getGet('fil-kategori') ?? '';
@@ -69,6 +69,8 @@ class Anom extends BaseController
         $data['listSelFlag'] = array_merge($data['listSelFlag'], $listSelFlag ?? []);
         $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel ?? []);
         $data['listWilayah'] = $listSelWilayah;
+
+        $listAnom = null;
 
         try {
             $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah(

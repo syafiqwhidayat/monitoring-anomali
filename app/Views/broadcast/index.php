@@ -251,7 +251,7 @@
                 <div class="modal-body">
                     <span>Apakah Anda Yakin Menghapus Broadcast: </span>
                     <span id="display-judul" class="fw-bold">-</span>
-                    <input type="hidden" name="id" id="br-id" value="">
+                    <input type="hidden" name="id" id="hp-id" value="">
                     <div class="d-flex justify-content-around mt-3">
                         <button type=" button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Tidak</button>
                         <button type="submit" class="btn btn-success ms-auto">Ya</button>

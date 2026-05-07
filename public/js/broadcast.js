@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("display-judul").innerText = judul;
 
       // Set value dropdown ke nilai saat ini
-      document.getElementById("br-id").value = id;
+      document.getElementById("hp-id").value = id;
     });
   });
 });

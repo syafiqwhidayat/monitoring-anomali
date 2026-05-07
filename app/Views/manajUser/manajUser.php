@@ -9,7 +9,7 @@
                 <h2 class="page-title">
                     <?= $title; ?>
                 </h2>
-                <div class="text-muted mt-1">Kelola hak akses dan informasi pengguna aplikasi Sidik Anomali</div>
+                <div class="text-muted mt-1">Kelola hak akses dan informasi pengguna aplikasi Sidik Anomali. Default password : password123</div>
             </div>
             <?php if (!$isMitra) : ?>
                 <div class="col-auto ms-auto d-print-none">

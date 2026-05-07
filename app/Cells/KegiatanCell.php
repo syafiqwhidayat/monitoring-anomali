@@ -19,7 +19,7 @@ class KegiatanCell
             $daftar_kegiatan = $kegiatanModel->getKegiatanDesc();
         }
 
-        if (!$daftar_kegiatan) {
+        if (!$daftar_kegiatan && session()->get('aktif_kegiatan')) {
             $daftar_kegiatan = [['id' => null, 'nama' => 'tidak ada kegiatan terdaftar']];
             session()->set('aktif_kegiatan', null);
             session()->set('nama_kegiatan', 'Tidak ada kegiatan terdaftar');

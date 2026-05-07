@@ -18,46 +18,27 @@ class Wilayah extends BaseController
     {
         // Data Dummy Wilayah Tugas & Mitra
         $data['title'] = "Manajemen Wiayah Tugas";
-        $data['wilayah_tugas'] = [
-            [
-                'kab'   => ['kd' => '10', 'nm' => 'DHARMASRAYA'],
-                'kec'   => ['kd' => '030', 'nm' => 'SITIUNG'],
-                'desa'  => ['kd' => '001', 'nm' => 'SITIUNG'],
-                'sls'   => ['kd' => '0001', 'nm' => 'DUSUN I'],
-                'mitra' => ['nama' => 'Budi Santoso', 'email' => 'budi@gmail.com'],
-                'petugas_organik' => 'Syafiq'
-            ],
-            [
-                'kab'   => ['kd' => '10', 'nm' => 'DHARMASRAYA'],
-                'kec'   => ['kd' => '030', 'nm' => 'SITIUNG'],
-                'desa'  => ['kd' => '002', 'nm' => 'SIGUNTUR'],
-                'sls'   => ['kd' => '0012', 'nm' => 'RT 05'],
-                'mitra' => ['nama' => 'Siti Aminah', 'email' => 'siti@outlook.com'],
-                'petugas_organik' => 'Rahma'
-            ],
-        ];
-
-        $data['list_mitra'] = [
-            ['nama' => 'Budi Santoso', 'email' => 'budi@gmail.com'],
-            ['nama' => 'Siti Aminah', 'email' => 'siti@outlook.com'],
-            ['nama' => 'Andi Wijaya', 'email' => 'andi.w@gmail.com'],
-            ['nama' => 'Rina Permata', 'email' => 'rinap@yahoo.co.id'],
-            ['nama' => 'Joko Susilo', 'email' => 'joko.s@gmail.com'],
-        ];
-        $data['list_organik'] = [
-            ['nama' => 'Syafiq'],
-            ['nama' => 'Rahma'],
-            ['nama' => 'Lathifah Dzakiyah'],
-            ['nama' => 'Hendra Kurniawan'],
-            ['nama' => 'Dewi Sartika'],
-        ];
+        $isOrganik = session('isOrganik');
 
         $wilayahTugasModel = new \App\Models\WilayahTugasModel;
         $userModel = new \App\Models\UserModel;
-        $data['wilayah_tugas'] = $wilayahTugasModel->getWilayahTugasByKegaitan(1);
-        // $data['user'] = $userModel->findAllByGroup();
-        // dd($userModel->findAllByGroup('superadmin', true));
+        $idKegaiatan = session('aktif_kegiatan');
 
+        // isian filter
+        $data['sel_prov'] = $this->request->getGet('sel-prov') ?? 13;
+        $data['sel_kab'] = $this->request->getGet('sel-kab') ?? null;
+        $data['sel_kec'] = $this->request->getGet('sel-kec') ?? null;
+        $data['sel_des'] = $this->request->getGet('sel-des') ?? null;
+        $data['sel_keyword'] = $this->request->getGet('sel-keyword') ?? null;
+
+        // list filter
+        $data['list_kab'] = $wilayahTugasModel->getWilayah('kab', $data['sel_prov']);
+        $data['list_kec'] = $wilayahTugasModel->getWilayah('kec', $data['sel_prov'], $data['sel_kab']);
+        $data['list_des'] = $wilayahTugasModel->getWilayah('des', $data['sel_prov'], $data['sel_kab'], $data['sel_kec']);
+
+        // data
+        $data['list_user'] = $wilayahTugasModel->getUserByKegiatan($idKegaiatan);
+        $data['wilayah_tugas'] = $wilayahTugasModel->getWilayahTugasByKegaitan($idKegaiatan, $data['sel_kab'], $data['sel_kec'], $data['sel_des'], $data['sel_keyword']);
 
         return view('manajWilayah/manajWilayahTugas', $data);
     }
@@ -77,6 +58,8 @@ class Wilayah extends BaseController
             // 1. Simpan file ke folder writable/uploads
             $newName = $file->getRandomName();
             $file->move(WRITEPATH . 'uploads', $newName);
+            $idKegiatan = session('aktif_kegiatan');
+            $wilayahTugas = auth()->user()->wilayah_kerja;
 
             // 2. Buat catatan awal di tabel upload_logs (status: pending)
             $wilayahLogModel = new \App\Models\WilUploadLogModel();
@@ -84,14 +67,14 @@ class Wilayah extends BaseController
                 'nama_file' => $newName,
                 'status'    => 'pending',
                 'id_user'   => auth()->id(), // Siapa yang upload
-                'id_kegiatan' => session()->get('aktif_kegiatan'),
+                'id_kegiatan' => $idKegiatan,
             ]);
 
             // 3. PANGGIL COMMAND DI BACKGROUND
             // Kita kirimkan Nama File dan ID Log sebagai parameter
             // Tanda '&' di akhir perintah adalah kunci agar berjalan di background
             // $command = "php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId . " > /dev/null 2>&1 &"; //command linux
-            $command = "start /B php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId; //command windows
+            $command = "start /B php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId . " " . $idKegiatan . " " . $wilayahTugas; //command windows
             shell_exec($command);
 
             return redirect()->to('/wilayah/logs')->with('message', 'Upload berhasil! Sistem sedang memproses data di latar belakang.');

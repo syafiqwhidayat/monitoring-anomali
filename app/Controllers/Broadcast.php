@@ -23,7 +23,8 @@ class Broadcast extends BaseController
             'title'      => 'Broadcast Information',
         ];
 
-        $data['broadcasts'] = $this->broadcastModel->getBroadcast(session('aktif_kegiatan'), auth()->user()->wilayah_kerja);
+        $hasil = $this->broadcastModel->getBroadcast(session('aktif_kegiatan'), auth()->user()->wilayah_kerja);
+        $data['broadcasts'] = !empty($hasil) ? $hasil : [];
 
         return view('broadcast/index', $data);
     }

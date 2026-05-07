@@ -11,7 +11,7 @@
         <div class="hr-text hr-text-left fs-5 mb-3">Filter Anomali</div>
         <div class="mb-3">
             <form action="<?= base_url('/anomali') ?>" method="get">
-                <input type="hidden" name="isEdit" id="isEdit" value=<?= $isEdit; ?>>
+                <input type="hidden" name="isEdit" id="isEdit" value="<?= $isEdit; ?>">
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label class="form-label">Level Anomali</label>
@@ -67,7 +67,7 @@
         <div class="hr-text hr-text-left fs-5 mb-3">Daftar Anomali</div>
         <div class="row">
             <div class="col">
-                <?php if (!$listAnom): ?>
+                <?php if (empty($listAnom)): ?>
                     <?php if ($message): ?>
                         <div class="alert alert-warning" role="alert">
                             <?= $message; ?>

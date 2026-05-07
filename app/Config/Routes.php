@@ -17,7 +17,7 @@ $routes->get('/anomali', 'Anom::list'); //untuk halaman awal konfirmasi anomali 
 $routes->get('/anomali/listDetil', 'Anom::listDetil'); //untuk memunculkan part accordion
 $routes->post('/anomali/updateKonfirmasi', 'Anom::updateKonfirmasi');
 // $routes->get('/anomali/listEdit', 'Anom::listEdit');
-$routes->get('/anomali/listEdit', 'Anom::list/true');
+$routes->get('/anomali/listEdit', 'Anom::list/1');
 $routes->get('/anomali/konfirmasiBulk', 'Anom::konfirmasiBulk');
 
 $routes->get('/manajemen-anomali/list', 'ManajAnom::manajemenList');
@@ -66,6 +66,7 @@ $routes->get('/wilayah/downloadTemplate', 'Wilayah::downloadTemplate');
 $routes->post('/wilayah/upload', 'Wilayah::store');
 $routes->get('/wilayah/logs', 'Wilayah::logsWilayah');
 $routes->get('/wilayah/log-detil/(:num)', 'Wilayah::logDetil/$1');
+$routes->post('/wilayah/edit', 'Wilayah::edit');
 
 $routes->group('admin', ['filter' => 'group:admin'], static function ($routes) {
     $routes->get('users', 'Admin\UserController::index');

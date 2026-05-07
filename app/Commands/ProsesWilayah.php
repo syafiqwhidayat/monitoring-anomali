@@ -7,6 +7,7 @@ use CodeIgniter\CLI\CLI;
 use App\Models\WilUploadLogModel;
 use App\Models\UserModel;
 use App\Models\WilayahTugasModel;
+use App\Models\KegiatanModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use SebastianBergmann\Environment\Console;
 
@@ -60,14 +61,23 @@ class ProsesWilayah extends BaseCommand
      *
      * @param array $params
      */
+
+
     public function run(array $params)
     {
         // 1. Ambil nama file dan ID Log dari parameter
         $fileName = $params[0] ?? null;
         $logId = $params[1] ?? null;
         $idKegiatan    = $params[2] ?? null;
+        $wilayahTugas    = $params[3] ?? null;
 
-        if (!$fileName || !$idKegiatan) {
+        $kegiatanModel = new KegiatanModel();
+
+
+        $kegiatan = $kegiatanModel->find($idKegiatan);
+        $levelWilayah       = $kegiatan['level_wilayah'] ?? 4;
+
+        if (!$fileName || !$logId || !$idKegiatan || !$wilayahTugas) {
             CLI::error("Nama file atau ID Log tidak ditemukan.");
             return;
         }
@@ -106,8 +116,10 @@ class ProsesWilayah extends BaseCommand
                     'username'      => explode('@', $row[6])[0], // Ambil depan email untuk username
                 ];
 
+                $kode = (trim($row[0] ?? '')) . (trim($row[1] ?? '')) . (trim($row[2] ?? '')) . (trim($row[3] ?? '')) . (trim($row[4] ?? '')) . (trim($row[5] ?? ''));
+
                 $idWilayah = [
-                    'idWilayah' => $row[0] . $row[1] . $row[2] . $row[3] . $row[4] . $row[5]
+                    'idWilayah' => $kode,
                 ];
 
                 // 3. Validasi Manual
@@ -141,12 +153,15 @@ class ProsesWilayah extends BaseCommand
                 // validasi id wilayah
                 $validation->reset();
                 $ruleWilayah = [
-                    'idWilayah' => "required|is_not_unique[wilayah.id]"
+                    'idWilayah' => "required|exact_length[$levelWilayah]"
                 ];
                 $messageWilayah = [
-                    'is_not_unique' => 'wilayah tidak terdaftar',
+                    'idWilayah' => [
+                        'exact_length' => "id wialyah tidak sesuai. harusnya  $levelWilayah digit",
+                    ]
                 ];
                 $validation->setRules($ruleWilayah, $messageWilayah);
+
                 // validasi Email PPL
                 if (!$validation->run($idWilayah)) {
                     $gagal++;
@@ -182,7 +197,8 @@ class ProsesWilayah extends BaseCommand
                     } else {
                         $userPPL->addGroup('mitra');
                     }
-                };
+                }
+
                 if (!$userPML) {
                     $userPML = new \App\Entities\User($dataUserPML);
                     $userPML->password = 'password123'; // Password default
@@ -203,7 +219,8 @@ class ProsesWilayah extends BaseCommand
                     } else {
                         $userPML->addGroup('mitra');
                     }
-                };
+                }
+
                 $existing = $wilayaTugasModel->where([
                     'id_wilayah'  => $idWilayah['idWilayah'],
                     'id_kegiatan' => $idKegiatan
@@ -218,7 +235,7 @@ class ProsesWilayah extends BaseCommand
 
                 if ($existing) {
                     // Jika wilayah tugas sudah ada, lakukan Update berdasarkan ID primer yang ditemukan
-                    if (!$wilayaTugasModel->update($existing->id, $dataWilayahTugas)) {
+                    if (!$wilayaTugasModel->update($existing['id'], $dataWilayahTugas)) {
                         $gagal++;
                         $errorDetails[] = [
                             'baris' => $i + 1,
@@ -244,7 +261,7 @@ class ProsesWilayah extends BaseCommand
                     $gagal++;
                     $errorDetails[] = [
                         'baris' => $i + 1,
-                        'data'  => "gagal input wilayah tugas: " . $idWilayah,
+                        'data'  => "gagal input wilayah tugas: " . $idWilayah['idWilayah'],
                         'pesan' => 'gagal input wilayah tugas'
                     ];
                     continue;

@@ -132,7 +132,7 @@ class AnomaliModel extends Model
         if ($id_kegiatan) {
             $data = $data->where('k.id_kegiatan', $id_kegiatan);
         } else {
-            return "id Kegiatan tidak terdefinisi";
+            return null;
         };
         // dd($data->findAll());
 

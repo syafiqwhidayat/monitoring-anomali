@@ -7,6 +7,17 @@
             <div class="col">
                 <h2 class="page-title">Log Import Wilayah Tugas</h2>
             </div>
+            <div class="col-auto ms-auto">
+                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalUpload">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                        <polyline points="7 9 12 4 17 9" />
+                        <line x1="12" y1="4" x2="12" y2="16" />
+                    </svg>
+                    Upload Master Wilayah
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -71,7 +82,7 @@
                                     <?php elseif ($log->status == 'proses'): ?>
                                         <span class="badge">Sedang Diproses</span>
                                     <?php elseif ($log->status == 'pending'): ?>
-                                        <span class="badge">Antre</span>
+                                        <span class="badge">Pending</span>
                                     <?php else: ?>
                                         <span class="badge">Gagal</span>
                                     <?php endif; ?>
@@ -96,6 +107,35 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="modalUpload" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form action="<?= base_url('/wilayah/upload') ?>" method="post" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Wilayah Tugas</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p> Template Upload Wiayah Tugas:</p>
+                    <a href="<?= base_url('/wilayah/downloadTemplate'); ?>" class="btn btn-outline-primary">
+                        <i class="bi bi-download"></i> Unduh Template Excel (.xlsx)
+                    </a>
+                    <div class="hr-text"></div>
+                    <div class="mb-3">
+                        <label class="form-label">Pilih File (Excel/CSV)</label>
+                        <input type="file" name="file_wilayah" class="form-control" required>
+                        <small class="form-hint mt-2">Bisa gunakan file upload wilayah tugas Fasih. Gunakan format kolom: Kab, Kec, Desa, SLS, Email PML, Email PPL.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success ms-auto">Mulai Upload</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

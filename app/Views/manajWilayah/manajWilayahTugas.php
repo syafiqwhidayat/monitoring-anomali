@@ -8,44 +8,42 @@
                 <h2 class="page-title">Manajemen Wilayah Tugas</h2>
                 <div class="text-muted mt-1">Pemetaan wilayah SLS terhadap Mitra dan Petugas Organik</div>
             </div>
-            <div class="col-auto ms-auto">
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalUpload">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-                        <polyline points="7 9 12 4 17 9" />
-                        <line x1="12" y1="4" x2="12" y2="16" />
-                    </svg>
-                    Upload Master Wilayah
-                </button>
-            </div>
         </div>
     </div>
 
     <div class="card mb-3 shadow-sm" style="border-radius: 12px;">
         <div class="card-body">
-            <form action="" method="get" class="row g-3">
+            <form action="<?php base_url('wilayah') ?>" method="get" class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label">Kabupaten</label>
-                    <select name="kec" class="form-select">
-                        <option value="">Semua Kecamatan</option>
+                    <select name="sel-kab" class="form-select">
+                        <option value="">Semua Kabupaten</option>
+                        <?php foreach ($list_kab ?? [] as $kab): ?>
+                            <option value="<?= $kab['id']; ?>" <?= ($sel_kab == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Kecamatan</label>
-                    <select name="kec" class="form-select">
+                    <select name="sel-kec" class="form-select">
                         <option value="">Semua Kecamatan</option>
+                        <?php foreach ($list_kec ?? [] as $kab): ?>
+                            <option value="<?= $kab['id']; ?>" <?= ($sel_kec == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Desa</label>
-                    <select name="desa" class="form-select">
+                    <select name="sel-des" class="form-select">
                         <option value="">Semua Desa</option>
+                        <?php foreach ($list_des ?? [] as $kab): ?>
+                            <option value="<?= $kab['id']; ?>" <?= ($sel_des == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Cari Nama Mitra/SLS</label>
-                    <input type="text" name="keyword" class="form-control" placeholder="Ketik nama...">
+                    <input type="text" name="sel-keyword" class="form-control" value="<?= $sel_keyword; ?>" placeholder="Ketik nama...">
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button class="btn btn-primary w-100">Cari</button>
@@ -71,14 +69,38 @@
                     <?php foreach ($wilayah_tugas as $wt) : ?>
                         <tr>
                             <td>
-                                <div class="small text-muted"><?= $wt['kd_kab'] ?> - <?= $wt['nm_kab'] ?></div>
-                                <div class="font-weight-medium"><?= $wt['kd_kec'] ?> - <?= $wt['nm_kec'] ?></div>
+                                <div class="small text-muted">
+                                    <?php if (!empty($wt['kd_kab'])) : ?>
+                                        <?= $wt['kd_kab'] ?> - <?= $wt['nm_kab'] ?>
+                                    <?php else: ?>
+                                        tidak ada
+                                    <?php endif; ?>
+                                </div>
+                                <div class="font-weight-medium">
+                                    <?php if (!empty($wt['kd_kec'])) : ?>
+                                        <?= $wt['kd_kec'] ?> - <?= $wt['nm_kec'] ?>
+                                    <?php else: ?>
+                                        tidak ada
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             <td>
-                                <div><?= $wt['kd_des'] ?> - <?= $wt['nm_des'] ?></div>
+                                <div>
+                                    <?php if (!empty($wt['kd_des'])) : ?>
+                                        <?= $wt['kd_des'] ?> - <?= $wt['nm_des'] ?>
+                                    <?php else: ?>
+                                        tidak ada
+                                    <?php endif; ?>
+                                </div>
                             </td>
                             <td>
-                                <span class="badge bg-blue-lt mb-1"><?= $wt['kd_sls'] . $wt['kd_subsls'] ?></span>
+                                <span class="badge bg-blue-lt mb-1">
+                                    <?php if (!empty($wt['kd_sls'])) : ?>
+                                        <?= $wt['kd_sls'] . $wt['kd_subsls'] ?>
+                                    <?php else: ?>
+                                        tidak ada
+                                    <?php endif; ?>
+                                </span>
                                 <div class="small"><?= $wt['nm_sls']  ?></div>
                             </td>
                             <td>
@@ -143,7 +165,7 @@
 <div class="modal modal-blur fade" id="modalEditPetugas" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <form action="<?= base_url('manajemen-wilayah/update-petugas') ?>" method="post">
+            <form action="<?= base_url('wilayah/edit') ?>" method="post">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Penanggung Jawab Wilayah</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -176,8 +198,8 @@
                         <label class="form-label">Petugas PPL</label>
                         <select name="ppl_email" id="select-ppl" class="form-select">
                             <option value="">-- Pilih Petugas --</option>
-                            <?php foreach ($list_mitra as $m): ?>
-                                <option value="<?= $m['email'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>
+                            <?php foreach ($list_user as $m): ?>
+                                <option value="<?= $m['id'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -186,8 +208,8 @@
                         <label class="form-label">Petugas PML</label>
                         <select name="pml_email" id="select-pml" class="form-select">
                             <option value="">-- Pilih Petugas --</option>
-                            <?php foreach ($list_organik as $o): ?>
-                                <option value="<?= $o['nama'] ?>"><?= $o['nama'] ?></option>
+                            <?php foreach ($list_user as $o): ?>
+                                <option value="<?= $o['id'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>
                             <?php endforeach; ?>
                         </select>
                     </div>
