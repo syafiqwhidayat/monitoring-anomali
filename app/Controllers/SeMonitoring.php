@@ -33,13 +33,13 @@ class SeMonitoring extends BaseController
         $open = $dataHead[0]['open'];
         $data = [
             "title" => "Monitoring Progress Sensus Ekonomi",
-            "dataCharJmlAnom" => $this->dataChartJmlAnom(),
+            "dataCharJmlKab" => $this->dataChartNgibar(),
             "dataHead" => [
                 'total_submit' => $dataHead[0]['submit_total'],
                 'total_ED' => $dataHead[0]['submit_ED'],
                 'total_NED' => $dataHead[0]['submit_NED']
             ],
-            "dataProses" => [
+            "dataProgresFasih" => [
                 'label' => json_encode(['Submit Ekonomi Digital', 'Submit Non Ekonomi Digital', 'Open']),
                 'nilai' => json_encode([$submitED, $sumbitNED, $open]),
             ],
@@ -47,24 +47,9 @@ class SeMonitoring extends BaseController
                 'label' => json_encode(['Submit Ekonomi Digital', 'Submit Non Ekonomi Digital']),
                 'nilai' => json_encode([$submitED, $sumbitNED]),
             ],
-            "dataProsesNonPublic" => [
-                'label' => json_encode(['Non Ekonomi Digital', 'Belum']),
-                'nilai' => json_encode([$dataHead[0]['submit_NED'], ($dataHead[0]['submit_total'] - $dataHead[0]['submit_NED'])]),
-            ],
-            "dataProsesFlag1" => [
-                'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode($this->dataChartProses('flag1')),
-            ],
-            "dataProsesFlag2" => [
-                'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode($this->dataChartProses('flag2')),
-            ],
-            "dataProsesFlag3" => [
-                'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode($this->dataChartProses('flag3')),
-            ],
+            "dataPotensiKab" => $this->dataPotensiKab(),
+            "dataNgibar" => $this->dataChartJmlAnom(),
             "dataTimeline" => $this->dataTimeline(),
-            "dataTop5" => $this->anomaliModel->getTop5()
         ];
         $data['dateUpdated'] = $this->seMonitoringModel->select("MAX(created_at) as terbaru")->get()->getRowArray()['terbaru'];
         return view('seMonitoring/monitoringAll', $data);
@@ -322,6 +307,77 @@ class SeMonitoring extends BaseController
                 ],
                 [
                     'label' => json_encode(['Submit Non Ekonomi Digital']),
+                    'nilai' => json_encode($tampil_submit),
+                ],
+                [
+                    'label' => json_encode(['Open']),
+                    'nilai' => json_encode($tampil_sisa),
+                ],
+            ],
+        ];
+        return $data;
+    }
+
+    public function dataPotensiKab($id_kat = null)
+    {
+        $dataModel = null;
+        $judulBaris = null;
+
+        $dataModel = $this->seMonitoringModel->jumlahKonfirmasiByWiayah();
+        $judulBaris = array_column($dataModel, 'kd_wilayah');
+        $jumlah_ed = array_column($dataModel, 'jumlah_ED');
+        $jumlah_submit = array_column($dataModel, 'jumlah_submit');
+        $jumlah_total = array_column($dataModel, 'jumlah_total');
+        $tampil_submit = array_map(fn($a, $b) => $a - $b, $jumlah_submit, $jumlah_ed);
+        $tampil_sisa = array_map(fn($a, $b) => $a - $b, $jumlah_total, $jumlah_submit);
+        $potensiDigital = ['15', '31', '16', '45', '32', '48', '32', '68', '14', '22', '50', '44', '35', '25', '42', '43', '35', '25', '43', '32',];
+        $potensiDigitalfalse = ['12', '65', '24', '43', '25', '42', '35', '15', '63', '45', '22', '14', '34', '25', '34', '51', '25', '34', '26', '17',];
+        $submitBukan = ['34', '24', '25', '52', '24', '35', '50', '15', '37', '15', '35', '42', '35', '15', '15', '17', '64', '32', '38', '31',];
+        $data =  [
+            'labels' => json_encode($judulBaris),
+            'datesets' => [
+                [
+                    'label' => json_encode(['Submit Ekonomi Digital']),
+                    'nilai' => json_encode($jumlah_ed),
+                ],
+                [
+                    'label' => json_encode(['Potensi Ekonomi Digital True']),
+                    'nilai' => json_encode($potensiDigital),
+                ],
+                [
+                    'label' => json_encode(['Potensi Ekonomi Digital False']),
+                    'nilai' => json_encode($potensiDigitalfalse),
+                ],
+                [
+                    'label' => json_encode(['Submit Bukan Ekonomi Digital']),
+                    'nilai' => json_encode($submitBukan),
+                ],
+            ],
+        ];
+        return $data;
+    }
+
+    public function dataChartNgibar($id_kat = null)
+    {
+        $dataModel = null;
+        $judulBaris = null;
+
+        $dataModel = $this->seMonitoringModel->jumlahKonfirmasiByWiayah();
+        $judulBaris = array_column($dataModel, 'kd_wilayah');
+        $jumlah_ed = array_column($dataModel, 'jumlah_ED');
+        $jumlah_submit = array_column($dataModel, 'jumlah_submit');
+        $jumlah_total = array_column($dataModel, 'jumlah_total');
+        $tampil_submit = array_map(fn($a, $b) => $a - $b, $jumlah_submit, $jumlah_ed);
+        $tampil_sisa = array_map(fn($a, $b) => $a - $b, $jumlah_total, $jumlah_submit);
+        $data =  [
+            'labels' => json_encode($judulBaris),
+            'datesets' => [
+                [
+                    'label' => json_encode(['Submit Ngibar/Mandiri']),
+                    'nilai' => json_encode($jumlah_ed),
+                ],
+                [
+                    'label' => json_encode(['Submit Petugas']),
                     'nilai' => json_encode($tampil_submit),
                 ],
                 [

@@ -133,39 +133,11 @@
     </div>
 </div>
 
-<div class="modal modal-blur fade" id="modalUpload" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <form action="<?= base_url('/wilayah/upload') ?>" method="post" enctype="multipart/form-data">
-                <div class="modal-header">
-                    <h5 class="modal-title">Upload Wilayah Tugas</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p> Template Upload Wiayah Tugas:</p>
-                    <a href="<?= base_url('/wilayah/downloadTemplate'); ?>" class="btn btn-outline-primary">
-                        <i class="bi bi-download"></i> Unduh Template Excel (.xlsx)
-                    </a>
-                    <div class="hr-text"></div>
-                    <div class="mb-3">
-                        <label class="form-label">Pilih File (Excel/CSV)</label>
-                        <input type="file" name="file_wilayah" class="form-control" required>
-                        <small class="form-hint mt-2">Bisa gunakan file upload wilayah tugas Fasih. Gunakan format kolom: Kab, Kec, Desa, SLS, Email PML, Email PPL.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-success ms-auto">Mulai Upload</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <div class="modal modal-blur fade" id="modalEditPetugas" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <form action="<?= base_url('wilayah/edit') ?>" method="post">
+                <input type="hidden" name="id" id="select-id" value="">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Penanggung Jawab Wilayah</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -196,7 +168,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Petugas PPL</label>
-                        <select name="ppl_email" id="select-ppl" class="form-select">
+                        <select name="sel-ppl" id="select-ppl" class="form-select">
                             <option value="">-- Pilih Petugas --</option>
                             <?php foreach ($list_user as $m): ?>
                                 <option value="<?= $m['id'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>
@@ -206,10 +178,10 @@
 
                     <div class="mb-3">
                         <label class="form-label">Petugas PML</label>
-                        <select name="pml_email" id="select-pml" class="form-select">
+                        <select name="sel-pml" id="select-pml" class="form-select">
                             <option value="">-- Pilih Petugas --</option>
-                            <?php foreach ($list_user as $o): ?>
-                                <option value="<?= $o['id'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>
+                            <?php foreach ($list_user as $m): ?>
+                                <option value="<?= $m['id'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>
                             <?php endforeach; ?>
                         </select>
                     </div>

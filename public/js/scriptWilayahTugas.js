@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const sls = this.getAttribute("data-sls");
       const ppl = this.getAttribute("data-ppl");
       const pml = this.getAttribute("data-pml");
+      const id = this.getAttribute("data-id");
 
       // Masukkan ke dalam modal rincian wilayah
       document.getElementById("display-kab").innerText = kab;
@@ -20,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // Set value dropdown ke nilai saat ini
       document.getElementById("select-ppl").value = ppl;
       document.getElementById("select-pml").value = pml;
+      document.getElementById("select-id").value = id;
     });
   });
 });

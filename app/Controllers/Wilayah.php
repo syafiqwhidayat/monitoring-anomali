@@ -9,6 +9,14 @@ use CodeIgniter\Model;
 
 class Wilayah extends BaseController
 {
+    protected $wilayahTugasModel;
+    protected $logModel;
+
+    public function __construct()
+    {
+        $this->wilayahTugasModel = new WilayahTugasModel();
+        $this->logModel = new WilUploadLogModel();
+    }
     public function index()
     {
         return null;
@@ -20,11 +28,11 @@ class Wilayah extends BaseController
         $data['title'] = "Manajemen Wiayah Tugas";
         $isOrganik = session('isOrganik');
 
-        $wilayahTugasModel = new \App\Models\WilayahTugasModel;
         $userModel = new \App\Models\UserModel;
         $idKegaiatan = session('aktif_kegiatan');
 
         // isian filter
+        $data['id'] = $this->request->getGet('id') ?? null;
         $data['sel_prov'] = $this->request->getGet('sel-prov') ?? 13;
         $data['sel_kab'] = $this->request->getGet('sel-kab') ?? null;
         $data['sel_kec'] = $this->request->getGet('sel-kec') ?? null;
@@ -32,13 +40,13 @@ class Wilayah extends BaseController
         $data['sel_keyword'] = $this->request->getGet('sel-keyword') ?? null;
 
         // list filter
-        $data['list_kab'] = $wilayahTugasModel->getWilayah('kab', $data['sel_prov']);
-        $data['list_kec'] = $wilayahTugasModel->getWilayah('kec', $data['sel_prov'], $data['sel_kab']);
-        $data['list_des'] = $wilayahTugasModel->getWilayah('des', $data['sel_prov'], $data['sel_kab'], $data['sel_kec']);
+        $data['list_kab'] = $this->wilayahTugasModel->getWilayah('kab', $data['sel_prov']);
+        $data['list_kec'] = $this->wilayahTugasModel->getWilayah('kec', $data['sel_prov'], $data['sel_kab']);
+        $data['list_des'] = $this->wilayahTugasModel->getWilayah('des', $data['sel_prov'], $data['sel_kab'], $data['sel_kec']);
 
         // data
-        $data['list_user'] = $wilayahTugasModel->getUserByKegiatan($idKegaiatan);
-        $data['wilayah_tugas'] = $wilayahTugasModel->getWilayahTugasByKegaitan($idKegaiatan, $data['sel_kab'], $data['sel_kec'], $data['sel_des'], $data['sel_keyword']);
+        $data['list_user'] = $this->wilayahTugasModel->getUserByKegiatan($idKegaiatan);
+        $data['wilayah_tugas'] = $this->wilayahTugasModel->getWilayahTugasByKegaitan($idKegaiatan, $data['sel_kab'], $data['sel_kec'], $data['sel_des'], $data['sel_keyword']);
 
         return view('manajWilayah/manajWilayahTugas', $data);
     }
@@ -133,8 +141,7 @@ class Wilayah extends BaseController
                 'created_at'    => '2026-04-27 10:30:00'
             ],
         ];
-        $logModel = model('WilUploadLogModel');
-        $datalog = $logModel->select('wilayah_upload_log.*,idn.secret AS email')
+        $datalog = $this->logModel->select('wilayah_upload_log.*,idn.secret AS email')
             ->join('auth_identities idn', 'id_user = idn.user_id')
             ->where('id_kegiatan', session()->get('aktif_kegiatan'))->orderBy('created_at', 'DESC');
 
@@ -214,5 +221,34 @@ class Wilayah extends BaseController
     public function downloadTemplate()
     {
         return $this->response->download(FCPATH . 'assets\templates\template_wilayah_tugas.xlsx', null);
+    }
+
+    public function edit()
+    {
+        $data['id'] = $this->request->getGet('id') ?? null;
+        $data['id_ppl'] = $this->request->getGet('sel-ppl') ?? null;
+        $data['id_pml'] = $this->request->getGet('sel-pml') ?? null;
+
+        $updateData = [];
+
+        if (!empty($data['id_ppl'])) {
+            $updateData['id_ppl'] = $data['id_ppl'];
+        }
+
+        if (!empty($data['id_pml'])) {
+            $updateData['id_pml'] = $data['id_pml'];
+        }
+
+        $wiltug = null;
+
+        if (!empty($updateData)) {
+            $wiltug = $this->wilayahTugasModel->update($data['id'], $updateData);
+        }
+
+        if ($wiltug) {
+            return redirect()->back()->with('message', 'User berhasil diedit');
+        } else {
+            return redirect()->back()->withInput()->with('errors', 'gagal edit wilayah tugas');
+        }
     }
 }

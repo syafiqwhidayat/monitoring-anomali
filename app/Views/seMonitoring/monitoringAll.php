@@ -57,6 +57,18 @@
             </div>
         </div>
     </div>
+    <div class="card card-body">
+        <div class="row">
+            <h1>Grafik Potensi Ekonomi Digital</h1>
+            <div class="col-12 col-md-12">
+                <div class="barPotensi">
+                    <canvas id="bar_potensi_ed_kab" aria-label="grafik_jumlah_anomali" role="img">
+                        <p>Browser Kamu tidak Support Canvas Element</p>
+                    </canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -66,6 +78,7 @@
         const persenAssigment = document.getElementById('grafPersenAnom');
         const persenSubmit = document.getElementById('grafPersenEkonomiDigital');
         const timelineAnom = document.getElementById('grafTimeline');
+        const bar_potensiEd_kab = document.getElementById('bar_potensi_ed_kab');
         // console.log(ctx);
 
         // option legend
@@ -94,24 +107,24 @@
         const myChart = new Chart(ctx, {
             type: 'bar', // Tipe grafik (bar, line, pie)
             data: {
-                labels: <?= $dataCharJmlAnom['labels'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
+                labels: <?= $dataCharJmlKab['labels'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                 datasets: [{
-                        label: <?= $dataCharJmlAnom['datesets'][0]['label'] ?>,
-                        data: <?= $dataCharJmlAnom['datesets'][0]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        label: <?= $dataCharJmlKab['datesets'][0]['label'] ?>,
+                        data: <?= $dataCharJmlKab['datesets'][0]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                         backgroundColor: '#94C11F',
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     },
                     {
-                        label: <?= $dataCharJmlAnom['datesets'][1]['label'] ?>,
-                        data: <?= $dataCharJmlAnom['datesets'][1]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        label: <?= $dataCharJmlKab['datesets'][1]['label'] ?>,
+                        data: <?= $dataCharJmlKab['datesets'][1]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                         backgroundColor: '#EE8911',
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     },
                     {
-                        label: <?= $dataCharJmlAnom['datesets'][2]['label'] ?>,
-                        data: <?= $dataCharJmlAnom['datesets'][2]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        label: <?= $dataCharJmlKab['datesets'][2]['label'] ?>,
+                        data: <?= $dataCharJmlKab['datesets'][2]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                         backgroundColor: '#0369A1',
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
@@ -141,9 +154,9 @@
         const grafPersenAssigment = new Chart(persenAssigment, {
             type: 'doughnut', // Tipe grafik (bar, line, pie)
             data: {
-                labels: <?= $dataProses['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
+                labels: <?= $dataProgresFasih['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                 datasets: [{
-                    data: <?= $dataProses['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                    data: <?= $dataProgresFasih['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                     backgroundColor: ['#EE8911', '#0369A1', '#B3B3B3'],
                     borderColor: 'rgba(255, 255, 255, 1)',
                     borderWidth: 1
@@ -209,6 +222,59 @@
                 plugins: getBaseOptions('Timeline Anomali')
             }
         });
+        const barPotensiEd = new Chart(bar_potensiEd_kab, {
+            type: 'bar', // Tipe grafik (bar, line, pie)
+            data: {
+                labels: <?= $dataPotensiKab['labels'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
+                datasets: [{
+                        label: <?= $dataPotensiKab['datesets'][0]['label'] ?>,
+                        data: <?= $dataPotensiKab['datesets'][0]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        backgroundColor: '#94C11F',
+                        borderColor: 'rgba(255, 255, 255, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: <?= $dataPotensiKab['datesets'][1]['label'] ?>,
+                        data: <?= $dataPotensiKab['datesets'][1]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        backgroundColor: '#EE8911',
+                        borderColor: 'rgba(255, 255, 255, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: <?= $dataPotensiKab['datesets'][2]['label'] ?>,
+                        data: <?= $dataPotensiKab['datesets'][2]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        backgroundColor: '#0369A1',
+                        borderColor: 'rgba(255, 255, 255, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: <?= $dataPotensiKab['datesets'][3]['label'] ?>,
+                        data: <?= $dataPotensiKab['datesets'][3]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        backgroundColor: '#B3B3B3',
+                        borderColor: 'rgba(255, 255, 255, 1)',
+                        borderWidth: 1
+                    },
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true
+                    }
+                }
+            }
+        });
     })
 </script>
 
@@ -233,6 +299,13 @@
     #grafTimeline {
         /* width: 15vw; */
         height: 30vh;
+    }
+
+    .barPotensi {
+        /* position: relative; */
+        height: 600px;
+        /* kontrol tinggi */
+        /* width: 100%; lebar mengikuti container */
     }
 </style>
 
