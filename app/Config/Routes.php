@@ -20,13 +20,13 @@ $routes->post('/anomali/updateKonfirmasi', 'Anom::updateKonfirmasi');
 $routes->get('/anomali/listEdit', 'Anom::list/1');
 $routes->get('/anomali/konfirmasiBulk', 'Anom::konfirmasiBulk');
 
-$routes->get('/manajemen-anomali/list', 'ManajAnom::manajemenList');
+$routes->get('/manajemen-anomali/list', 'ManajAnom::manajemenList');  //daftar kategori anomali
 $routes->post('/manajemen-anomali/action', 'ManajAnom::manajemenAction');
 $routes->get('manajemen-anomali/edit/(:any)', 'ManajAnom::edit/$1');
-$routes->post('/manajemen-anomali/updateKategori', 'ManajAnom::updateKategori');
+$routes->post('/manajemen-anomali/updateKategori', 'ManajAnom::updateKategori'); //update kategori anomali
 $routes->get('/manajemen-anomali/log', 'ManajAnom::log');
 $routes->get('/manajemen-anomali/template', 'ManajAnom::downloadTemplate');
-$routes->post('/manajemen-anomali/store', 'ManajAnom::store');
+$routes->post('/manajemen-anomali/store', 'ManajAnom::store'); //menambah log tambahan anomali
 $routes->get('/manajemen-anomali/log-detil/(:num)', 'ManajAnom::logDetil/$1');
 
 $routes->get('monitoring/', 'Monitoring::index');

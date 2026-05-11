@@ -6,7 +6,6 @@
         <div class="row">
             <div class="col">
                 <h1>Edit Anomali</h1>
-                <p>untuk id: <?= $data['id']; ?></p>
             </div>
         </div>
         <?php
@@ -31,14 +30,17 @@
                         <label for="kdAnom" class="form-label">Kode Anomali</label>
                         <input type="text" name="kode_anomali" class="form-control <?= (session()->getFlashdata('kode_anomali')) ? 'is-invalid' : ''; ?>"
                             id="kdAnom" aria-describedby="kdAnomHelp"
-                            value="<?= (old('kode_anomali')) ? old('kode_anomali') : $data['kode_anomali']; ?>">
+                            value="<?= (old('kode_anomali')) ? old('kode_anomali') : $data['kode_anomali']; ?>"
+                            <?= ($data['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
                         <div class="invalid-feedback">
                             <?= session()->getFlashdata('kode_anomali'); ?>
                         </div>
-                        <!-- <div id="kdAnomHelp" class="form-text">Kode Anomali tidak dapat di edit</div> -->
                     </div>
                     <div class="mb-3">
-                        <select class="form-control" name="flag" aria-label="Default select example">
+                        <select class="form-control"
+                            name="flag"
+                            aria-label="Default select example"
+                            <?= ($data['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
                             <option value="1" <?= ($data['flag'] == '1') ? 'selected' : ''; ?>>1</option>
                             <option value="2" <?= ($data['flag'] == '2') ? 'selected' : ''; ?>>2</option>
                             <option value="3" <?= ($data['flag'] == '3') ? 'selected' : ''; ?>>3</option>
@@ -46,11 +48,14 @@
                     </div>
                     <div class="mb-3">
                         <div class="form-check form-switch">
-                            <input type="hidden" name="is_show" value="not_show_id_<?= $data['id']; ?>">
+                            <input type="hidden"
+                                name="is_show" value="not_show_id_<?= $data['id']; ?>"
+                                <?= ($data['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
                             <input
                                 class="form-check-input" type="checkbox"
                                 role="switch" id="is_show_checkbox" name="is_show"
-                                value="show_id_<?= $data['id']; ?>" <?= ($data['is_show']) ? 'checked' : ''; ?>>
+                                value="show_id_<?= $data['id']; ?>" <?= ($data['is_show']) ? 'checked' : ''; ?>
+                                <?= ($data['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
                             <label class="form-check-label" for="UpdateAll">
                                 <i class="bi <?= ($data['is_show']) ? 'bi-eye-fill text-success' : 'bi-eye-slash-fill text-warning'; ?>"></i> Is <?= ($data['is_show']) ? '' : 'Not'; ?> Show
                             </label>
@@ -61,7 +66,8 @@
                         <textarea class="form-control" id="defAnom"
                             aria-describedby="defAnomHelp"
                             name="definisi_anomali"
-                            rows="4"><?= $data['definisi_anomali']; ?></textarea>
+                            rows="4"
+                            <?= ($data['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>><?= $data['definisi_anomali']; ?></textarea>
                         <div id="defAnomHelp" class="form-text"></div>
                     </div>
                     <div class="mb-3">
@@ -71,10 +77,12 @@
                             id="detAnom"
                             name="detil_anomali"
                             aria-describedby="detAnomHelp"
-                            rows="3"><?= $data['detil_anomali']; ?></textarea>
+                            rows="3"
+                            <?= ($data['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>><?= $data['detil_anomali']; ?></textarea>
                         <div id="detAnomHelp" class="form-text"></div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary"
+                        <?= ($data['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>Submit</button>
                 </form>
             </div>
         </div>

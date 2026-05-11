@@ -73,29 +73,29 @@
                     <tbody>
                         <?php foreach ($logs as $log) : ?>
                             <tr>
-                                <td class="text-secondary"><?= $log->created_at ?></td>
-                                <td><?= $log->nama_file ?></td>
-                                <td class="text-primary"><?= $log->email; ?></td>
+                                <td class="text-secondary"><?= $log['created_at'] ?></td>
+                                <td><?= $log['nama_file_awal'] ?></td>
+                                <td class="text-primary"><?= $log['email']; ?></td>
                                 <td>
-                                    <?php if ($log->status == 'selesai'): ?>
+                                    <?php if ($log['status'] == 'selesai'): ?>
                                         <span class="badge">Selesai</span>
-                                    <?php elseif ($log->status == 'proses'): ?>
+                                    <?php elseif ($log['status'] == 'proses'): ?>
                                         <span class="badge">Sedang Diproses</span>
-                                    <?php elseif ($log->status == 'pending'): ?>
+                                    <?php elseif ($log['status'] == 'pending'): ?>
                                         <span class="badge">Pending</span>
                                     <?php else: ?>
                                         <span class="badge">Gagal</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <strong><?= $log->berhasil ?></strong> / <?= $log->total_baris ?> Baris
-                                    <?php if ($log->gagal > 0): ?>
-                                        <small class="text-danger">(<?= $log->gagal ?> Error)</small>
+                                    <strong><?= $log['berhasil'] ?></strong> / <?= $log['total_baris'] ?> Baris
+                                    <?php if ($log['gagal'] > 0): ?>
+                                        <small class="text-danger">(<?= $log['gagal'] ?> Error)</small>
                                     <?php endif; ?>
                                 </td>
                                 <td>
-                                    <?php if (!empty($log->error_details) && $log->error_details != '[]'): ?>
-                                        <button class="btn btn-outline-danger btn-sm" onclick="showError(<?= $log->id ?>)">
+                                    <?php if (!empty($log['error_details']) && $log['error_details'] != '[]'): ?>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="showError(<?= $log['id'] ?>)">
                                             Lihat Detail Error
                                         </button>
                                     <?php else: ?>

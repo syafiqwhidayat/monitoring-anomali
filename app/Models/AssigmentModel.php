@@ -25,8 +25,9 @@ class AssigmentModel extends Model
     public function getOrInsert($data, $idKegiatan)
     {
         // 1. Cek apakah id_rtart sudah ada
-        $existing = $this->where('kd_assigment', $data['id_assigment'])
-            ->where('id_wilayah', $data['id_wilayah'])
+        $existing = $this
+            ->where('kd_assigment', $data['id_assigment'])
+            ->where('id_kegiatan', $idKegiatan)
             ->first();
 
         if ($existing) {

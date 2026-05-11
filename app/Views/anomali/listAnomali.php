@@ -25,7 +25,7 @@
                         <label class="form-label">Wilayah</label>
                         <select name="fil-wilayah" class="form-select" id="filter-wilayah">
                             <?php foreach ($listWilayah as $l): ?>
-                                <option value="<?= $l['id']; ?>" <?= ($l['id'] == $filterLevel) ? 'selected' : ''; ?>>Wilayah <?= $l['id']; ?></option>
+                                <option value="<?= $l['id']; ?>" <?= ($l['id'] == $filterWilayah) ? 'selected' : ''; ?>>Wilayah <?= $l['id']; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>

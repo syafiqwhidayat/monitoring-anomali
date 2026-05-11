@@ -2,8 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Models\LogUploadModel;
 use App\Models\WilayahTugasModel;
-use App\Models\WilUploadLogModel;
 use App\Models\UserModel;
 use CodeIgniter\Model;
 
@@ -15,7 +15,7 @@ class Wilayah extends BaseController
     public function __construct()
     {
         $this->wilayahTugasModel = new WilayahTugasModel();
-        $this->logModel = new WilUploadLogModel();
+        $this->logModel = new LogUploadModel();
     }
     public function index()
     {
@@ -65,17 +65,20 @@ class Wilayah extends BaseController
         if ($file->isValid() && !$file->hasMoved()) {
             // 1. Simpan file ke folder writable/uploads
             $newName = $file->getRandomName();
+            $oldName = $file->getFilename();
             $file->move(WRITEPATH . 'uploads', $newName);
             $idKegiatan = session('aktif_kegiatan');
             $wilayahTugas = auth()->user()->wilayah_kerja;
 
             // 2. Buat catatan awal di tabel upload_logs (status: pending)
-            $wilayahLogModel = new \App\Models\WilUploadLogModel();
-            $logId = $wilayahLogModel->insert([
+            $logId = $this->logModel->insert([
                 'nama_file' => $newName,
+                'nama_file_awal' => $oldName,
                 'status'    => 'pending',
                 'id_user'   => auth()->id(), // Siapa yang upload
                 'id_kegiatan' => $idKegiatan,
+                'jenis' => 'anomali',
+                'wilayah' => $wilayahTugas,
             ]);
 
             // 3. PANGGIL COMMAND DI BACKGROUND
@@ -141,13 +144,13 @@ class Wilayah extends BaseController
                 'created_at'    => '2026-04-27 10:30:00'
             ],
         ];
-        $datalog = $this->logModel->select('wilayah_upload_log.*,idn.secret AS email')
+        $datalog = $this->logModel->select('log_upload.*,idn.secret AS email')
             ->join('auth_identities idn', 'id_user = idn.user_id')
-            ->where('id_kegiatan', session()->get('aktif_kegiatan'))->orderBy('created_at', 'DESC');
+            ->where('id_kegiatan', session()->get('aktif_kegiatan'))
+            ->where('jenis', 'wilayah')
+            ->orderBy('created_at', 'DESC');
 
         $data['logs'] = $datalog->findAll();
-        // dd($data['logs']);
-        // $data['logs'] = $logModel->select('*')->orderBy('created_at', 'DESC')->findAll();
 
         return view('manajWilayah/logUploadWilayahTugas', $data);
     }
@@ -166,8 +169,7 @@ class Wilayah extends BaseController
                 ['baris' => 2, 'data' => 'Tono Supono', 'pesan' => 'Data NIP duplikat dengan baris sebelumnya'],
             ]
         ];
-        $logModel = model('WilUploadLogModel');
-        $log = $logModel->find($id);
+        $log = $this->logModel->find($id);
         $errors = json_decode($log->error_details, true);
 
 

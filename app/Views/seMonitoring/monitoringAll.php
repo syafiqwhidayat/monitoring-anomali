@@ -58,8 +58,17 @@
         </div>
     </div>
     <div class="card card-body">
+        <h1>Grafik Potensi Ekonomi Digital</h1>
         <div class="row">
-            <h1>Grafik Potensi Ekonomi Digital</h1>
+            <div class="col-12 col-md-12">
+                <div class="pieSubmitLevel">
+                    <canvas id="pie_submit_level" aria-label="grafik_sumbit_level" role="img">
+                        <p>Browser Kamu tidak Support Canvas Element</p>
+                    </canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-12 col-md-12">
                 <div class="barPotensi">
                     <canvas id="bar_potensi_ed_kab" aria-label="grafik_jumlah_anomali" role="img">
@@ -79,6 +88,7 @@
         const persenSubmit = document.getElementById('grafPersenEkonomiDigital');
         const timelineAnom = document.getElementById('grafTimeline');
         const bar_potensiEd_kab = document.getElementById('bar_potensi_ed_kab');
+        const pie_submit_level = document.getElementById('pie_submit_level');
         // console.log(ctx);
 
         // option legend
@@ -263,6 +273,13 @@
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    title: {
+                        display: true,
+                        text: "Potensi Ekonomi Digital Menurut Wilayah", // Judul akan berubah sesuai input
+                        font: {
+                            size: 16
+                        }
                     }
                 },
                 scales: {
@@ -271,6 +288,65 @@
                     },
                     y: {
                         stacked: true
+                    }
+                }
+            }
+        });
+
+        const pieSubmit = new Chart(pie_submit_level, {
+            type: 'pie', // Tipe grafik (bar, line, pie)
+            data: {
+                // labels: ['Fasih Submit', 'Fasih Open', 'Submit ED', 'Submit NED', 'Submit Open', 'Potensi Submit', 'Potensi ED', 'Potensi NED', 'Potensi Open'], // Mengambil data Jan, Feb, Mar dari PHP
+                datasets: [{
+                        label: 'Level 1',
+                        backgroundColor: ['#0369A1', '#B3B3B3'],
+                        data: [70, 30],
+                        customLabels: ['Fasih Submit', 'Fasih Open']
+                    },
+                    {
+                        label: 'Level 2',
+                        backgroundColor: ['#94C11F', '#6E9115', '#8C8C8C'],
+                        data: [30, 40, 30],
+                        customLabels: ['Submit ED', 'Submit NED', 'Submit Open']
+                    },
+                    {
+                        label: 'Level 3',
+                        backgroundColor: ['#F4AD58', '#EE8911', '#B86A0D', '#B3B3B3'],
+                        data: [30, 25, 15, 30],
+                        customLabels: ['Potensi Submit', 'Potensi ED', 'Potensi NED', 'Potensi Open']
+                    },
+                    {
+                        label: 'Level 4',
+                        backgroundColor: ['#ffffff'],
+                        data: [100],
+                        customLabels: ['NULL']
+                    },
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                maintainAspectRatio: false,
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            // Logika untuk menampilkan label yang benar saat di-hover
+                            label: function(context) {
+                                const dataset = context.dataset;
+                                const index = context.dataIndex;
+                                return dataset.customLabels[index] + ': ' + context.raw;
+                            }
+                        }
+                    },
+                    legend: {
+                        display: true // Matikan legend default karena akan kacau
+                    },
+                    title: {
+                        display: true,
+                        text: "Persentase Potensi Ekonomi Digital", // Judul akan berubah sesuai input
+                        font: {
+                            size: 16
+                        }
                     }
                 }
             }

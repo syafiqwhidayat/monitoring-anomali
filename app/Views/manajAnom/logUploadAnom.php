@@ -15,7 +15,7 @@
                         <polyline points="7 9 12 4 17 9" />
                         <line x1="12" y1="4" x2="12" y2="16" />
                     </svg>
-                    Upload Monitoring
+                    Upload Anomali
                 </button>
             </div>
         </div>
@@ -64,6 +64,7 @@
                         <tr>
                             <th>Waktu</th>
                             <th>Nama File</th>
+                            <th>Level Anomali</th>
                             <th>User</th>
                             <th>Status</th>
                             <th>Progress (Berhasil/Total)</th>
@@ -74,7 +75,8 @@
                         <?php foreach ($logs as $log) : ?>
                             <tr>
                                 <td class="text-secondary"><?= $log['created_at'] ?></td>
-                                <td><?= $log['nama_file'] ?></td>
+                                <td><?= $log['nama_file_awal'] ?></td>
+                                <td class="text-primary"><?= $log['wilayah']; ?></td>
                                 <td class="text-primary"><?= $log['email']; ?></td>
                                 <td>
                                     <?php if ($log['status'] == 'selesai'): ?>

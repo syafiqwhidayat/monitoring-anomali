@@ -205,7 +205,7 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Manajemen Kegiatan</a>]
+                                    <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Manajemen Kegiatan <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
                                 </div>
                             </div>
                         </div>

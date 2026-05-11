@@ -116,7 +116,7 @@ class ManajUser extends BaseController
         $rule = [
             'email'         => 'required|valid_email|is_unique[auth_identities.secret]|regex_match[/^[a-zA-Z0-9._%+-]+@bps\.go\.id$/]',
             'wilayah_kerja' => 'required',
-            'name'          => 'required|alpha'
+            'name'          => 'required|alpha_space'
         ];
         $validationMessages = [
             'wilayah_kerja' => [
@@ -128,7 +128,7 @@ class ManajUser extends BaseController
                 'is_unique' => 'email sudah terdaftar di sistem'
             ],
             'name' => [
-                'alpha' => 'Nama hanya boleh diisi huruf',
+                'alpha_space' => 'Nama hanya boleh diisi huruf',
             ]
         ];
 
@@ -146,7 +146,7 @@ class ManajUser extends BaseController
             if ($isOrganik) {
                 $userBaru->addGroup('mitra');
             }
-            return redirect()->back()->with('message', 'User berhasil ditambahkan');
+            return redirect()->to('/user/organik')->with('message', 'User berhasil ditambahkan');
         } else {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         };
@@ -229,7 +229,7 @@ class ManajUser extends BaseController
         $isValid = $this->validate($rule);
         if ($isValid) {
             $user = $this->userModel->findById($id);
-            $isOldOrganik = str_ends_with($user->getIdentity('email')->secret, '@bps.go.id');
+            $isOldOrganik = str_ends_with($user->getIdentities()[0]->secret, '@bps.go.id');
             $isNewOrganik = str_ends_with($userData['email'], '@bps.go.id');
             if ($isOldOrganik == $isNewOrganik) {
             } else {
@@ -244,7 +244,11 @@ class ManajUser extends BaseController
                 $user->addGroup($userData['role']);
             }
             $this->userModel->update($id, $userEntitas);
-            return redirect()->back()->back()->with('message', 'User berhasil diedit');
+            if ($isNewOrganik) {
+                return redirect()->to('user/organik')->with('message', 'User berhasil diedit');
+            } else {
+                return redirect()->to('user/mitra')->with('message', 'User berhasil diedit');
+            }
         } else {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         };

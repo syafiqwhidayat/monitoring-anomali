@@ -45,6 +45,42 @@
         </div>
     </div>
 
+    <!-- Allert Error -->
+    <?php if (session()->getFlashdata('error')) : ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="d-flex">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <circle cx="12" cy="12" r="9" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                </div>
+                <div><?= session()->getFlashdata('error'); ?></div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <!-- Allert Pesan -->
+    <?php if (session()->getFlashdata('message')) : ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="d-flex">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <circle cx="12" cy="12" r="9" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                </div>
+                <div><?= session()->getFlashdata('message'); ?></div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
     <!-- ini tabel -->
     <div class="card card-body">
         <table class="table">
@@ -53,6 +89,7 @@
                     <th scope="col">#</th>
                     <th scope="col">Kode Anomali</th>
                     <th scope="col">Flag</th>
+                    <th scope="col">Level</th>
                     <th scope="col">Deskripsi Anmali</th>
                     <th scope="col">Detil Anomali</th>
                     <th scope="col">Aksi</th>
@@ -68,15 +105,26 @@
                             </div>
                         </td>
                         <td><button type=" button" class="btn btn-warning p-1 "><i class="fas fa-flag"> <?= $l['flag']; ?> </i></button></td>
-                        <td><?= $l['definisi_anomali']; ?></td>
-                        <td><?= $l['detil_anomali']; ?></td>
+                        <td>
+                            <span class="badge bg-blue-lt">
+                                <?= $l['level_anomali']; ?>
+                            </span>
+                        </td>
+                        <td><?= $l['definisi_anomali'] ?? '<span class="fst-italic text-muted">Belum didefinisikan</span>'; ?></td>
+                        <td><?= $l['detil_anomali'] ?? '<span class="fst-italic text-muted">Belum didetilkan</span>'; ?></td>
                         <td>
                             <form action="<?= base_url('/manajemen-anomali/action'); ?>" method="POST">
                                 <input type="hidden" name="id" value="<?= $l['id']; ?>">
-                                <input type="hidden" name="is_show" value="<?= $l['is_show']; ?>">
+                                <input type="hidden"
+                                    name="is_show"
+                                    value="<?= $l['is_show']; ?>">
                                 <button type="submit"
                                     name="action" value="toggle"
-                                    class="btn btn-primary p-1 d-flex align-items-center"><img src="<?= ($l['is_show']) ? '/img/icons/eye-slash.svg' : '/img/icons/eye.svg'; ?>" alt="Ikon Simpan" width="16" height="16"></button>
+                                    class="btn btn-primary p-1 d-flex align-items-center"
+                                    <?= ($l['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
+                                    <img src="<?= ($l['is_show']) ? '/img/icons/eye-slash.svg' : '/img/icons/eye.svg'; ?>"
+                                        alt="Ikon Simpan" width="16" height="16">
+                                </button>
                                 <a aria-current="page" class="btn btn-warning p-1 d-flex justify-content-center a-butt" href="<?= base_url('/manajemen-anomali/edit/' . $l['id']); ?>"><img src="/img/icons/edit.svg" alt="Ikon Simpan" width="16" height="16"></a>
                                 <button type="button"
                                     name="action" value="delete"

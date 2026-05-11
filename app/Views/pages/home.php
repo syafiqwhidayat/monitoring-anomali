@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div class="col-lg-5 d-none d-lg-block">
-                <img src="<?= base_url('img/logo.png') ?>" alt="Sidik Anomali" class="img-fluid rounded">
+                <img src="<?= base_url('img/logo.png') ?>" alt="Sidik Anomali" class="">
             </div>
         </div>
     </div>

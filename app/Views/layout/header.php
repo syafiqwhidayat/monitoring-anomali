@@ -43,9 +43,12 @@
                     </div>
                     <div class="col-auto">
                         <div class="dropdown" data-bs-toggle="dropdown">
-                            <span
+                            <span class="avatar avatar-md rounded-circle bg-azure-lt">
+                                <?= strtoupper(substr($user->name, 0, 2)) ?>
+                            </span>
+                            <!-- <span
                                 class="avatar avatar-md rounded-circle "
-                                style="background-image: url(/img/bps.svg)"></span>
+                                style="background-image: url(/img/bps.svg)"></span> -->
                         </div>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                             <a href="<?= base_url('profile') ?>" class="dropdown-item">Profil</a>

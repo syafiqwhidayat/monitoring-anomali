@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Generation Time: May 07, 2026 at 07:16 AM
+-- Generation Time: May 11, 2026 at 03:39 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -35,7 +35,8 @@ CREATE TABLE `anomali` (
   `id_assigment` varchar(24) NOT NULL,
   `konfirmasi` text NOT NULL DEFAULT '',
   `is_lap` tinyint(1) NOT NULL DEFAULT 0,
-  `is_insert` tinyint(1) DEFAULT NULL,
+  `is_insert` tinyint(1) NOT NULL DEFAULT 0,
+  `is_sistem` tinyint(1) NOT NULL DEFAULT 0,
   `date_created` datetime NOT NULL DEFAULT current_timestamp(),
   `date_updated` datetime DEFAULT NULL,
   `date_deleted` datetime DEFAULT NULL
@@ -45,211 +46,211 @@ CREATE TABLE `anomali` (
 -- Dumping data for table `anomali`
 --
 
-INSERT INTO `anomali` (`id`, `id_kategori_anomali`, `id_user`, `id_wilayah`, `id_assigment`, `konfirmasi`, `is_lap`, `is_insert`, `date_created`, `date_updated`, `date_deleted`) VALUES
-(4, 13, 1, '1311021002000100', '76', 'Perlu Perbaikan: NIK salah format', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(5, 10, 1, '1311030005000901', '122', 'Data Ganda: Ditemukan entri serupa di Blok B', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(6, 9, 1, '1311040003000902', '143', 'Sesuai Lapangan: Tidak ada perubahan data', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(7, 14, 1, '1311011007000502', '32', 'Perlu perbaikan: Kode wilayah RT/RW keliru', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(8, 18, 1, '1311023003000300', '95', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(9, 1, 1, '1311040008000503', '158', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(10, 10, 1, '1311040005000501', '146', 'Perlu perbaikan: Nilai penghasilan tidak masuk akal', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(11, 11, 1, '1311020005002500', '65', 'Sesuai Lapangan: Data sudah diverifikasi ulang', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(12, 14, 1, '1311040006000802', '151', 'Data Ganda: Duplikasi data Kepala Keluarga', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(13, 5, 1, '1311040004000601', '145', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(14, 8, 1, '1311023004000401', '98', 'Perlu perbaikan: Kelengkapan data pendidikan formal', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(15, 8, 1, '1311040007000801', '155', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(16, 20, 1, '1311020001000802', '49', 'Perlu perbaikan: Status rumah tangga perlu diperjelas', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(17, 16, 1, '1311010007000300', '10', 'Data Ganda: Entry berulang oleh pengguna yang sama', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(18, 5, 1, '1311011001000301', '17', 'ini adalah contoh jawaban. apakah berhasil disimpan?', 0, NULL, '0000-00-00 00:00:00', '2026-05-02 23:58:59', NULL),
-(19, 17, 1, '1311031004000902', '133', 'Perlu perbaikan: Jenis kelamin KK terbalik', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(20, 16, 1, '1311012004000101', '40', 'Data Ganda: Hanya perlu menghapus satu entri', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(21, 15, 1, '1311040008000601', '159', 'Sesuai Lapangan: Data telah diperbaiki dan diverifikasi', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(22, 16, 1, '1311011003000402', '24', 'Perlu perbaikan: NIK kosong, wajib diisi', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(23, 10, 1, '1311010008000502', '13', 'Sesuai Lapangan: Ditemukan error pada sistem, bukan data', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(24, 10, 1, '1311021002000401', '77', 'Perlu perbaikan: Kolom pekerjaan terlewat', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(25, 4, 1, '1311022002000301', '88', 'Data Ganda: Kesalahan penginputan nama', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(26, 4, 1, '1311010006000900', '8', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(27, 6, 1, '1311022004000100', '91', 'Sesuai Kondisi Lapangan', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:41', NULL),
-(28, 10, 1, '1311040006000701', '149', 'Perlu perbaikan: Usia KK harus > 17 tahun', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(29, 10, 1, '1311022003000100', '89', 'Sesuai Lapangan: Terverifikasi, data input sudah benar', 0, NULL, '0000-00-00 00:00:00', '2025-11-24 12:11:46', NULL),
-(30, 19, 1, '1311011007000701', '34', 'Data Ganda: Responden ini sudah tercatat di KK sebelah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(31, 5, 1, '1311021002000402', '78', 'Perlu perbaikan: Status pekerjaan tidak konsisten', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(32, 13, 1, '1311010006000402', '6', 'Sesuai Lapangan: Setelah diperiksa, data valid', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(33, 1, 1, '1311020003002102', '58', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(34, 13, 1, '1311011005000202', '27', 'Data Ganda: Duplikasi ID responden', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(35, 11, 1, '1311030005000802', '121', 'Sesuai Lapangan: Tidak ada koreksi data', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(36, 8, 1, '1311021002000600', '79', 'Perlu perbaikan: Tanggal lahir bertentangan dengan usia', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(37, 6, 1, '1311010005000501', '1', 'Sesuai Kondisi Lapangan', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:41', NULL),
-(38, 11, 1, '1311031004001002', '134', 'Perlu perbaikan: Hubungan dengan KK salah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(39, 11, 1, '1311020003000900', '52', 'Sesuai Lapangan: Anomali disebabkan oleh entry ganda di server', 0, NULL, '0000-00-00 00:00:00', '2025-11-24 12:07:33', NULL),
-(40, 6, 1, '1311041001000600', '164', 'Sesuai Kondisi Lapangan', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:41', NULL),
-(41, 8, 1, '1311020003002002', '57', 'Perlu perbaikan: Koordinat GPS perlu diperbarui', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(42, 6, 1, '1311040003000601', '138', 'Sesuai Kondisi Lapangan', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:41', NULL),
-(43, 5, 1, '1311041004000101', '168', 'Perlu perbaikan: Jumlah anggota KK tidak sinkron', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(44, 19, 1, '1311041003000102', '167', 'Sesuai Lapangan: Data di lapangan sudah akurat', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(45, 1, 1, '1311020003000301', '50', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(46, 5, 1, '1311040008000801', '161', 'Sesuai Lapangan: Dikonfirmasi oleh supervisor', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(47, 11, 1, '1311010006000100', '4', 'Data Ganda: Entri sudah dihapus', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(48, 6, 1, '1311012001000200', '35', 'Sesuai Kondisi Lapangan', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:41', NULL),
-(49, 16, 1, '1311021003000102', '81', 'Sesuai Lapangan: Data ini valid, bukan anomali', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(50, 9, 1, '1311020005000100', '60', 'Data Ganda: NIK duplikat telah diperbaiki secara otomatis', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(51, 3, 1, '1311020003001502', '53', 'Perlu perbaikan: Sumber air minum tidak tercatat', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(52, 2, 1, '1311040007000600', '154', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(53, 2, 1, '1311040003001101', '144', 'Sesuai Lapangan: Dikonfirmasi data usia valid', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(54, 4, 1, '1311030005001501', '125', 'Perlu perbaikan: Kode pos salah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(55, 2, 1, '1311011002000201', '19', 'Data Ganda: Entri ini sudah ada, hapus', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(56, 2, 1, '1311012001000200', '35', 'update sayfiq', 0, NULL, '0000-00-00 00:00:00', '2026-01-29 06:41:54', NULL),
-(57, 2, 1, '1311040003000201', '135', 'Perlu perbaikan: Jenis atap rumah tidak sesuai', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(58, 2, 1, '1311041003000101', '166', 'Sesuai Lapangan: Tidak ada koreksi', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(59, 1, 1, '1311020003000900', '52', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(60, 1, 1, '1311011004000100', '25', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(61, 3, 1, '1311022001000100', '86', 'Sesuai Lapangan: Validasi NIK berhasil', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(62, 4, 1, '1311030002001500', '110', 'Perlu perbaikan: Status disabilitas perlu diperjelas', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(63, 1, 1, '1311011002000201', '19', 'memang tidak sesuai dengan NIK', 0, NULL, '0000-00-00 00:00:00', '2026-05-03 02:00:20', NULL),
-(64, 2, 1, '1311030005001101', '123', 'Data Ganda: Entri telah digabungkan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(65, 3, 1, '1311041004000400', '170', 'Perlu perbaikan: Kolom jenis kelamin kosong', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(66, 2, 1, '1311010008000700', '14', 'Sesuai Lapangan: Dikonfirmasi oleh petugas lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(67, 4, 1, '1311041001001200', '165', 'Perlu perbaikan: Kode wilayah desa/kelurahan salah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(68, 4, 1, '1311030005000802', '121', 'Data Ganda: Entri duplikat dengan nama serupa', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(69, 1, 1, '1311030001001203', '104', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(70, 1, 1, '1311020005002600', '66', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(71, 3, 1, '1311030002000900', '108', 'Sesuai Lapangan: Sudah diperbaiki pada database', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(72, 2, 1, '1311011004000302', '26', 'Perlu perbaikan: Tanggal lahir kosong', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(73, 3, 1, '1311012003000400', '39', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(74, 3, 1, '1311041004000101', '168', 'Data Ganda: Duplikasi alamat dan KK', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(76, 1, 1, '1311031001000500', '128', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(77, 2, 1, '1311010005000602', '3', 'Perlu perbaikan: NIK kurang digit', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(78, 4, 1, '1311030001001201', '102', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(79, 4, 1, '1311020003002202', '59', 'Data Ganda: Entri telah di-merge', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(80, 2, 1, '1311011002000400', '21', 'Perlu perbaikan: Tingkat pendidikan tidak sinkron', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(81, 3, 1, '1311040003000801', '140', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(82, 3, 1, '1311020008000200', '68', 'Perlu perbaikan: Usia menikah pertama tidak valid', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(83, 3, 1, '1311011006000203', '28', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(84, 1, 1, '1311030004000701', '115', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(85, 1, 1, '1311040008000202', '156', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(86, 4, 1, '1311020008000102', '67', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(87, 4, 1, '1311023004000202', '96', 'Perlu perbaikan: Kode wilayah diubah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(88, 2, 1, '1311020008000704', '70', 'Data Ganda: Entri duplikat', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(89, 4, 1, '1311010008000301', '12', 'Perlu perbaikan: Jenis lantai perlu diubah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(90, 4, 1, '1311031001000302', '126', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(91, 2, 1, '1311020008000800', '71', 'Perlu perbaikan: Nama KK salah input', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(92, 2, 1, '1311040008000701', '160', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(93, 4, 1, '1311040008000802', '162', 'Perlu perbaikan: Status bekerja perlu diverifikasi', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(94, 1, 1, '1311030004000302', '113', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(95, 4, 1, '1311030004000703', '116', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(96, 1, 1, '1311030005000801', '120', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(97, 1, 1, '1311011003000402', '24', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(98, 4, 1, '1311020003000501', '51', 'Perlu perbaikan: Tingkat pendidikan tidak wajar', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(99, 4, 1, '1311030004000602', '114', 'Data Ganda: Responden ditemukan di Blok sebelah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(100, 1, 1, '1311023001000100', '94', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(101, 2, 1, '1311011007000602', '33', 'Perlu perbaikan: Lama tinggal diubah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(102, 4, 1, '1311031004000801', '132', 'Sesuai Lapangan: Data valid', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(103, 1, 1, '1311021002000800', '80', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(104, 1, 1, '1311030004000200', '112', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(105, 1, 1, '1311040005000700', '147', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(106, 2, 1, '1311030001001202', '103', 'Perlu perbaikan: Kepemilikan KKS bertentangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(107, 3, 1, '1311011001000302', '18', 'Sesuai Lapangan: Anomali false positive', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(108, 4, 1, '1311011007000501', '31', 'Perlu perbaikan: Data migrasi tidak sinkron', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(109, 4, 1, '1311012004000401', '44', 'Data Ganda: Duplikasi ditemukan di kabupaten lain', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(110, 4, 1, '1311010008001500', '16', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(111, 3, 1, '1311031001000401', '127', 'Perlu perbaikan: Pengeluaran per bulan kosong', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(112, 4, 1, '1311020005001500', '63', 'Data Ganda: Entri sudah diperbaiki', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(113, 1, 1, '1311012001000200', '35', 'update lagi', 0, NULL, '0000-00-00 00:00:00', '2026-01-29 06:41:58', NULL),
-(114, 3, 1, '1311030002000600', '107', 'Perlu perbaikan: Jenis bahan bakar memasak tidak sesuai', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(115, 4, 1, '1311021004000900', '85', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(116, 1, 1, '1311030005001101', '123', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(117, 3, 1, '1311012003000400', '39', 'Data Ganda: Duplikasi nama keluarga', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(118, 4, 1, '1311020005000600', '62', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(119, 1, 1, '1311040008000402', '157', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(120, 4, 1, '1311020003001700', '55', 'Sesuai Lapangan: Data sudah sesuai dengan KK', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(121, 4, 1, '1311010006000600', '7', 'Perlu perbaikan: Anggota KK lebih dari 10', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(122, 2, 1, '1311010005000601', '2', 'Data Ganda: Duplikasi ID responden di sistem', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(123, 4, 1, '1311011007000201', '30', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(124, 2, 1, '1311041003000101', '166', 'Perlu perbaikan: Data kepemilikan ternak tidak wajar', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(125, 3, 1, '1311022002000100', '87', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(126, 2, 1, '1311040006000402', '148', 'Perlu perbaikan: Penghasilan tercatat nol, harus diperiksa', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(127, 3, 1, '1311031004000102', '131', 'Data Ganda: Responden ini sudah meninggal', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(128, 1, 1, '1311030002001000', '109', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(129, 2, 1, '1311020001000200', '46', 'Perlu perbaikan: Status BPJS/Asuransi harus diisi', 0, NULL, '0000-00-00 00:00:00', '2025-11-24 12:07:18', NULL),
-(130, 4, 1, '1311021003000500', '83', 'Sesuai Lapangan: Data sudah divalidasi silang', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(131, 1, 1, '1311021001000900', '75', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(132, 2, 1, '1311030005000802', '121', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(133, 3, 1, '1311011003000103', '22', 'Perlu perbaikan: NIK belum terdaftar di Dukcapil', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(134, 3, 1, '1311020008001000', '73', 'Sesuai Lapangan: Validasi data kepemilikan aset aman', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(135, 4, 1, '1311010007000600', '11', 'Data Ganda: Duplikasi ditemukan di BS yang sama', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(136, 4, 1, '1311040003000506', '137', 'Perlu perbaikan: Nama responden tidak lengkap', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(137, 2, 1, '1311022003000502', '90', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(138, 1, 1, '1311031002000802', '129', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(139, 2, 1, '1311031003000100', '130', 'Perlu perbaikan: Kolom pekerjaan masih nol', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(140, 3, 1, '1311030001001202', '103', 'Sesuai Lapangan: Anomali diabaikan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(141, 4, 1, '1311030005000502', '119', 'Perlu perbaikan: Status KK harus \"Bapak\" atau \"Ibu\"', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(142, 2, 1, '1311030005000401', '118', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(143, 1, 1, '1311040003000402', '136', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(144, 4, 1, '1311010006000600', '7', 'Perlu perbaikan: Jenis usaha perlu diverifikasi', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(145, 4, 1, '1311040003000402', '136', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(146, 1, 1, '1311040003000901', '142', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(147, 3, 1, '1311011007000602', '33', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(148, 4, 1, '1311041004000102', '169', 'Perlu perbaikan: Data tanggal survei salah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(149, 4, 1, '1311012004000200', '42', 'Data Ganda: Duplikasi nama dan alamat', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(150, 3, 1, '1311030004000100', '111', 'Sesuai Lapangan: Anomali telah diabaikan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(151, 3, 1, '1311012002000402', '37', 'Perlu perbaikan: Status pernikahan tidak jelas', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(152, 2, 1, '1311030001001301', '105', 'Data Ganda: Duplikasi ditemukan pada NIK', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(153, 3, 1, '1311012003000100', '38', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(154, 1, 1, '1311012004000200', '42', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(155, 1, 1, '1311022004000601', '93', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(156, 4, 1, '1311012002000300', '36', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(157, 3, 1, '1311030005001401', '124', 'Perlu perbaikan: Kode wilayah perlu dikoreksi', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(158, 3, 1, '1311011003000401', '23', 'Data Ganda: Entri telah dihapus secara massal', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(159, 2, 1, '1311040006000703', '150', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(160, 1, 1, '1311030001000402', '100', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(161, 2, 1, '1311040003000901', '142', 'Sesuai Lapangan: Dikonfirmasi oleh petugas senior', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(162, 1, 1, '1311020005000600', '62', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(163, 1, 1, '1311020008000901', '72', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(164, 2, 1, '1311021001000700', '74', 'Data Ganda: Duplikasi ditemukan di Kecamatan berbeda', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(165, 4, 1, '1311020001000100', '45', 'Perlu perbaikan: Data penggunaan air tidak konsisten', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(166, 2, 1, '1311021002000401', '77', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(167, 3, 1, '1311020005002400', '64', 'Perlu perbaikan: Status pekerjaan pensiunan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(168, 4, 1, '1311010008001300', '15', 'Data Ganda: Duplikasi data anggota keluarga', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(169, 1, 1, '1311040006001400', '152', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(170, 3, 1, '1311030001000201', '99', 'Perlu perbaikan: Jenis atap rumah perlu diverifikasi', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(171, 2, 1, '1311030002000300', '106', 'Sesuai Lapangan: Tidak ada perubahan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(172, 1, 1, '1311020001000400', '47', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(173, 4, 1, '1311040003000701', '139', 'Perlu perbaikan: Penghasilan tidak wajar', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(174, 1, 1, '1311010006000401', '5', 'ini contoh jawaban', 0, NULL, '0000-00-00 00:00:00', '2026-05-02 09:48:33', NULL),
-(175, 2, 1, '1311011003000402', '24', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(176, 4, 1, '1311020003001800', '56', 'Perlu perbaikan: Kolom tanggungan keluarga kosong', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(177, 3, 1, '1311031002000802', '129', 'Sesuai Lapangan: Koreksi minor pada kode wilayah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(178, 3, 1, '1311023004000300', '97', 'Data Ganda: Duplikasi alamat rumah tangga', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(179, 3, 1, '1311010006000600', '7', 'Perlu perbaikan: Sumber penerangan tidak jelas', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(180, 3, 1, '1311031004000801', '132', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(181, 3, 1, '1311020003001600', '54', 'Perlu perbaikan: Pendidikan terakhir tidak diisi', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(182, 4, 1, '1311020008000400', '69', 'Data Ganda: Duplikasi entri dengan stempel waktu berbeda', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(183, 3, 1, '1311040003000802', '141', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(184, 2, 1, '1311023004000401', '98', 'Perlu perbaikan: Data kepemilikan aset perlu diperjelas', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(185, 1, 1, '1311020008000102', '67', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(186, 1, 1, '1311020001000700', '48', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(187, 3, 1, '1311010008001500', '16', 'Sesuai Lapangan: Tidak ada tindak lanjut', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(188, 1, 1, '1311022003000100', '89', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(189, 1, 1, '1311011006000501', '29', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(190, 2, 1, '1311030001000900', '101', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(191, 3, 1, '1311012004000300', '43', 'Perlu perbaikan: Jenis usaha tidak terisi', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(192, 4, 1, '1311020005000501', '61', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(193, 2, 1, '1311010006001200', '9', 'Perlu perbaikan: Kategori anomali perlu diubah', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(194, 2, 1, '1311012004000102', '41', 'Data Ganda: Duplikasi dalam satu KK', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(195, 2, 1, '1311040008000901', '163', 'Sesuai Lapangan: Data final', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(196, 1, 1, '1311040007000402', '153', '', 0, NULL, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
-(197, 2, 1, '1311030004000802', '117', 'Sesuai Lapangan: Anomali teratasi', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(198, 4, 1, '1311011002000301', '20', 'Perlu perbaikan: Jenis rumah tidak valid', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(199, 3, 1, '1311040008000402', '157', 'Data Ganda: Duplikasi ID responden', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(200, 3, 1, '1311021004000100', '84', 'Perlu perbaikan: NIK dan tanggal lahir tidak cocok', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(201, 3, 1, '1311022004000401', '92', 'Sesuai Lapangan', 0, NULL, '0000-00-00 00:00:00', NULL, NULL),
-(258, 27, NULL, '1311', '174', '', 0, 0, '2026-05-03 09:16:33', '2026-05-05 09:12:39', NULL),
-(259, 28, NULL, '1311', '174', 'usahanya menggunakan telfon biasa dalam bertransaksi. dan juga dalam proses masih manual dengan sklala besar.', 0, 0, '2026-05-03 09:17:05', '2026-05-05 09:12:39', NULL),
-(260, 27, NULL, '1311', '175', '', 0, 0, '2026-05-03 09:17:32', '2026-05-05 09:12:39', NULL),
-(261, 27, NULL, '1311030', '229', '', 0, 1, '2026-05-05 09:12:39', '2026-05-05 09:16:18', NULL),
-(262, 28, NULL, '1311030', '229', '', 0, 1, '2026-05-05 09:12:39', '2026-05-05 09:16:31', NULL),
-(263, 69, NULL, '1311030', '229', '', 0, 1, '2026-05-05 09:12:39', '2026-05-05 09:16:34', NULL),
-(264, 31, NULL, '1311030', '187', '', 0, 1, '2026-05-05 09:12:39', '2026-05-05 09:16:14', NULL);
+INSERT INTO `anomali` (`id`, `id_kategori_anomali`, `id_user`, `id_wilayah`, `id_assigment`, `konfirmasi`, `is_lap`, `is_insert`, `is_sistem`, `date_created`, `date_updated`, `date_deleted`) VALUES
+(4, 13, 1, '1311021002000100', '76', 'Perlu Perbaikan: NIK salah format', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(5, 10, 1, '1311030005000901', '122', 'Data Ganda: Ditemukan entri serupa di Blok B', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(6, 9, 1, '1311040003000902', '143', 'Sesuai Lapangan: Tidak ada perubahan data', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(7, 14, 1, '1311011007000502', '32', 'Perlu perbaikan: Kode wilayah RT/RW keliru', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(8, 18, 1, '1311023003000300', '95', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(9, 1, 1, '1311040008000503', '158', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(10, 10, 1, '1311040005000501', '146', 'Perlu perbaikan: Nilai penghasilan tidak masuk akal', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(11, 11, 1, '1311020005002500', '65', 'Sesuai Lapangan: Data sudah diverifikasi ulang', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(12, 14, 1, '1311040006000802', '151', 'Data Ganda: Duplikasi data Kepala Keluarga', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(13, 5, 1, '1311040004000601', '145', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(14, 8, 1, '1311023004000401', '98', 'Perlu perbaikan: Kelengkapan data pendidikan formal', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(15, 8, 1, '1311040007000801', '155', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(16, 20, 1, '1311020001000802', '49', 'Perlu perbaikan: Status rumah tangga perlu diperjelas', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(17, 16, 1, '1311010007000300', '10', 'Data Ganda: Entry berulang oleh pengguna yang sama', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(18, 5, 1, '1311011001000301', '17', 'ini adalah contoh jawaban. apakah berhasil disimpan?', 0, 0, 0, '0000-00-00 00:00:00', '2026-05-02 23:58:59', NULL),
+(19, 17, 1, '1311031004000902', '133', 'Perlu perbaikan: Jenis kelamin KK terbalik', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(20, 16, 1, '1311012004000101', '40', 'Data Ganda: Hanya perlu menghapus satu entri', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(21, 15, 1, '1311040008000601', '159', 'Sesuai Lapangan: Data telah diperbaiki dan diverifikasi', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(22, 16, 1, '1311011003000402', '24', 'Perlu perbaikan: NIK kosong, wajib diisi', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(23, 10, 1, '1311010008000502', '13', 'Sesuai Lapangan: Ditemukan error pada sistem, bukan data', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(24, 10, 1, '1311021002000401', '77', 'Perlu perbaikan: Kolom pekerjaan terlewat', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(25, 4, 1, '1311022002000301', '88', 'Data Ganda: Kesalahan penginputan nama', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(26, 4, 1, '1311010006000900', '8', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(27, 6, 1, '1311022004000100', '91', 'Sesuai Kondisi Lapangan', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:41', NULL),
+(28, 10, 1, '1311040006000701', '149', 'Perlu perbaikan: Usia KK harus > 17 tahun', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(29, 10, 1, '1311022003000100', '89', 'Sesuai Lapangan: Terverifikasi, data input sudah benar', 0, 0, 0, '0000-00-00 00:00:00', '2025-11-24 12:11:46', NULL),
+(30, 19, 1, '1311011007000701', '34', 'Data Ganda: Responden ini sudah tercatat di KK sebelah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(31, 5, 1, '1311021002000402', '78', 'Perlu perbaikan: Status pekerjaan tidak konsisten', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(32, 13, 1, '1311010006000402', '6', 'Sesuai Lapangan: Setelah diperiksa, data valid', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(33, 1, 1, '1311020003002102', '58', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(34, 13, 1, '1311011005000202', '27', 'Data Ganda: Duplikasi ID responden', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(35, 11, 1, '1311030005000802', '121', 'Sesuai Lapangan: Tidak ada koreksi data', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(36, 8, 1, '1311021002000600', '79', 'Perlu perbaikan: Tanggal lahir bertentangan dengan usia', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(37, 6, 1, '1311010005000501', '1', 'Sesuai Kondisi Lapangan', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:41', NULL),
+(38, 11, 1, '1311031004001002', '134', 'Perlu perbaikan: Hubungan dengan KK salah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(39, 11, 1, '1311020003000900', '52', 'Sesuai Lapangan: Anomali disebabkan oleh entry ganda di server', 0, 0, 0, '0000-00-00 00:00:00', '2025-11-24 12:07:33', NULL),
+(40, 6, 1, '1311041001000600', '164', 'Sesuai Kondisi Lapangan', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:41', NULL),
+(41, 8, 1, '1311020003002002', '57', 'Perlu perbaikan: Koordinat GPS perlu diperbarui', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(42, 6, 1, '1311040003000601', '138', 'Sesuai Kondisi Lapangan', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:41', NULL),
+(43, 5, 1, '1311041004000101', '168', 'Perlu perbaikan: Jumlah anggota KK tidak sinkron', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(44, 19, 1, '1311041003000102', '167', 'Sesuai Lapangan: Data di lapangan sudah akurat', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(45, 1, 1, '1311020003000301', '50', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(46, 5, 1, '1311040008000801', '161', 'Sesuai Lapangan: Dikonfirmasi oleh supervisor', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(47, 11, 1, '1311010006000100', '4', 'Data Ganda: Entri sudah dihapus', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(48, 6, 1, '1311012001000200', '35', 'Sesuai Kondisi Lapangan', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:41', NULL),
+(49, 16, 1, '1311021003000102', '81', 'Sesuai Lapangan: Data ini valid, bukan anomali', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(50, 9, 1, '1311020005000100', '60', 'Data Ganda: NIK duplikat telah diperbaiki secara otomatis', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(51, 3, 1, '1311020003001502', '53', 'Perlu perbaikan: Sumber air minum tidak tercatat', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(52, 2, 1, '1311040007000600', '154', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(53, 2, 1, '1311040003001101', '144', 'Sesuai Lapangan: Dikonfirmasi data usia valid', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(54, 4, 1, '1311030005001501', '125', 'Perlu perbaikan: Kode pos salah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(55, 2, 1, '1311011002000201', '19', 'Data Ganda: Entri ini sudah ada, hapus', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(56, 2, 1, '1311012001000200', '35', 'update sayfiq', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-29 06:41:54', NULL),
+(57, 2, 1, '1311040003000201', '135', 'Perlu perbaikan: Jenis atap rumah tidak sesuai', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(58, 2, 1, '1311041003000101', '166', 'Sesuai Lapangan: Tidak ada koreksi', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(59, 1, 1, '1311020003000900', '52', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(60, 1, 1, '1311011004000100', '25', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(61, 3, 1, '1311022001000100', '86', 'Sesuai Lapangan: Validasi NIK berhasil', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(62, 4, 1, '1311030002001500', '110', 'Perlu perbaikan: Status disabilitas perlu diperjelas', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(63, 1, 1, '1311011002000201', '19', 'memang tidak sesuai dengan NIK', 0, 0, 0, '0000-00-00 00:00:00', '2026-05-03 02:00:20', NULL),
+(64, 2, 1, '1311030005001101', '123', 'Data Ganda: Entri telah digabungkan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(65, 3, 1, '1311041004000400', '170', 'Perlu perbaikan: Kolom jenis kelamin kosong', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(66, 2, 1, '1311010008000700', '14', 'Sesuai Lapangan: Dikonfirmasi oleh petugas lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(67, 4, 1, '1311041001001200', '165', 'Perlu perbaikan: Kode wilayah desa/kelurahan salah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(68, 4, 1, '1311030005000802', '121', 'Data Ganda: Entri duplikat dengan nama serupa', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(69, 1, 1, '1311030001001203', '104', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(70, 1, 1, '1311020005002600', '66', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(71, 3, 1, '1311030002000900', '108', 'Sesuai Lapangan: Sudah diperbaiki pada database', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(72, 2, 1, '1311011004000302', '26', 'Perlu perbaikan: Tanggal lahir kosong', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(73, 3, 1, '1311012003000400', '39', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(74, 3, 1, '1311041004000101', '168', 'Data Ganda: Duplikasi alamat dan KK', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(76, 1, 1, '1311031001000500', '128', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(77, 2, 1, '1311010005000602', '3', 'Perlu perbaikan: NIK kurang digit', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(78, 4, 1, '1311030001001201', '102', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(79, 4, 1, '1311020003002202', '59', 'Data Ganda: Entri telah di-merge', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(80, 2, 1, '1311011002000400', '21', 'Perlu perbaikan: Tingkat pendidikan tidak sinkron', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(81, 3, 1, '1311040003000801', '140', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(82, 3, 1, '1311020008000200', '68', 'Perlu perbaikan: Usia menikah pertama tidak valid', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(83, 3, 1, '1311011006000203', '28', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(84, 1, 1, '1311030004000701', '115', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(85, 1, 1, '1311040008000202', '156', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(86, 4, 1, '1311020008000102', '67', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(87, 4, 1, '1311023004000202', '96', 'Perlu perbaikan: Kode wilayah diubah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(88, 2, 1, '1311020008000704', '70', 'Data Ganda: Entri duplikat', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(89, 4, 1, '1311010008000301', '12', 'Perlu perbaikan: Jenis lantai perlu diubah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(90, 4, 1, '1311031001000302', '126', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(91, 2, 1, '1311020008000800', '71', 'Perlu perbaikan: Nama KK salah input', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(92, 2, 1, '1311040008000701', '160', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(93, 4, 1, '1311040008000802', '162', 'Perlu perbaikan: Status bekerja perlu diverifikasi', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(94, 1, 1, '1311030004000302', '113', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(95, 4, 1, '1311030004000703', '116', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(96, 1, 1, '1311030005000801', '120', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(97, 1, 1, '1311011003000402', '24', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(98, 4, 1, '1311020003000501', '51', 'Perlu perbaikan: Tingkat pendidikan tidak wajar', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(99, 4, 1, '1311030004000602', '114', 'Data Ganda: Responden ditemukan di Blok sebelah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(100, 1, 1, '1311023001000100', '94', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(101, 2, 1, '1311011007000602', '33', 'Perlu perbaikan: Lama tinggal diubah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(102, 4, 1, '1311031004000801', '132', 'Sesuai Lapangan: Data valid', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(103, 1, 1, '1311021002000800', '80', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(104, 1, 1, '1311030004000200', '112', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(105, 1, 1, '1311040005000700', '147', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(106, 2, 1, '1311030001001202', '103', 'Perlu perbaikan: Kepemilikan KKS bertentangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(107, 3, 1, '1311011001000302', '18', 'Sesuai Lapangan: Anomali false positive', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(108, 4, 1, '1311011007000501', '31', 'Perlu perbaikan: Data migrasi tidak sinkron', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(109, 4, 1, '1311012004000401', '44', 'Data Ganda: Duplikasi ditemukan di kabupaten lain', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(110, 4, 1, '1311010008001500', '16', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(111, 3, 1, '1311031001000401', '127', 'Perlu perbaikan: Pengeluaran per bulan kosong', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(112, 4, 1, '1311020005001500', '63', 'Data Ganda: Entri sudah diperbaiki', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(113, 1, 1, '1311012001000200', '35', 'update lagi', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-29 06:41:58', NULL),
+(114, 3, 1, '1311030002000600', '107', 'Perlu perbaikan: Jenis bahan bakar memasak tidak sesuai', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(115, 4, 1, '1311021004000900', '85', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(116, 1, 1, '1311030005001101', '123', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(117, 3, 1, '1311012003000400', '39', 'Data Ganda: Duplikasi nama keluarga', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(118, 4, 1, '1311020005000600', '62', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(119, 1, 1, '1311040008000402', '157', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(120, 4, 1, '1311020003001700', '55', 'Sesuai Lapangan: Data sudah sesuai dengan KK', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(121, 4, 1, '1311010006000600', '7', 'Perlu perbaikan: Anggota KK lebih dari 10', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(122, 2, 1, '1311010005000601', '2', 'Data Ganda: Duplikasi ID responden di sistem', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(123, 4, 1, '1311011007000201', '30', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(124, 2, 1, '1311041003000101', '166', 'Perlu perbaikan: Data kepemilikan ternak tidak wajar', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(125, 3, 1, '1311022002000100', '87', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(126, 2, 1, '1311040006000402', '148', 'Perlu perbaikan: Penghasilan tercatat nol, harus diperiksa', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(127, 3, 1, '1311031004000102', '131', 'Data Ganda: Responden ini sudah meninggal', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(128, 1, 1, '1311030002001000', '109', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(129, 2, 1, '1311020001000200', '46', 'Perlu perbaikan: Status BPJS/Asuransi harus diisi', 0, 0, 0, '0000-00-00 00:00:00', '2025-11-24 12:07:18', NULL),
+(130, 4, 1, '1311021003000500', '83', 'Sesuai Lapangan: Data sudah divalidasi silang', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(131, 1, 1, '1311021001000900', '75', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(132, 2, 1, '1311030005000802', '121', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(133, 3, 1, '1311011003000103', '22', 'Perlu perbaikan: NIK belum terdaftar di Dukcapil', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(134, 3, 1, '1311020008001000', '73', 'Sesuai Lapangan: Validasi data kepemilikan aset aman', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(135, 4, 1, '1311010007000600', '11', 'Data Ganda: Duplikasi ditemukan di BS yang sama', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(136, 4, 1, '1311040003000506', '137', 'Perlu perbaikan: Nama responden tidak lengkap', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(137, 2, 1, '1311022003000502', '90', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(138, 1, 1, '1311031002000802', '129', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(139, 2, 1, '1311031003000100', '130', 'Perlu perbaikan: Kolom pekerjaan masih nol', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(140, 3, 1, '1311030001001202', '103', 'Sesuai Lapangan: Anomali diabaikan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(141, 4, 1, '1311030005000502', '119', 'Perlu perbaikan: Status KK harus \"Bapak\" atau \"Ibu\"', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(142, 2, 1, '1311030005000401', '118', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(143, 1, 1, '1311040003000402', '136', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(144, 4, 1, '1311010006000600', '7', 'Perlu perbaikan: Jenis usaha perlu diverifikasi', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(145, 4, 1, '1311040003000402', '136', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(146, 1, 1, '1311040003000901', '142', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(147, 3, 1, '1311011007000602', '33', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(148, 4, 1, '1311041004000102', '169', 'Perlu perbaikan: Data tanggal survei salah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(149, 4, 1, '1311012004000200', '42', 'Data Ganda: Duplikasi nama dan alamat', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(150, 3, 1, '1311030004000100', '111', 'Sesuai Lapangan: Anomali telah diabaikan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(151, 3, 1, '1311012002000402', '37', 'Perlu perbaikan: Status pernikahan tidak jelas', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(152, 2, 1, '1311030001001301', '105', 'Data Ganda: Duplikasi ditemukan pada NIK', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(153, 3, 1, '1311012003000100', '38', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(154, 1, 1, '1311012004000200', '42', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(155, 1, 1, '1311022004000601', '93', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(156, 4, 1, '1311012002000300', '36', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(157, 3, 1, '1311030005001401', '124', 'Perlu perbaikan: Kode wilayah perlu dikoreksi', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(158, 3, 1, '1311011003000401', '23', 'Data Ganda: Entri telah dihapus secara massal', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(159, 2, 1, '1311040006000703', '150', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(160, 1, 1, '1311030001000402', '100', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(161, 2, 1, '1311040003000901', '142', 'Sesuai Lapangan: Dikonfirmasi oleh petugas senior', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(162, 1, 1, '1311020005000600', '62', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(163, 1, 1, '1311020008000901', '72', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(164, 2, 1, '1311021001000700', '74', 'Data Ganda: Duplikasi ditemukan di Kecamatan berbeda', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(165, 4, 1, '1311020001000100', '45', 'Perlu perbaikan: Data penggunaan air tidak konsisten', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(166, 2, 1, '1311021002000401', '77', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(167, 3, 1, '1311020005002400', '64', 'Perlu perbaikan: Status pekerjaan pensiunan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(168, 4, 1, '1311010008001300', '15', 'Data Ganda: Duplikasi data anggota keluarga', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(169, 1, 1, '1311040006001400', '152', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(170, 3, 1, '1311030001000201', '99', 'Perlu perbaikan: Jenis atap rumah perlu diverifikasi', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(171, 2, 1, '1311030002000300', '106', 'Sesuai Lapangan: Tidak ada perubahan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(172, 1, 1, '1311020001000400', '47', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(173, 4, 1, '1311040003000701', '139', 'Perlu perbaikan: Penghasilan tidak wajar', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(174, 1, 1, '1311010006000401', '5', 'ini contoh jawaban', 0, 0, 0, '0000-00-00 00:00:00', '2026-05-02 09:48:33', NULL),
+(175, 2, 1, '1311011003000402', '24', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(176, 4, 1, '1311020003001800', '56', 'Perlu perbaikan: Kolom tanggungan keluarga kosong', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(177, 3, 1, '1311031002000802', '129', 'Sesuai Lapangan: Koreksi minor pada kode wilayah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(178, 3, 1, '1311023004000300', '97', 'Data Ganda: Duplikasi alamat rumah tangga', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(179, 3, 1, '1311010006000600', '7', 'Perlu perbaikan: Sumber penerangan tidak jelas', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(180, 3, 1, '1311031004000801', '132', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(181, 3, 1, '1311020003001600', '54', 'Perlu perbaikan: Pendidikan terakhir tidak diisi', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(182, 4, 1, '1311020008000400', '69', 'Data Ganda: Duplikasi entri dengan stempel waktu berbeda', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(183, 3, 1, '1311040003000802', '141', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(184, 2, 1, '1311023004000401', '98', 'Perlu perbaikan: Data kepemilikan aset perlu diperjelas', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(185, 1, 1, '1311020008000102', '67', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(186, 1, 1, '1311020001000700', '48', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(187, 3, 1, '1311010008001500', '16', 'Sesuai Lapangan: Tidak ada tindak lanjut', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(188, 1, 1, '1311022003000100', '89', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(189, 1, 1, '1311011006000501', '29', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(190, 2, 1, '1311030001000900', '101', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(191, 3, 1, '1311012004000300', '43', 'Perlu perbaikan: Jenis usaha tidak terisi', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(192, 4, 1, '1311020005000501', '61', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(193, 2, 1, '1311010006001200', '9', 'Perlu perbaikan: Kategori anomali perlu diubah', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(194, 2, 1, '1311012004000102', '41', 'Data Ganda: Duplikasi dalam satu KK', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(195, 2, 1, '1311040008000901', '163', 'Sesuai Lapangan: Data final', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(196, 1, 1, '1311040007000402', '153', '', 0, 0, 0, '0000-00-00 00:00:00', '2026-01-08 02:15:58', NULL),
+(197, 2, 1, '1311030004000802', '117', 'Sesuai Lapangan: Anomali teratasi', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(198, 4, 1, '1311011002000301', '20', 'Perlu perbaikan: Jenis rumah tidak valid', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(199, 3, 1, '1311040008000402', '157', 'Data Ganda: Duplikasi ID responden', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(200, 3, 1, '1311021004000100', '84', 'Perlu perbaikan: NIK dan tanggal lahir tidak cocok', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(201, 3, 1, '1311022004000401', '92', 'Sesuai Lapangan', 0, 0, 0, '0000-00-00 00:00:00', NULL, NULL),
+(258, 27, NULL, '1311', '174', '', 0, 0, 0, '2026-05-03 09:16:33', '2026-05-05 09:12:39', NULL),
+(259, 28, NULL, '1311', '174', 'usahanya menggunakan telfon biasa dalam bertransaksi. dan juga dalam proses masih manual dengan sklala besar.', 0, 0, 0, '2026-05-03 09:17:05', '2026-05-05 09:12:39', NULL),
+(260, 27, NULL, '1311', '175', '', 0, 0, 0, '2026-05-03 09:17:32', '2026-05-05 09:12:39', NULL),
+(261, 27, NULL, '1311030', '229', 'ini jawaban pagi ini', 0, 1, 0, '2026-05-05 09:12:39', '2026-05-10 22:24:42', NULL),
+(262, 28, NULL, '1311030', '229', '', 0, 1, 0, '2026-05-05 09:12:39', '2026-05-05 09:16:31', NULL),
+(263, 69, NULL, '1311030', '229', '', 0, 1, 0, '2026-05-05 09:12:39', '2026-05-05 09:16:34', NULL),
+(264, 31, NULL, '1311030', '187', '', 0, 1, 0, '2026-05-05 09:12:39', '2026-05-05 09:16:14', NULL);
 
 -- --------------------------------------------------------
 
@@ -494,7 +495,13 @@ INSERT INTO `auth_groups_users` (`id`, `user_id`, `group`, `created_at`) VALUES
 (31, 1, 'mitra', '2026-05-06 12:18:17'),
 (32, 32, 'mitra', '2026-05-07 05:14:24'),
 (33, 33, 'mitra', '2026-05-07 05:14:25'),
-(34, 34, 'mitra', '2026-05-07 05:14:25');
+(34, 34, 'mitra', '2026-05-07 05:14:25'),
+(35, 35, 'admin', '2026-05-09 14:28:06'),
+(36, 35, 'mitra', '2026-05-09 14:28:06'),
+(37, 36, 'admin', '2026-05-09 14:29:36'),
+(38, 36, 'mitra', '2026-05-09 14:29:36'),
+(39, 37, 'admin', '2026-05-09 14:31:32'),
+(40, 37, 'mitra', '2026-05-09 14:31:32');
 
 -- --------------------------------------------------------
 
@@ -522,8 +529,8 @@ CREATE TABLE `auth_identities` (
 --
 
 INSERT INTO `auth_identities` (`id`, `user_id`, `type`, `name`, `secret`, `secret2`, `expires`, `extra`, `force_reset`, `last_used_at`, `created_at`, `updated_at`) VALUES
-(1, 1, 'email_password', '', 'admin@bps.go.id', '$2y$12$ABTl6j3cU0nUnYQX8ZtduueuhxFnl90kTNFCvR7aKJW07rndP0gRi', NULL, NULL, 0, '2026-05-07 00:42:10', '2026-04-21 10:37:34', '2026-05-07 00:42:10'),
-(2, 10, 'email_password', NULL, 'rahma@bps.go.id', '$2y$12$X14/qhoB8z19wIlIiwooG.reINbblN51AsVFPmEC5lunwqU0p0vOa', NULL, NULL, 0, NULL, '2026-04-25 10:24:04', '2026-04-25 10:24:04'),
+(1, 1, 'email_password', '', 'admin@bps.go.id', '$2y$12$ABTl6j3cU0nUnYQX8ZtduueuhxFnl90kTNFCvR7aKJW07rndP0gRi', NULL, NULL, 0, '2026-05-10 23:22:52', '2026-04-21 10:37:34', '2026-05-10 23:22:52'),
+(2, 10, 'email_password', NULL, 'nur.rahma@bps.go.id', '$2y$12$X14/qhoB8z19wIlIiwooG.reINbblN51AsVFPmEC5lunwqU0p0vOa', NULL, NULL, 0, NULL, '2026-04-25 10:24:04', '2026-05-09 14:33:10'),
 (3, 12, 'email_password', NULL, 'syafiq@bps.go.id', '$2y$12$LWxwPGQxTgy7G1EkwfxrxOy1m1Wrcq/XwkURZLSaOB84AcGIqqjVW', NULL, NULL, 0, NULL, '2026-04-26 08:12:06', '2026-04-26 08:34:42'),
 (4, 13, 'email_password', NULL, 'admin2@bps.go.id', '$2y$12$sbTWanVolOX7VXTwc/BLj.UQBnRbpCarSfL8YnksbbnRug5OXmcBK', NULL, NULL, 0, NULL, '2026-04-26 08:20:07', '2026-04-26 08:20:07'),
 (5, 14, 'email_password', NULL, 'admin3@bps.go.id', '$2y$12$JGgPvSQgKSHTiuswMQMc3u4yPjTLJlXQvBZFeSVemFcck6Zcu0Uiy', NULL, NULL, 0, '2026-04-26 08:49:10', '2026-04-26 08:24:25', '2026-04-26 08:49:10'),
@@ -545,7 +552,10 @@ INSERT INTO `auth_identities` (`id`, `user_id`, `type`, `name`, `secret`, `secre
 (21, 31, 'email_password', NULL, 'taufiq.agung@bps.go.id', '$2y$12$aJ1fDuN0XUdLwYKsLq5E2eUwEIECRNOogFzDPWlsySyxIWu76Xr5.', NULL, NULL, 0, NULL, '2026-04-28 03:35:59', '2026-04-28 03:35:59'),
 (22, 32, 'email_password', NULL, 'anifebria94@gmail.com', '$2y$12$ltqwLa2d.2KJ1.7A3Bume.sxsaOzKad8KZAFb2B74zsBKkuzcETS.', NULL, NULL, 0, NULL, '2026-05-07 05:14:24', '2026-05-07 05:14:24'),
 (23, 33, 'email_password', NULL, 'dwinasuryanti5@gmail.com', '$2y$12$HUy37gqkLb3upP4wczWy.uwwo5FkaoZfiUOm3.I7TUaUnnQE81dZ6', NULL, NULL, 0, NULL, '2026-05-07 05:14:24', '2026-05-07 05:14:25'),
-(24, 34, 'email_password', NULL, 'hutrieni83@gmail.com', '$2y$12$V.MxqtUXsqW4wL9oO9t97.pSQXM0p2zr8lSZbJYCraYMchSV/JJHW', NULL, NULL, 0, NULL, '2026-05-07 05:14:25', '2026-05-07 05:14:25');
+(24, 34, 'email_password', NULL, 'hutrieni83@gmail.com', '$2y$12$V.MxqtUXsqW4wL9oO9t97.pSQXM0p2zr8lSZbJYCraYMchSV/JJHW', NULL, NULL, 0, NULL, '2026-05-07 05:14:25', '2026-05-07 05:14:25'),
+(25, 35, 'email_password', NULL, 'admin1311@bps.go.id', '$2y$12$nT8UhPiqdb8Cha.tReeht.MAOZnAZiS.xk5HBsNiNn3zB1ElTRBV2', NULL, NULL, 0, '2026-05-10 21:33:37', '2026-05-09 14:28:05', '2026-05-10 21:33:37'),
+(26, 36, 'email_password', NULL, 'admin1375@bps.go.id', '$2y$12$9RZYW9fKY2.1hXYIsEW9Z.qAdBg/B5OLJzP9q/Q3VQkpelzq/1xnq', NULL, NULL, 0, '2026-05-09 14:36:23', '2026-05-09 14:29:36', '2026-05-09 14:36:23'),
+(27, 37, 'email_password', NULL, 'syafiq.hidayat@bps.go.id', '$2y$12$eiQ2NsTstIn5BMnG5D5GaO2/l2ChzNM.W3eJOHKa9JHQEAosPsRHq', NULL, NULL, 0, '2026-05-09 14:35:18', '2026-05-09 14:31:32', '2026-05-09 14:35:18');
 
 -- --------------------------------------------------------
 
@@ -637,7 +647,18 @@ INSERT INTO `auth_logins` (`id`, `ip_address`, `user_agent`, `id_type`, `identif
 (66, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-06 11:15:56', 1),
 (67, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-06 11:16:30', 1),
 (68, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-06 11:20:35', 1),
-(69, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-07 00:42:10', 1);
+(69, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-07 00:42:10', 1),
+(70, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-07 23:51:39', 1),
+(71, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-08 07:31:13', 1),
+(72, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-09 14:23:20', 1),
+(73, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'syafiq.hidayat@bps.go.id', 37, '2026-05-09 14:35:18', 1),
+(74, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin1375@bps.go.id', 36, '2026-05-09 14:36:23', 1),
+(75, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-09 14:36:52', 1),
+(76, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin1311@bps.go.id', 35, '2026-05-09 15:21:40', 1),
+(77, '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-10 02:21:46', 1),
+(78, '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Mobile Safari/537.36', 'email_password', 'admin1311@bps.go.id', 35, '2026-05-10 02:22:03', 1),
+(79, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin1311@bps.go.id', 35, '2026-05-10 21:33:37', 1),
+(80, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36', 'email_password', 'admin@bps.go.id', 1, '2026-05-10 23:22:52', 1);
 
 -- --------------------------------------------------------
 
@@ -695,6 +716,7 @@ CREATE TABLE `broadcasts` (
   `id` int(11) NOT NULL,
   `id_user` int(11) NOT NULL,
   `id_kegiatan` int(11) NOT NULL,
+  `wilayah` varchar(4) NOT NULL DEFAULT '1300',
   `kategori` enum('sop','kondef','kbli') NOT NULL,
   `judul` varchar(255) NOT NULL,
   `isi` text NOT NULL,
@@ -706,10 +728,11 @@ CREATE TABLE `broadcasts` (
 -- Dumping data for table `broadcasts`
 --
 
-INSERT INTO `broadcasts` (`id`, `id_user`, `id_kegiatan`, `kategori`, `judul`, `isi`, `created_at`, `deleted_at`) VALUES
-(1, 1, 1, 'sop', 'Pengumuman Update Fasih Engine', 'Assalamualaikum bapak/ibu semua, utk pekerjaan manen sawit menggunakan alat manual, itu statusnya tetap pekerja ya bapak ibu. jika majikannya tetap tp lebih dr 1, maka pekerjaa utama adalah di 1 majikan yang paling banyak jam kerja biasanya dalam seminggu, dilanjutkan tambahan utama majikan terbanyak selanjutnya.', '2025-11-13 20:41:37', NULL),
-(2, 1, 1, 'sop', 'Pengumuman Perbaikan Anomali', 'Assalamualaikum bapak/ibu semua, utk pekerjaan manen sawit menggunakan alat manual, itu statusnya tetap pekerja ya bapak ibu. jika majikannya tetap tp lebih dr 1, maka pekerjaa utama adalah di 1 majikan yang paling banyak jam kerja biasanya dalam seminggu, dilanjutkan tambahan utama majikan terbanyak selanjutnya.', '2025-11-13 20:41:37', NULL),
-(9, 1, 1, 'sop', 'Jangan Lupa Memakai Atribut', 'Kami menemukan masih banyak petugas yg tidak menggunakan atribut ketika pendataan kelapangan. mohon untuk di gunakan atribut yang telah diberikan.', '2026-05-01 18:55:43', NULL);
+INSERT INTO `broadcasts` (`id`, `id_user`, `id_kegiatan`, `wilayah`, `kategori`, `judul`, `isi`, `created_at`, `deleted_at`) VALUES
+(1, 1, 1, '1300', 'sop', 'Pengumuman Update Fasih Engine', 'Assalamualaikum bapak/ibu semua, utk pekerjaan manen sawit menggunakan alat manual, itu statusnya tetap pekerja ya bapak ibu. jika majikannya tetap tp lebih dr 1, maka pekerjaa utama adalah di 1 majikan yang paling banyak jam kerja biasanya dalam seminggu, dilanjutkan tambahan utama majikan terbanyak selanjutnya.', '2025-11-13 20:41:37', NULL),
+(2, 1, 1, '1300', 'sop', 'Pengumuman Perbaikan Anomali', 'Assalamualaikum bapak/ibu semua, utk pekerjaan manen sawit menggunakan alat manual, itu statusnya tetap pekerja ya bapak ibu. jika majikannya tetap tp lebih dr 1, maka pekerjaa utama adalah di 1 majikan yang paling banyak jam kerja biasanya dalam seminggu, dilanjutkan tambahan utama majikan terbanyak selanjutnya.', '2025-11-13 20:41:37', NULL),
+(9, 1, 1, '1300', 'sop', 'Jangan Lupa Memakai Atribut', 'Kami menemukan masih banyak petugas yg tidak menggunakan atribut ketika pendataan kelapangan. mohon untuk di gunakan atribut yang telah diberikan.', '2026-05-01 18:55:43', NULL),
+(11, 1, 2, '1300', 'sop', 'Mohon dipakai atribut kelapangan', 'ditemukan masih banyak petugas yang belum menggunakan atribut kelapangan', '2026-05-07 14:20:10', NULL);
 
 -- --------------------------------------------------------
 
@@ -762,13 +785,13 @@ CREATE TABLE `kategori_anomali` (
 --
 
 INSERT INTO `kategori_anomali` (`id`, `id_kegiatan`, `level_anomali`, `kode_anomali`, `flag`, `definisi_anomali`, `detil_anomali`, `is_show`, `date_created`, `date_updated`, `date_deleted`) VALUES
-(1, 1, '1300', 'AN01', '3', 'Cek konsistensi jenis kelamin Kepala Keluarga.', 'Jenis kelamin KK tidak sesuai dengan NIK', 1, '2025-11-05 13:04:39', '2026-04-28 04:23:22', NULL),
-(2, 1, '1300', 'AN02', '3', 'Verifikasi usia responden yang berusia di bawah 5 tahun.', 'Usia di bawah 5 tahun Tapi sudah tamat SD', 1, '2025-11-05 13:04:45', '2026-04-28 04:23:47', NULL),
-(3, 1, '1300', 'AN03', '2', 'Cek data pekerjaan untuk responden berusia di atas 70 tahun.', 'Responden lansia (>70) terdeteksi memiliki pekerjaan full-time apakah benar?', 1, '2025-11-05 13:05:10', '2026-04-28 04:24:14', NULL),
-(4, 1, '1300', 'AN04', '3', 'Pemeriksaan status perkawinan responden di bawah 15 tahun.', 'Responden di bawah dibawah 15 tahun, tapi sudah pernah menikah. apakah benar?', 0, '2025-11-05 13:05:30', '2026-04-28 04:24:43', NULL),
-(5, 1, '1300', 'AN05', '3', 'Cek kelengkapan data alamat dan kode pos.', 'Kolom kode pos kosong atau tidak valid.', 1, '2025-11-05 13:06:01', '2026-01-29 05:48:19', NULL),
-(6, 1, '1300', 'AN06', '3', 'Konsistensi hubungan dengan Kepala Keluarga (Hubungan Ganda).', 'Ditemukan lebih dari satu responden berstatus \"Istri\" dalam satu KK.', 1, '2025-11-05 13:06:22', NULL, NULL),
-(7, 1, '1300', 'AN07', '3', 'Verifikasi status disabilitas dan kemampuan bekerja.', 'Responden disabilitas berat terdeteksi bekerja di sektor formal.', 1, '2025-11-05 13:07:05', NULL, NULL),
+(1, 1, '1300', 'AN01', '3', 'Terdefinisi sebagai UB, namun jumlah tenaga kerja dibayar = 0', 'Usaha ini terdefinisi sebagai UB, namun jumlah tenaga kerja dibayar = 0. apakah benar', 1, '2025-11-05 13:04:39', '2026-05-08 00:07:16', NULL),
+(2, 1, '1300', 'AN02', '3', 'Usaha terdefinisi di Kawasan Ekonomi Khusus. Apakah benar?', 'Apakah benar usaha ini terletak pada kawasan ekonomi khsusus?', 1, '2025-11-05 13:04:45', '2026-05-08 00:47:42', NULL),
+(3, 1, '1300', 'AN03', '2', 'Usaha terdefinisi sebagai UB atau UM, tapi tidak memiliki NIB.', 'Usaha ini terdefinisi sebagai Usaha Besar (UB) atau Usaha Menengah (UM), tapi didak memiliki NIB, apakah benar?', 1, '2025-11-05 13:05:10', '2026-05-08 00:49:04', NULL),
+(4, 1, '1300', 'AN04', '1', 'NIB tidak match dengan daftar NIB dari dinas satu pintu.', 'NIB yang dituliskan pada usaha ini tidak ditemukan pada daftar NIB dari dinas satu pintu, apakah tidak ada kesalahan penulisan NIB nya?', 1, '2025-11-05 13:05:30', '2026-05-08 00:50:10', NULL),
+(5, 1, '1300', 'AN05', '3', 'Jumlah Cabang Usaha >5 terdefinisi tidak wajar.', 'Apakah benar usaha ini memiliki cabang > 5?', 1, '2025-11-05 13:06:01', '2026-05-08 01:05:52', NULL),
+(6, 1, '1300', 'AN06', '2', 'Usaha ini terdefinisi seabgai produksi konsumsi atau obat-obatan, tapi tidak memiliki izin BPOM', 'Apakah benar usaha terdefinisi sebagai produksi barang konsumsi atau obat-obatan tapi tidak memiliki izin BPOM?', 1, '2025-11-05 13:06:22', '2026-05-08 01:07:22', NULL),
+(7, 1, '1300', 'AN07', '3', 'Terdefinisi sebagai sekolah, tapi tidak mendapatkan MBG apakah benar?', 'Usaha ini merupakan sekolah, apakah benar tidak mendapatkan MBG?', 1, '2025-11-05 13:07:05', '2026-05-08 01:08:36', NULL),
 (8, 1, '1300', 'AN08', '3', 'Cek kesesuaian tingkat pendidikan dengan jenis pekerjaan.', 'Pendidikan SD memiliki pekerjaan sebagai Manajer/Profesional.', 0, '2025-11-05 13:07:40', NULL, NULL),
 (9, 1, '1300', 'AN09', '3', 'Pemeriksaan data migrasi (tempat lahir dan tempat tinggal saat ini).', 'Tempat lahir berada di luar negeri, tetapi tidak ada catatan migrasi.', 1, '2025-11-05 13:08:00', NULL, NULL),
 (10, 1, '1300', 'AN10', '3', 'Cek keberadaan NIK yang duplikat dalam wilayah sensus.', 'Nomor Induk Kependudukan (NIK) terdeteksi ganda.', 1, '2025-11-05 13:08:35', NULL, NULL),
@@ -782,12 +805,12 @@ INSERT INTO `kategori_anomali` (`id`, `id_kegiatan`, `level_anomali`, `kode_anom
 (18, 1, '1300', 'AN18', '3', 'Validasi data penggunaan air minum dan sanitasi.', 'Air minum dari PDAM, namun tidak memiliki fasilitas sanitasi yang layak.', 1, '2025-11-05 13:12:30', NULL, NULL),
 (19, 1, '1300', 'AN19', '3', 'Cek kelengkapan data vaksinasi pada anak-anak.', 'Anak usia sekolah tidak memiliki catatan vaksinasi dasar lengkap.', 0, '2025-11-05 13:13:00', NULL, NULL),
 (20, 1, '1300', 'AN20', '3', 'Pemeriksaan status kepemilikan hewan ternak (jumlah melebihi batas wajar).', 'Ditemukan jumlah ternak yang tidak realistis untuk ukuran rumah tangga biasa.', 1, '2025-11-05 13:13:30', NULL, NULL),
-(24, 1, '1300', 'A2', '3', 'anomali baru A2', 'anomali baru A2', 1, '2026-04-21 07:46:01', '2026-04-22 10:02:09', NULL),
-(25, 1, '1300', 'A34', '3', 'Anomali Baru A34', 'Anomali Baru A34', 0, '2026-04-21 07:46:01', '2026-04-22 10:02:26', NULL),
-(26, 1, '1300', 'A50', '3', 'Anomali Baru A50', 'Anomali Baru A50', 0, '2026-04-21 07:46:01', '2026-04-22 10:02:45', NULL),
-(27, 2, '1300', 'P1', '3', 'Potensi Usaha Ekonomi Digital KBLI Perbank-an', 'Usaha ini terdefinisi sebagai usaha dengan KBLI Perbank-an. apakah benar tidak menggunakan digital?', 1, '2026-05-03 09:14:26', '2026-05-04 09:40:58', NULL),
-(28, 2, '1300', 'P2', '3', 'Potensi Ekonomi Digital Jumlah Omset', 'Usaha ini memiliki omset yg besar, apakah benar tidak menggunakan digital dalam penjualannya?', 1, '2026-05-03 09:14:26', '2026-05-03 02:17:54', NULL),
-(31, 2, '1311', 'P3', '2', 'Potensi Ekonomi Digital karena besaran omset > 1 M', 'Apakah benar usaha tidak menguankan digital dalam usahanya? karena omsetnya tergolong besar > 1 M', 1, '2026-05-05 07:18:19', '2026-05-05 09:35:13', NULL),
+(24, 1, '1300', 'A2', '1', 'Margin keuntungan usaha > 2M, tapi jumlah pegawai <3.', 'Apakah benar, margin usaha terdefinsisi > 2M, tetapi jumlah pekerja pada usaha ini lebih kecil dari 3 orang?', 1, '2026-04-21 07:46:01', '2026-05-08 00:03:09', NULL),
+(25, 1, '1300', 'A34', '2', 'Margin usaha lebih kecil daripada pengeluaran', 'Usaha ini memiliki margin keuntungan yang lebih kecil daripada pengeluran usaha. apakah benar?', 1, '2026-04-21 07:46:01', '2026-05-08 00:04:08', NULL),
+(26, 1, '1300', 'A50', '2', 'Pendapatan dibagi dengan jumlah tenaga kerja < 500rb', 'Apakah benar jumlah tenaga kerja dan keuntungan sudah sesuai? karena pendapatan dibagi jumlah tenaga kerja < 500rb', 1, '2026-04-21 07:46:01', '2026-05-08 00:05:39', NULL),
+(27, 2, '1300', 'P1', '3', 'Potensi Usaha Ekonomi Digital KBLI Perbank-an', 'Usaha ini terdefinisi sebagai usaha dengan KBLI Perbank-an. apakah benar tidak menggunakan digital?', 1, '2026-05-03 09:14:26', '2026-05-09 15:21:25', NULL),
+(28, 2, '1300', 'P2', '3', 'Potensi Ekonomi Digital dengan Jumlah Omset >5M', 'Usaha ini memiliki omset >5M, apakah benar tidak menggunakan digital dalam penjualannya?', 1, '2026-05-03 09:14:26', '2026-05-08 00:08:39', NULL),
+(31, 2, '1311', 'P3', '2', 'Potensi Ekonomi Digital matching dengan usaha di merchant tiktok', 'Nama usaha ini ditemukan mirip dengan toko di tiktok. apakah benar usaha ini tidak menggunakan digital?', 1, '2026-05-05 07:18:19', '2026-05-08 00:10:02', NULL),
 (69, 2, '1311', 'P5', '3', 'Potensi Ekonomi Digital matching dengan database merchant shopee', 'Nama usaha ditemukan di shopee. apakah benar usaha tidak tergolong ekonomi digital. silahkan konfirmasi ke petugas lapangan', 1, '2026-05-05 09:09:32', '2026-05-05 09:15:53', NULL);
 
 -- --------------------------------------------------------
@@ -826,8 +849,10 @@ INSERT INTO `kegiatan` (`id`, `kode_kegiatan`, `nama_kegiatan`, `detil_kegiatan`
 CREATE TABLE `log_upload` (
   `id` int(11) UNSIGNED NOT NULL,
   `id_kegiatan` int(11) NOT NULL,
+  `wilayah` varchar(4) DEFAULT NULL,
   `jenis` enum('wilayah','anomali') NOT NULL DEFAULT 'anomali',
   `nama_file` varchar(255) NOT NULL,
+  `nama_file_awal` varchar(255) DEFAULT NULL,
   `status` enum('pending','proses','selesai','gagal') NOT NULL DEFAULT 'pending',
   `total_baris` int(11) NOT NULL DEFAULT 0,
   `berhasil` int(11) NOT NULL DEFAULT 0,
@@ -842,21 +867,26 @@ CREATE TABLE `log_upload` (
 -- Dumping data for table `log_upload`
 --
 
-INSERT INTO `log_upload` (`id`, `id_kegiatan`, `jenis`, `nama_file`, `status`, `total_baris`, `berhasil`, `gagal`, `error_details`, `id_user`, `created_at`, `updated_at`) VALUES
-(1, 1, 'wilayah', '1777344311_7b879b4cf127778258ba.xlsx', 'selesai', 16, 0, 16, '[{\"baris\":2,\"data\":\"diaramayana91@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":3,\"data\":\"diaramayana91@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":4,\"data\":\"norasyarkawi@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":5,\"data\":\"norasyarkawi@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":6,\"data\":\"viandiapdiyanto@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":7,\"data\":\"viandiapdiyanto@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":8,\"data\":\"tutisunarni1976@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":9,\"data\":\"anifebria94@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":10,\"data\":\"dwinasuryanti5@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":11,\"data\":\"dwinasuryanti5@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":12,\"data\":\"anifebria94@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":13,\"data\":\"hutrieni83@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":14,\"data\":\"hutrieni83@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":15,\"data\":\"rahmisuwinda@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":16,\"data\":\"shisiadeeva99@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":17,\"data\":\"shisiadeeva99@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}}]', 1, '2026-04-28 02:45:11', '2026-04-28 02:57:42'),
-(2, 1, 'wilayah', '1777345142_5ce635dcd1a8aef12551.xlsx', 'gagal', 0, 0, 0, '[{\"baris\":\"-\",\"data\":\"Sistem\",\"pesan\":[\"Duplicate entry \'11\' for key \'username\'\"]}]', 1, '2026-04-28 02:59:02', '2026-04-28 03:13:48'),
-(3, 1, 'wilayah', '1777345197_64de40738c1637e6c636.xlsx', 'gagal', 0, 0, 0, '[{\"baris\":\"-\",\"data\":\"Sistem\",\"pesan\":[\"Allowed fields must be specified for model: \\\"App\\\\Models\\\\WilayahTugasModel\\\"\"]}]', 1, '2026-04-28 02:59:57', '2026-04-28 03:18:14'),
-(4, 1, 'wilayah', '1777345292_32888085a6b04d806aff.xlsx', 'gagal', 0, 0, 0, '[{\"baris\":\"-\",\"data\":\"Sistem\",\"pesan\":[\"Attempt to read property \\\"id\\\" on bool\"]}]', 1, '2026-04-28 03:01:32', '2026-04-28 03:22:09'),
-(5, 1, 'wilayah', '1777345367_25d2d68c75af9b40c4fa.xlsx', 'selesai', 16, 0, 16, '[{\"baris\":2,\"data\":\"diaramayana91@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":3,\"data\":\"diaramayana91@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":4,\"data\":\"norasyarkawi@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":5,\"data\":\"norasyarkawi@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":6,\"data\":\"viandiapdiyanto@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":7,\"data\":\"viandiapdiyanto@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":8,\"data\":\"tutisunarni1976@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":9,\"data\":\"anifebria94@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":10,\"data\":\"dwinasuryanti5@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":11,\"data\":\"dwinasuryanti5@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":12,\"data\":\"anifebria94@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":13,\"data\":\"hutrieni83@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":14,\"data\":\"hutrieni83@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":15,\"data\":\"rahmisuwinda@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":16,\"data\":\"shisiadeeva99@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":17,\"data\":\"shisiadeeva99@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}}]', 1, '2026-04-28 03:02:47', '2026-04-28 03:02:47'),
-(6, 1, 'wilayah', '1777347357_15efa201ffef957246f3.xlsx', 'selesai', 16, 6, 10, '[{\"baris\":3,\"data\":\"1311010007000500\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":4,\"data\":\"1311011003000400\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":9,\"data\":\"1311023004000200\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":10,\"data\":\"1311030001000400\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":11,\"data\":\"1311030004000300\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":12,\"data\":\"1311030005001500\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":13,\"data\":\"1311040003000900\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":14,\"data\":\"1311040004000500\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":15,\"data\":\"1311040008000600\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":16,\"data\":\"taufiq.agung@bps.go.id\",\"pesan\":[]}]', 1, '2026-04-28 03:35:57', '2026-04-28 03:35:59'),
-(7, 2, 'wilayah', '1777881388_b0fab7ea4f542a1b5621.xlsx', 'pending', 0, 0, 0, NULL, 1, '2026-05-04 07:56:28', '2026-05-04 07:56:28'),
-(8, 2, 'anomali', '1777952871_55a41c8e8fcfbcba5d62.xlsx', 'proses', 0, 0, 0, NULL, 1, NULL, NULL),
-(9, 2, 'anomali', '1777952967_850d3f0c88c9c7d688f7.xlsx', 'selesai', 0, 0, 0, '[{\"baris\":\"-\",\"id_assigment\":\"Sistem\",\"messages\":[\"Array to string conversion\"]}]', 1, NULL, NULL),
-(10, 2, 'anomali', '1777953773_de5e6dc474d305bfc851.xlsx', 'pending', 0, 0, 0, NULL, 1, '2026-05-05 11:02:53', '2026-05-05 11:02:53'),
-(11, 2, 'anomali', '1777953791_9123096a01f93f374fee.xlsx', 'gagal', 0, 0, 0, '[{\"baris\":\"-\",\"data\":\"Sistem\",\"messages\":[\"CodeIgniter\\\\BaseModel::timeToString(): Argument #1 ($properties) must be of type array, string given, called in C:\\\\Users\\\\syafi\\\\Documents\\\\Project\\\\monitoring-anomali\\\\vendor\\\\codeigniter4\\\\framework\\\\system\\\\BaseModel.php on line 1865\"]}]', 1, '2026-05-05 11:03:11', '2026-05-05 04:20:53'),
-(12, 2, 'anomali', '1777953832_f1d36e905be475608a3d.xlsx', 'selesai', 2, 2, 0, '[]', 1, '2026-05-05 11:03:52', '2026-05-05 11:03:52'),
-(13, 2, 'anomali', '1777962273_2e67d39d1c7e9c4efecd.xlsx', 'gagal', 0, 0, 0, '[{\"baris\":\"-\",\"data\":\"Sistem\",\"messages\":[\"Cannot add or update a child row: a foreign key constraint fails (`monitoring_anomali`.`anomali`, CONSTRAINT `fk_kategori_anomali` FOREIGN KEY (`id_kategori_anomali`) REFERENCES `kategori_anomali` (`id`) ON DELETE CASCADE)\"]}]', 1, '2026-05-05 13:24:33', '2026-05-05 13:24:33'),
-(14, 2, 'anomali', '1777972359_96d9fe22840ba2090a35.xlsx', 'selesai', 2, 2, 0, '[]', 1, '2026-05-05 16:12:39', '2026-05-05 16:12:39');
+INSERT INTO `log_upload` (`id`, `id_kegiatan`, `wilayah`, `jenis`, `nama_file`, `nama_file_awal`, `status`, `total_baris`, `berhasil`, `gagal`, `error_details`, `id_user`, `created_at`, `updated_at`) VALUES
+(1, 1, NULL, 'wilayah', '1777344311_7b879b4cf127778258ba.xlsx', NULL, 'selesai', 16, 0, 16, '[{\"baris\":2,\"data\":\"diaramayana91@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":3,\"data\":\"diaramayana91@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":4,\"data\":\"norasyarkawi@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":5,\"data\":\"norasyarkawi@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":6,\"data\":\"viandiapdiyanto@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":7,\"data\":\"viandiapdiyanto@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":8,\"data\":\"tutisunarni1976@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":9,\"data\":\"anifebria94@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":10,\"data\":\"dwinasuryanti5@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":11,\"data\":\"dwinasuryanti5@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":12,\"data\":\"anifebria94@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":13,\"data\":\"hutrieni83@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":14,\"data\":\"hutrieni83@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":15,\"data\":\"rahmisuwinda@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":16,\"data\":\"shisiadeeva99@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":17,\"data\":\"shisiadeeva99@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}}]', 1, '2026-04-28 02:45:11', '2026-04-28 02:57:42'),
+(2, 1, NULL, 'wilayah', '1777345142_5ce635dcd1a8aef12551.xlsx', NULL, 'gagal', 0, 0, 0, '[{\"baris\":\"-\",\"data\":\"Sistem\",\"pesan\":[\"Duplicate entry \'11\' for key \'username\'\"]}]', 1, '2026-04-28 02:59:02', '2026-04-28 03:13:48'),
+(3, 1, NULL, 'wilayah', '1777345197_64de40738c1637e6c636.xlsx', NULL, 'gagal', 0, 0, 0, '[{\"baris\":\"-\",\"data\":\"Sistem\",\"pesan\":[\"Allowed fields must be specified for model: \\\"App\\\\Models\\\\WilayahTugasModel\\\"\"]}]', 1, '2026-04-28 02:59:57', '2026-04-28 03:18:14'),
+(4, 1, NULL, 'wilayah', '1777345292_32888085a6b04d806aff.xlsx', NULL, 'gagal', 0, 0, 0, '[{\"baris\":\"-\",\"data\":\"Sistem\",\"pesan\":[\"Attempt to read property \\\"id\\\" on bool\"]}]', 1, '2026-04-28 03:01:32', '2026-04-28 03:22:09'),
+(5, 1, NULL, 'wilayah', '1777345367_25d2d68c75af9b40c4fa.xlsx', NULL, 'selesai', 16, 0, 16, '[{\"baris\":2,\"data\":\"diaramayana91@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":3,\"data\":\"diaramayana91@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":4,\"data\":\"norasyarkawi@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":5,\"data\":\"norasyarkawi@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":6,\"data\":\"viandiapdiyanto@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":7,\"data\":\"viandiapdiyanto@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":8,\"data\":\"tutisunarni1976@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":9,\"data\":\"anifebria94@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":10,\"data\":\"dwinasuryanti5@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":11,\"data\":\"dwinasuryanti5@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":12,\"data\":\"anifebria94@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":13,\"data\":\"hutrieni83@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":14,\"data\":\"hutrieni83@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":15,\"data\":\"rahmisuwinda@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":16,\"data\":\"shisiadeeva99@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}},{\"baris\":17,\"data\":\"shisiadeeva99@gmail.com\",\"pesan\":{\"idWilayah\":\"The idWilayah field is required.\"}}]', 1, '2026-04-28 03:02:47', '2026-04-28 03:02:47'),
+(6, 1, NULL, 'wilayah', '1777347357_15efa201ffef957246f3.xlsx', NULL, 'selesai', 16, 6, 10, '[{\"baris\":3,\"data\":\"1311010007000500\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":4,\"data\":\"1311011003000400\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":9,\"data\":\"1311023004000200\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":10,\"data\":\"1311030001000400\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":11,\"data\":\"1311030004000300\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":12,\"data\":\"1311030005001500\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":13,\"data\":\"1311040003000900\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":14,\"data\":\"1311040004000500\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":15,\"data\":\"1311040008000600\",\"pesan\":{\"idWilayah\":\"The idWilayah field must contain a previously existing value in the database.\"}},{\"baris\":16,\"data\":\"taufiq.agung@bps.go.id\",\"pesan\":[]}]', 1, '2026-04-28 03:35:57', '2026-04-28 03:35:59'),
+(7, 2, NULL, 'wilayah', '1777881388_b0fab7ea4f542a1b5621.xlsx', NULL, 'pending', 0, 0, 0, NULL, 1, '2026-05-04 07:56:28', '2026-05-04 07:56:28'),
+(8, 2, NULL, 'anomali', '1777952871_55a41c8e8fcfbcba5d62.xlsx', NULL, 'proses', 0, 0, 0, NULL, 1, NULL, NULL),
+(9, 2, NULL, 'anomali', '1777952967_850d3f0c88c9c7d688f7.xlsx', NULL, 'selesai', 0, 0, 0, '[{\"baris\":\"-\",\"id_assigment\":\"Sistem\",\"messages\":[\"Array to string conversion\"]}]', 1, NULL, NULL),
+(10, 2, NULL, 'anomali', '1777953773_de5e6dc474d305bfc851.xlsx', NULL, 'pending', 0, 0, 0, NULL, 1, '2026-05-05 11:02:53', '2026-05-05 11:02:53'),
+(11, 2, NULL, 'anomali', '1777953791_9123096a01f93f374fee.xlsx', NULL, 'gagal', 0, 0, 0, '[{\"baris\":\"-\",\"data\":\"Sistem\",\"messages\":[\"CodeIgniter\\\\BaseModel::timeToString(): Argument #1 ($properties) must be of type array, string given, called in C:\\\\Users\\\\syafi\\\\Documents\\\\Project\\\\monitoring-anomali\\\\vendor\\\\codeigniter4\\\\framework\\\\system\\\\BaseModel.php on line 1865\"]}]', 1, '2026-05-05 11:03:11', '2026-05-05 04:20:53'),
+(12, 2, NULL, 'anomali', '1777953832_f1d36e905be475608a3d.xlsx', NULL, 'selesai', 2, 2, 0, '[]', 1, '2026-05-05 11:03:52', '2026-05-05 11:03:52'),
+(13, 2, NULL, 'anomali', '1777962273_2e67d39d1c7e9c4efecd.xlsx', NULL, 'gagal', 0, 0, 0, '[{\"baris\":\"-\",\"data\":\"Sistem\",\"messages\":[\"Cannot add or update a child row: a foreign key constraint fails (`monitoring_anomali`.`anomali`, CONSTRAINT `fk_kategori_anomali` FOREIGN KEY (`id_kategori_anomali`) REFERENCES `kategori_anomali` (`id`) ON DELETE CASCADE)\"]}]', 1, '2026-05-05 13:24:33', '2026-05-05 13:24:33'),
+(14, 2, NULL, 'anomali', '1777972359_96d9fe22840ba2090a35.xlsx', NULL, 'selesai', 2, 2, 0, '[]', 1, '2026-05-05 16:12:39', '2026-05-05 16:12:39'),
+(15, 2, NULL, 'anomali', '1778381234_e0a98694ef8648119338.xlsx', '1778381234_e0a98694ef8648119338.xlsx', 'selesai', 4, 4, 0, '[]', 35, '2026-05-10 09:47:14', '2026-05-10 09:47:14'),
+(16, 2, NULL, 'anomali', '1778381278_2e17824354db8434dfaa.xlsx', 'template_anomali (1).xlsx', 'selesai', 4, 4, 0, '[]', 35, '2026-05-10 09:47:58', '2026-05-10 09:47:58'),
+(17, 2, '1311', 'anomali', '1778381337_60a95f4e899e8014c867.xlsx', 'template_anomali (1).xlsx', 'selesai', 4, 4, 0, '[]', 35, '2026-05-10 09:48:57', '2026-05-10 09:48:57'),
+(18, 2, '1311', 'anomali', '1778381912_f9552ec0dac2ed708191.xlsx', 'template_anomali (1).xlsx', 'selesai', 4, 1, 3, '[{\"baris\":2,\"data\":\"131103054861\",\"messages\":\"User tidak punya akses untuk menambahkan ANOMALI: P1\"},{\"baris\":4,\"data\":\"1311041568433\",\"messages\":\"User tidak punya akses untuk menambahkan ANOMALI: P2\"},{\"baris\":5,\"data\":\"1311041156135\",\"messages\":\"User tidak punya akses untuk menambahkan ANOMALI: P1\"}]', 35, '2026-05-10 09:58:32', '2026-05-10 09:58:32'),
+(19, 2, '1311', 'anomali', '1778382401_d406ae94c104eec22081.xlsx', 'template_anomali (1).xlsx', 'selesai', 4, 1, 3, '[{\"baris\":2,\"data\":\"131103054861\",\"messages\":\"User tidak punya akses untuk menambahkan ANOMALI: P1\"},{\"baris\":4,\"data\":\"1311041568433\",\"messages\":\"User tidak punya akses untuk menambahkan ANOMALI: P2\"},{\"baris\":5,\"data\":\"1311041156135\",\"messages\":\"User tidak punya akses untuk menambahkan ANOMALI: P1\"}]', 35, '2026-05-10 10:06:41', '2026-05-10 10:06:41');
 
 -- --------------------------------------------------------
 
@@ -1083,9 +1113,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `name`, `status`, `status_message`, `wilayah_kerja`, `active`, `last_active`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'admin', 'Syafiq Hidayat', NULL, NULL, '1300', 0, '2026-05-07 05:15:41', '2026-04-21 10:37:33', '2026-05-05 09:20:33', NULL),
+(1, 'admin', 'Syafiq Hidayat', NULL, NULL, '1300', 0, '2026-05-10 23:59:49', '2026-04-21 10:37:33', '2026-05-05 09:20:33', NULL),
 (9, 'rahma4', '', NULL, NULL, '1311', 0, NULL, '2026-04-25 10:03:34', '2026-04-25 10:03:34', NULL),
-(10, 'rahma', 'Rahma Hidayah', NULL, NULL, '1311', 0, NULL, '2026-04-25 10:24:04', '2026-04-26 05:19:43', NULL),
+(10, 'nur.rahma', 'Rahma Hidayah', NULL, NULL, '1311', 0, NULL, '2026-04-25 10:24:04', '2026-05-09 14:34:47', NULL),
 (12, 'syafiq', 'Syafiq Hidayat', NULL, NULL, '1311', 0, NULL, '2026-04-26 08:12:06', '2026-04-30 04:53:25', '2026-04-30 04:53:25'),
 (13, 'admin2', 'Admin Dua', NULL, NULL, '1311', 0, NULL, '2026-04-26 08:20:07', '2026-04-30 07:38:06', '2026-04-30 07:38:06'),
 (14, 'admin3', 'Admin 3', NULL, NULL, '1311', 0, '2026-04-26 08:49:30', '2026-04-26 08:24:25', '2026-04-30 07:38:02', '2026-04-30 07:38:02'),
@@ -1107,7 +1137,10 @@ INSERT INTO `users` (`id`, `username`, `name`, `status`, `status_message`, `wila
 (31, 'taufiq.agung', 'Taufiq Agung', NULL, NULL, '1311', 0, NULL, '2026-04-28 03:35:58', '2026-04-30 07:35:51', NULL),
 (32, 'anifebria94', 'Anifebria94@gmail.com', NULL, NULL, '1311', 0, NULL, '2026-05-07 05:14:24', '2026-05-07 05:14:24', NULL),
 (33, 'dwinasuryanti5', 'Dwinasuryanti5@gmail.com', NULL, NULL, '1311', 0, NULL, '2026-05-07 05:14:24', '2026-05-07 05:14:24', NULL),
-(34, 'hutrieni83', 'Hutrieni83@gmail.com', NULL, NULL, '1311', 0, NULL, '2026-05-07 05:14:25', '2026-05-07 05:14:25', NULL);
+(34, 'hutrieni83', 'Hutrieni83@gmail.com', NULL, NULL, '1311', 0, NULL, '2026-05-07 05:14:25', '2026-05-07 05:14:25', NULL),
+(35, 'admin1311', 'Admin Dharmasraya', NULL, NULL, '1311', 0, '2026-05-10 23:22:45', '2026-05-09 14:28:05', '2026-05-09 14:28:05', NULL),
+(36, 'admin1375', 'Admin Bukittingi', NULL, NULL, '1375', 0, '2026-05-09 14:36:44', '2026-05-09 14:29:36', '2026-05-09 14:29:36', NULL),
+(37, 'syafiq.hidayat', 'Syafiq Hidayat', NULL, NULL, '1311', 0, '2026-05-09 14:36:12', '2026-05-09 14:31:32', '2026-05-09 14:31:32', NULL);
 
 -- --------------------------------------------------------
 
@@ -8278,31 +8311,31 @@ ALTER TABLE `wilayah_upload_log`
 -- AUTO_INCREMENT for table `anomali`
 --
 ALTER TABLE `anomali`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=265;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=291;
 
 --
 -- AUTO_INCREMENT for table `assigment`
 --
 ALTER TABLE `assigment`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=230;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=240;
 
 --
 -- AUTO_INCREMENT for table `auth_groups_users`
 --
 ALTER TABLE `auth_groups_users`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `auth_identities`
 --
 ALTER TABLE `auth_identities`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `auth_logins`
 --
 ALTER TABLE `auth_logins`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
 
 --
 -- AUTO_INCREMENT for table `auth_permissions_users`
@@ -8326,7 +8359,7 @@ ALTER TABLE `auth_token_logins`
 -- AUTO_INCREMENT for table `broadcasts`
 --
 ALTER TABLE `broadcasts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `comics`
@@ -8350,7 +8383,7 @@ ALTER TABLE `kegiatan`
 -- AUTO_INCREMENT for table `log_upload`
 --
 ALTER TABLE `log_upload`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -8380,7 +8413,7 @@ ALTER TABLE `se_upload_log`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `users_backup`

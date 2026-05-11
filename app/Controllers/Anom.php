@@ -13,18 +13,21 @@ class Anom extends BaseController
 {
     protected $anomaliModel;
     protected $katAnomaliModel;
+    protected $validation;
 
     public function __construct()
     {
         $this->anomaliModel = new AnomaliModel();
         $this->katAnomaliModel = new KatAnomaliModel();
+        $this->validation = \Config\Services::validation();
     }
 
     public function list($isEdit = '0')
     {
         // cek is edit jika ada inisial value
+        $userWilayah = auth()->user()->wilayah_kerja;
         $data['isEdit'] = $isEdit == '1' ?: ($this->request->getGet('isEdit') == '1' ?? '0');
-        $data['filterWilayah'] = null;
+        $data['filterWilayah'] = $this->request->getGet('fil-wilayah') ?? ($userWilayah !== '1300' ? $userWilayah : '');
         $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
         $data['filterKategori'] = $this->request->getGet('fil-kategori') ?? '';
         $data['filterFlag'] = $this->request->getGet('fil-flag') ?? '';
@@ -32,10 +35,9 @@ class Anom extends BaseController
         $isRT = (session()->get('is_rt') == 1);
 
         // cek filter wilayah inisial value
-        $userWilayah = auth()->user()->wilayah_kerja;
-        $data['filterWilayah'] = ($userWilayah != '1300')
-            ? $userWilayah
-            : ($this->request->getGet('fil-wilayah') ?? '1300');
+        // $data['filterWilayah'] = ($userWilayah !== '1300')
+        //     ? $userWilayah
+        //     : ($this->request->getGet('fil-wilayah') ?? '1300');
 
         // Persiapan data dropdown
 
@@ -69,8 +71,10 @@ class Anom extends BaseController
         $data['listSelFlag'] = array_merge($data['listSelFlag'], $listSelFlag ?? []);
         $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel ?? []);
         $data['listWilayah'] = $listSelWilayah;
+        // dd($data['message']);
 
         $listAnom = null;
+        // dd($data['filterWilayah']);
 
         try {
             $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah(
@@ -81,6 +85,7 @@ class Anom extends BaseController
                 $data['filterLevel'],
                 $isRT
             );
+            // dd($data['listAnom']);
         } catch (\Throwable $th) {
             $data['listAnom'] = [];
             $data['message'] = "Gagal memuat data: " . $th->getMessage();
@@ -95,16 +100,18 @@ class Anom extends BaseController
         $data['listAnom'] = null;
         $data['id'] = null;
         $data['jenis'] = null;
+        // apakah base rumahtangga
         $isRT = (session()->get('is_rt') == 1);
-        // dd(session()->get('is_rt') == 1);
 
+        // mendapatkan nilai filter
         $filterLevel = $this->request->getGet('fil-level');
         $id = $this->request->getGet('id-anomali');
         $filterKategori = $this->request->getGet('fil-kategori');
         $filterFlag = $this->request->getGet('fil-flag');
         $isEdit = $this->request->getGet('is-edit');
-        // dd($isRT);
+
         try {
+            // mengambail anomali menurut wilayah
             $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah(
                 $id,
                 $isEdit,
@@ -115,14 +122,11 @@ class Anom extends BaseController
             );
         } catch (\Throwable $e) {
             $data['listAnom'] = null;
-            // dd($e->getMessage());
         }
-        // dd($data['listAnom']);
 
         if ($isRT) {
             switch (strlen($id)) {
                 case 4:
-                    // $data['listAnom'] = $dataDesa;q
                     $data['jenis'] = 'Kec';
                     break;
                 case 7:
@@ -145,7 +149,6 @@ class Anom extends BaseController
         } else {
             if (strlen($id) == session('level_wilayah')) {
                 $data['jenis'] = 'Nrt';
-                // return $this->listAnom($id, $isEdit);
             } elseif (strlen($id) > session('level_wilayah')) {
                 $data['jenis'] = 'Anom';
                 return $this->listAnom($id, $isEdit);
@@ -176,22 +179,23 @@ class Anom extends BaseController
 
     public function listAnom($idArt, $isEdit)
     {
-        $data = [
-            'listAnom' => [
-                [
-                    'id' => '131104000100010000102',
-                    'kdAnom' => 'AN21',
-                    'detilAnom' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni voluptate sed similique. Architecto non eius ut, beatae iste eveniet laboriosam nihil voluptate magnam aspernatur praesentium cum, veniam corrupti libero asperiores!',
-                ],
-                [
-                    'id' => '131104000100010000102',
-                    'kdAnom' => 'AN22',
-                    'detilAnom' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni voluptate sed similique. Architecto non eius ut, beatae iste eveniet laboriosam nihil voluptate magnam aspernatur praesentium cum',
-                ]
-            ]
-        ];
+        // $data = [
+        //     'listAnom' => [
+        //         [
+        //             'id' => '131104000100010000102',
+        //             'kdAnom' => 'AN21',
+        //             'detilAnom' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni voluptate sed similique. Architecto non eius ut, beatae iste eveniet laboriosam nihil voluptate magnam aspernatur praesentium cum, veniam corrupti libero asperiores!',
+        //         ],
+        //         [
+        //             'id' => '131104000100010000102',
+        //             'kdAnom' => 'AN22',
+        //             'detilAnom' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni voluptate sed similique. Architecto non eius ut, beatae iste eveniet laboriosam nihil voluptate magnam aspernatur praesentium cum',
+        //         ]
+        //     ]
+        // ];
 
         $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt, $isEdit);
+        // dd($data['list_anom']);
 
 
         return view('anomali/listAnomaliDetil', $data);
@@ -215,81 +219,70 @@ class Anom extends BaseController
             return $this->updateKonfirmasiBulk();
         }
 
-        $id = $this->request->getPost('id');
-        $konfirmasi = $this->request->getVar('konfirmasi');
+        $datum['id'] = $this->request->getPost('id');
+        $datum['konfirmasi'] = $this->request->getVar('konfirmasi');
+        $datum['is_lap'] = $this->request->getVar('kondisi_lapangan') ?? 0;
         $rules = [
             'id'           => 'required|is_natural_no_zero',
-            // 'konfirmasi'   => 'required',
+            'konfirmasi' => 'required|trim|alpha_numeric_punct|min_length[5]'
         ];
-        if (! $this->validate($rules)) {
-            // Jika validasi GAGAL, kembalikan JSON error
-            dd("gagal validasi");
+        $this->validation->reset();
+        $this->validation->setRules($rules);
+        if (!$this->validation->run($datum)) {
             return $this->response->setJSON([
                 'status' => 'error',
                 'message' => 'Validasi gagal: ' . $this->validator->getError('konfirmasi') // Kirim pesan error spesifik
             ]);
         }
+        $id = $datum['id'];
+        unset($datum['id']);
+        $this->anomaliModel->update($id, $datum);
 
-        // Lakukan proses update
-        $dataUpdate = [
-            'konfirmasi' => trim($konfirmasi),
-            // ...
-        ];
-
-        $this->anomaliModel->update($id, $dataUpdate);
-
-        // Jika BERHASIL, kembalikan JSON sukses
-
-        // dd("berhasil validasi");
         return $this->response->setJSON([
             'status' => 'success',
             'message' => 'Konfirmasi berhasil disimpan.',
             'id_updated' => $id
         ]);
-
-        // dd($konfirmasi);
     }
 
     public function updateKonfirmasiBulk()
     {
-        $konfirmasi = $this->request->getVar('konfirmasi');
-        $id_kode_anomali = $this->request->getVar('kode_anomali');
-        $konfirmasi = trim($konfirmasi);
-        // dd($id_kode_anomali);
+        // filter terpilih
+        $data['filterAnomali'] = $this->request->getVar('id-kat') ?? null;
+        $data['sel_prov'] = $this->request->getVar('kd-prov') ?? 13;
+        $data['sel_kab'] = ($data['sel_prov']) ? $this->request->getVar('kd-kab') ?? null : null;
+        $data['sel_kec'] = ($data['sel_kab']) ? $this->request->getVar('kd-kec') ?? null : null;
+        $data['sel_des'] = ($data['sel_kec']) ? $this->request->getVar('kd-des') ?? null : null;
+        $idWilayah = $data['sel_prov'] . $data['sel_kab'] . $data['sel_kec'] . $data['sel_des'];
+        $len = strlen($idWilayah);
 
-        // Lakukan proses update
-        $dataUpdate = [
-            'konfirmasi' => trim($konfirmasi),
-            // ...
+        $data['konfirmasi'] = $this->request->getVar('konfirmasi');
+        $data['is_lap'] = $this->request->getVar('kondisi_lapangan') ?? 0;
+        $data['id_kode_anomali'] = $this->request->getVar('id-kat');
+        $data['konfirmasi'] = strip_tags($data['konfirmasi']);
+        $rules = [
+            'konfirmasi' => 'required|trim|alpha_numeric_punct|min_length[5]'
         ];
+        $this->validation->reset();
+        $this->validation->setRules($rules);
+        if (!$this->validation->run($data)) {
+            return redirect()->back()->withInput()->with('errors', $this->validation->getErrors());
+        }
+
         $jumlah = 0;
 
-        // if ($this->anomaliModel->setKonfirmasiBulk($id_kode_anomali, $konfirmasi)) {
-        //     $jumlah = $this->anomaliModel->db->affectedRows();
-        //     // echo "Berhasil memperbarui $jumlah data.";
-        // } else {
-        //     dd("gagal");
-        // }
         $hasil = $this->anomaliModel
-            ->where('id_kategori_anomali', $id_kode_anomali)
-            ->set(['konfirmasi' => $konfirmasi])
+            ->where("left(id_wilayah,$len)", $idWilayah)
+            ->where('konfirmasi', '')
+            ->where('id_kategori_anomali', $data['id_kode_anomali']);
+        $hasil
+            ->set(['konfirmasi' => $data['konfirmasi'], 'is_lap' => $data['is_lap']])
             ->update();
-        // ->findAll();
-        // dd($hasil);
         if ($hasil) {
             $jumlah = $this->anomaliModel->db->affectedRows();
-            // echo "Berhasil memperbarui $jumlah data.";
         } else {
             dd("gagal");
         }
-
-        // Jika BERHASIL, kembalikan JSON sukses
-
-        // dd("berhasil validasi");
-        // return $this->response->setJSON([
-        //     'status' => 'success',
-        //     'message' => 'Konfirmasi berhasil disimpan. Berhasil mempengaruhi ' . $jumlah . ' anomali'
-        // ]);
 
         return redirect()->to(base_url('/anomali/konfirmasiBulk'))->with('message', 'Konfirmasi berhasil disimpan. Berhasil mempengaruhi ' . $jumlah . ' anomali');
 
@@ -309,16 +302,63 @@ class Anom extends BaseController
     {
         $data = [
             'title' => 'Konfirmasi Bulk Anomali',
-            'listKodeAnom' => null,
             'data' => [
-                'is_show' => true,
+                'kode_anomali' => "AN01",
+                'is_show' => false,
+                'flag' => 1,
+                'definisi' => "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nisi doloremque earum voluptatum rem vitae laboriosam laudantium dignissimos expedita nostrum id nobis sint obcaecati, molestias perferendis ullam ipsam ab deserunt unde voluptas ratione sit quasi consectetur debitis dolores! Reprehenderit, autem ipsum.",
+                'detil' => "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nisi doloremque earum voluptatum rem vitae laboriosam laudantium dignissimos expedita nostrum id nobis sint obcaecati, molestias perferendis ullam ipsam ab deserunt unde voluptas ratione sit quasi consectetur debitis dolores! Reprehenderit, autem ipsum.",
+                'id' => 1,
             ],
+            'jumlah_anomali' => 30,
         ];
 
-        $data['listKodeAnom'] = $this->anomaliModel->getKdAnomaliByUser() ?? [];
-        // dd($data['listKodeAnom']);
+        // filter terpilih
+        $data['filterAnomali'] = $this->request->getGet('fil-anomali') ?? null;
+        $oldFilter = $this->request->getGet('fil-anomali-old') ?? null;
 
-        // dd($data['listKodeAnom']);
+        // filter wilayah
+        $data['sel_prov'] = $this->request->getGet('sel-prov') ?? 13;
+        $data['sel_kab'] = $data['sel_prov'] ? $this->request->getGet('sel-kab') ?? null : null;
+        // reset filter wilayah ketika ganti filter
+        if ($oldFilter !== $data['filterAnomali']) {
+            $data['sel_kab'] = null;
+        }
+        $data['sel_kec'] = $data['sel_kab'] ? $this->request->getGet('sel-kec') ?? null : null;
+        $data['sel_des'] = $data['sel_kec'] ? $this->request->getGet('sel-des') ?? null : null;
+
+
+
+        $data['listKodeAnom'] = [[
+            'id' => '',
+            'nama' => "Pilih Kode Anomali",
+            'level' => ''
+        ]];
+        $listAnom = $this->anomaliModel->getKdAnomaliByUser() ?? [];
+
+        $data['listKodeAnom'] = array_merge($data['listKodeAnom'], $listAnom);
+        $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov']);
+        $data['list_kec'] = $this->anomaliModel->getWilayah('kec', $data['filterAnomali'], $data['sel_prov'], $data['sel_kab']);
+        $data['list_des'] = $this->anomaliModel->getWilayah('des', $data['filterAnomali'], $data['sel_prov'], $data['sel_kab'], $data['sel_kec']);
+
+        // jika tidak ada anomali yg terpilih, maka mengembalikan data null
+        if (!empty($data['filterAnomali'])) {
+            $data['data'] = $this->katAnomaliModel->find($data['filterAnomali']);
+
+            $idWilayah = $data['sel_prov'] . $data['sel_kab'] . $data['sel_kec'] . $data['sel_des'];
+            $len = strlen($idWilayah);
+            $hasil = $this->anomaliModel->builder()
+                ->where("left(id_wilayah,$len)", $idWilayah)
+                ->where('konfirmasi', '')
+                ->where('id_kategori_anomali', $data['filterAnomali'])
+                ->countAllResults();
+            // dd($this->anomaliModel->getLastQuery());
+
+            $data['jumlah_anomali'] = $hasil;
+        } else {
+            $data['data'] = null;
+            $data['jumlah_anomali'] = 0;
+        }
 
         return view('anomali/konfirmasiBulk', $data);
     }

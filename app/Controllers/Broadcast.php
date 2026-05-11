@@ -22,8 +22,30 @@ class Broadcast extends BaseController
         $data = [
             'title'      => 'Broadcast Information',
         ];
+        $currentWilayah = auth()->user()->wilayah_kerja;
 
-        $hasil = $this->broadcastModel->getBroadcast(session('aktif_kegiatan'), auth()->user()->wilayah_kerja);
+        // variabel filter
+        $data['filterWilayah'] = $this->request->getGet('fil-wilayah') ?? $currentWilayah;
+
+        // pilihan filter
+        $data['listWilayah'] = [];
+        $listWilayah = $this->broadcastModel->select('wilayah')
+            ->where('id_kegiatan', session('aktif_kegiatan'))
+            ->distinct()
+            // ->orderBy('wilayah', 'ASC')
+            ->findAll();
+
+        foreach ($listWilayah as ['wilayah' => $kode]) {
+            $data['listWilayah'][] = [
+                'id'   => $kode,
+                'nama' => "Broadcast $kode",
+            ];
+        }
+
+        $data['listWilayah'] = array_merge($data['listWilayah'], $listSelKdAnom ?? []);
+
+
+        $hasil = $this->broadcastModel->getBroadcast($data['filterWilayah']);
         $data['broadcasts'] = !empty($hasil) ? $hasil : [];
 
         return view('broadcast/index', $data);
@@ -31,20 +53,31 @@ class Broadcast extends BaseController
 
     public function simpan()
     {
-        $data['id'] = $this->request->getPost('br-id');
+        $currentUser = auth()->user();
+
+        $data['id'] = $this->request->getPost('br-id') ?? null;
         $data['judul'] = $this->request->getPost('br-judul');
         $data['isi'] = $this->request->getPost('br-isi');
         $data['kategori'] = $this->request->getPost('br-kategori');
-        $currentUser = auth()->user();
+        $data['wilayah'] = $currentUser->wilayah_kerja;
         if ($data['id']) {
             // cek apakah super admin bisa edit semua
-            if (!$currentUser->inGroup('superadmin')) {
+            $selectedBroadcast = $this->broadcastModel->find($data['id']);
+            if ($currentUser->inGroup('superadmin')) {
+            } elseif ($currentUser->inGroup('admin')) {
                 // cek apakah admin wilayah bersangkutan punya akses
-                $selectedBroadcast = $this->broadcastModel->findById($data['id']);
-                if (!$this->userModel->cekKesamaanWilayahTugas($selectedBroadcast->id_user, $currentUser->id)) {
+                if (!$this->userModel->cekKesamaanWilayahTugas($selectedBroadcast['id_user'], $currentUser->id)) {
                     return redirect()->back()->with('error', 'User tidak punya akses ubah');
                 }
+                return redirect()->back()->with('error', 'anda tidak punya akses untuk edit');
+            } else {
+                return redirect()->back()->with('error', 'anda tidak punya akses untuk edit');
             }
+            if (!$this->broadcastModel->update($selectedBroadcast->id, $data)) {
+                return redirect()->back()->with('error', 'gagal edit broadcast');
+            } else {
+                return redirect()->back()->with('message', 'berhasil edit broadcast');
+            };
         } else {
             $data['id_kegiatan'] = session()->get('aktif_kegiatan');
             $data['id_user'] = $currentUser->id;

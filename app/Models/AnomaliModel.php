@@ -13,14 +13,25 @@ class AnomaliModel extends Model
     protected $createdField = 'date_created';
     protected $updatedField = 'date_updated';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['id_kategori_anomali', 'id_user', 'id_wilayah', 'id_assigment', 'konfirmasi', 'is_lap', 'is_insert'];
+    protected $allowedFields = [
+        'id_kategori_anomali',
+        'id_user',
+        'id_wilayah',
+        'id_assigment',
+        'konfirmasi',
+        'is_lap',
+        'is_insert',
+        'is_sistem',
+    ];
 
     public function getAnomaliByWilayah($wilayah = null, $isEdit = null, $kode_anomali = null, $flag = null, $levelAnomali = null, $isRT = true)
     {
-        $len = strlen($wilayah);
-        $data = null;
         $id_kegiatan = session()->get('aktif_kegiatan') ?? null;
         $level_wilayah = session()->get('level_wilayah') ?? null;
+
+        // mengambil panjang id wilayah
+        $len = strlen($wilayah);
+        $data = null;
 
         if ($len == $level_wilayah && !$isRT) {
             $data = $this
@@ -34,11 +45,11 @@ class AnomaliModel extends Model
             // memasukkan filter by wilayah
             switch ($len) {
                 case '0':
-                    $data = $this->select("SUBSTRING(art.kd_assigment, 1, 4) AS id, wilayah.kd_kab AS kd,wilayah.nm_kab AS nm,COUNT(*) AS jmlAnom")
+                    $data = $this->select("LEFT(art.kd_assigment,4) AS id, wilayah.kd_kab AS kd,wilayah.nm_kab AS nm,COUNT(*) AS jmlAnom")
                         ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        ->join('wilayah', 'LEFT(wilayah.id,LENGTH(art.id_wilayah)) = art.id_wilayah', 'left')
+                        ->join('wilayah', 'wilayah.id = art.id_wilayah', 'left')
                         ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->groupBy('wilayah.kd_kab');
+                        ->groupBy('id');
                     break;
                 case '4':
                     $data = $this
@@ -152,7 +163,7 @@ class AnomaliModel extends Model
         $idKegiatan = session()->get('aktif_kegiatan') ?? null;
 
         $query = $this
-            ->select('anomali.id AS id, art.kd_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi')
+            ->select('anomali.id AS id, art.kd_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi,anomali.is_lap as is_lap')
             ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             ->where('k.is_show', true)
@@ -365,10 +376,10 @@ class AnomaliModel extends Model
     public function getAnomaliByAssigment($kd_assigment)
     {
         $query = $this
-            ->select('anomali.id AS id, art.kd_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi, anomali.id_kategori_anomali AS id_kategori_anomali')
-            ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
+            ->select('anomali.id AS id, ass.kd_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi, anomali.id_kategori_anomali AS id_kategori_anomali')
+            ->join('assigment ass', 'ass.id = anomali.id_assigment', 'left')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-            ->where('art.kd_assigment', $kd_assigment);
+            ->where('anomali.id_assigment', $kd_assigment);
         $data  = $query->findAll();
         return ($data);
     }
@@ -435,18 +446,66 @@ class AnomaliModel extends Model
         $id_kegiatan = session()->get('aktif_kegiatan');
         $wilayah_kerja = auth()->user()->wilayah_kerja;
 
-        $data = $this->select('LEFT(a.id_wilayah,4) AS id')
-            ->join('assigment a', 'a.id = anomali.id_assigment', 'left')
+        $data = $this->select('LEFT(anomali.id_wilayah,4) AS id')
+            // ->join('assigment a', 'a.id = anomali.id_assigment', 'left')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             ->where('k.id_kegiatan', $id_kegiatan);
 
         if ($wilayah_kerja != '1300') {
-            $data->where('LEFT(a.id_wilayah,4)', $wilayah_kerja);
+            $data->where('LEFT(anomali.id_wilayah,4)', $wilayah_kerja);
         }
 
-        $data->orderBy('id', 'ASC')
-            ->distinct();
+        $data->orderBy('id', 'ASC'); //id disini adalah id Wilayah
+        $data->distinct();
 
         return ($data->findAll());
+    }
+
+    public function getWilayah($level = 'kab', $idKat = null, $idProv = null, $idKab = null, $idKec = null, $idDes = null)
+    {
+        if ($level == 'kab' && !$idProv) return null;
+        if ($level == 'kec' && !$idKab) return null;
+        if ($level == 'des' && !$idKec) return null;
+        if ($level == 'sls' && !$idDes) return null;
+
+        $idKegiatan = session('aktif_kegiatan');
+        $data = $this
+            ->join('wilayah w', 'w.id = id_wilayah')
+            ->join('kategori_anomali k', 'k.id = id_kategori_anomali')
+            ->where('id_kegiatan', $idKegiatan);
+
+        switch ($level) {
+            case 'kab':
+                $data->select('kd_kab AS id, nm_kab AS nama');
+                break;
+            case 'kec':
+                $data->select('kd_kec AS id, nm_kec AS nama');
+                break;
+            case 'des':
+                $data->select('kd_des AS id, nm_des AS nama');
+                break;
+            case 'sls':
+                $data->select('kd_sls AS id, nm_sls AS nama');
+                break;
+        }
+
+        if ($idProv) {
+            $data->where('kd_prov', $idProv);
+            $data->where('kd_kab !=', "");
+        }
+        if ($idKab) {
+            $data->where('kd_kab', $idKab);
+            $data->where('kd_kec !=', "");
+        }
+        if ($idKec) {
+            $data->where('kd_kec', $idKec);
+            $data->where('kd_des !=', "");
+        }
+        if ($idDes) {
+            $data->where('kd_des', $idDes);
+            $data->where('kd_sls !=', "");
+        }
+
+        return ($data->distinct()->findAll());
     }
 }

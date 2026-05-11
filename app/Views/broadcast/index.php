@@ -20,6 +20,8 @@
         </div>
     </div>
 </div>
+
+
 <!-- allert message -->
 <?php if (session()->getFlashdata('message')) : ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -60,6 +62,37 @@
     <div class="container-xl">
         <div class="row justify-content-center">
             <div class="col-lg-10">
+
+                <!-- filter -->
+                <?php if (auth()->user()->wilayah_kerja === "1300"): ?>
+                    <div class="card card-body mb-5">
+                        <div class="hr-text hr-text-left fs-5 mb-3">Filter Broadcast</div>
+                        <div class="mb-3">
+                            <form action="<?= base_url('/broadcast') ?>" method="get">
+                                <div class="row g-3">
+                                    <div class="col-md-5">
+                                        <label class="form-label">Wilayah Broadcast</label>
+                                        <select name="fil-wilayah" class="form-select" id="filter-wilayah">
+                                            <?php foreach ($listWilayah as $l): ?>
+                                                <option value="<?= $l['id']; ?>" <?= ($l['id'] == $filterWilayah) ? 'selected' : ''; ?>><?= $l['nama']; ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-primary w-100" id="tombolFilterEdit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-filter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                                <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-4 2v-8.5l-4.414 -4.414a2 2 0 0 1 -.586 -1.414v-2.172z" />
+                                            </svg>
+                                            Terapkan
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                <?php endif; ?>
 
                 <ul class="timeline">
                     <?php foreach ($broadcasts as $b) : ?>

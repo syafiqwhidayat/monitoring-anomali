@@ -68,6 +68,19 @@ class ManajAnom extends BaseController
     public function log()
     {
         $data['title'] = "Log Upload";
+
+        // filter
+        $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
+        // data filter
+        $data['listLevel'] = [
+            [
+                'id' => '',
+                'nama' => "Semua Anomali",
+            ],
+        ];
+        $listSelLevel = $this->anomaliModel->getLevelAnomByUser() ?? [];
+        $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel ?? []);
+
         $data['logs'] = [];
 
         $datalog = $this->logModel->select('log_upload.*,idn.secret AS email')
@@ -75,6 +88,10 @@ class ManajAnom extends BaseController
             ->where('id_kegiatan', session()->get('aktif_kegiatan'))
             ->where('jenis', 'anomali')
             ->orderBy('created_at', 'DESC');
+
+        if ($data['filterLevel'] != '') {
+            $datalog->where('log_upload.wilayah', $data['filterLevel']);
+        }
 
         $data['logs'] = $datalog->findAll();
 
@@ -86,6 +103,12 @@ class ManajAnom extends BaseController
     {
         $id = $this->request->getVar('id');
         $action = $this->request->getVar('action');
+
+        // cek apakah user punya hak update
+        $kategoriAnom = $this->katAnomaliModel->find($id);
+        if ($kategoriAnom['level_anomali'] !== auth()->user()->wilayah_kerja) {
+            return redirect()->back()->with('error', 'User tidak punya akses edit Kategori Anomali');
+        }
 
         if ($action === "toggle") {
             $is_show = $this->request->getVar('is_show');
@@ -105,18 +128,10 @@ class ManajAnom extends BaseController
     {
         $data = [
             "title" => "Upload Anomali",
-            "data" => [
-                'id' => $id,
-                'kode_anomali' => 'AN21',
-                'definisi_anomali' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Nam nesciunt voluptatem dolorem pariatur reiciendis aspernatur provident itaque! Eveniet necessitatibus laboriosam, omnis excepturi sed architecto dolores repudiandae quisquam expedita facere. Sapiente.',
-                'detil_anomali' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Expedita, impedit quasi earum facilis officia est enim sit distinctio repellat recusandae!',
-                'is_show' => true,
-            ]
-
         ];
 
         $data['data'] = $this->katAnomaliModel->find($id);
-        // dd($data);
+        // dd($data['data']);
 
         return view('ManajAnom/edit', $data);
     }
@@ -127,10 +142,19 @@ class ManajAnom extends BaseController
             "title" => "Upload Anomali",
         ];
 
+        // data yg akan diupdate
         $data = $this->request->getPost();
         $id = $data['id'];
         unset($data['id']);
         unset($data['kode_anomali']);
+
+        // cek apakah user punya hak update
+        $kategoriAnom = $this->katAnomaliModel->find($id);
+        if ($kategoriAnom['level_anomali'] !== auth()->user()->wilayah_kerja) {
+            return redirect()->to(base_url('/manajemen-anomali/list'))->with('error', 'User tidak punya akses edit Kategori Anomali');
+        }
+
+
 
         // memastikan show untuk id yg sama
         if ($data['is_show'] == "show_id_" . $id) {
@@ -148,19 +172,6 @@ class ManajAnom extends BaseController
         }
 
         return redirect()->to(base_url('/manajemen-anomali/list'))->with('message', 'data berhasil di update');
-
-
-
-        // Jika BERHASIL, kembalikan JSON sukses
-
-        // dd("berhasil validasi");
-        // return $this->response->setJSON([
-        //     'status' => 'success',
-        //     'message' => 'Konfirmasi berhasil disimpan.',
-        //     'id_updated' => $id
-        // ]);
-
-        // dd($konfirmasi);
     }
 
     public function downloadTemplate()
@@ -174,6 +185,7 @@ class ManajAnom extends BaseController
 
         if ($file->isValid() && !$file->hasMoved()) {
             // 1. Simpan file ke folder writable/uploads
+            $oldName = $file->getName();
             $newName = $file->getRandomName();
             $file->move(WRITEPATH . 'uploads', $newName);
             $idKegiatan = session()->get('aktif_kegiatan');
@@ -183,18 +195,23 @@ class ManajAnom extends BaseController
             // 2. Buat catatan awal di tabel upload_logs (status: pending)
             $logId = $this->logModel->insert([
                 'nama_file' => $newName,
+                'nama_file_awal' => $oldName,
                 'status'    => 'pending',
                 'id_user'   => auth()->id(), // Siapa yang upload
                 'id_kegiatan' => session()->get('aktif_kegiatan'),
-                'jenis' => 'anomali'
+                'jenis' => 'anomali',
+                'wilayah' => auth()->user()->wilayah_kerja,
             ]);
 
             // 3. PANGGIL COMMAND DI BACKGROUND
             // Kita kirimkan Nama File dan ID Log sebagai parameter
             // Tanda '&' di akhir perintah adalah kunci agar berjalan di background
             // $command = "php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId . " > /dev/null 2>&1 &"; //command linux
-            $command = "start /B php " . FCPATH . "../spark proses:anomali " . $newName . " " . $logId . " " . $idKegiatan .  " " . $levelAnom; //command windows
-            shell_exec($command);
+            // $command = "start /B php " . FCPATH . "../spark proses:anomali " . $newName . " " . $logId . " " . $idKegiatan .  " " . $levelAnom; //command windows
+            // $command = "start /B php " . FCPATH . "../spark proses:anomali " . $newName . " " . $logId . " " . $idKegiatan . " " . $levelAnom . " > NUL 2> NUL";
+            $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:anomali ' . $newName . ' ' . $logId . ' ' . $idKegiatan . ' ' . $levelAnom . ' > NUL 2>&1"';
+            // shell_exec($command);
+            pclose(popen($command, "r"));
 
             return redirect()->to('/manajemen-anomali/log')->with('message', 'Upload berhasil! Sistem sedang memproses data di latar belakang.');
         }

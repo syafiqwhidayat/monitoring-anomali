@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const formData = new FormData(form);
         const anomaliId = formData.get("id");
         const anomaliKonfirmasi = formData.get("konfirmasi");
+        const kondisiLapangan = formData.get("kondisi_lapangan");
 
         // Perhatikan: Anda mungkin perlu ID unik lain jika ada beberapa tombol save
         // Jika ID tombol sama untuk semua form, gunakan form.querySelector
@@ -151,11 +152,11 @@ document.addEventListener("DOMContentLoaded", function () {
             // 3. Handle Feedback Berhasil/Gagal
             if (data.status === "success") {
               feedbackElement.innerHTML = savedContent;
-              form.classList.add("bg-success", "bg-opacity-10");
-              setTimeout(
-                () => form.classList.remove("bg-success", "bg-opacity-10"),
-                2000,
-              );
+              // form.classList.add("bg-success", "bg-opacity-10");
+              // setTimeout(
+              //   () => form.classList.remove("bg-success", "bg-opacity-10"),
+              //   2000,
+              // );
             } else {
               feedbackElement.innerHTML = `<span class="text-danger">Error: ${data.message}</span>`;
             }
@@ -168,7 +169,7 @@ document.addEventListener("DOMContentLoaded", function () {
           .finally(() => {
             // 4. Kembalikan tombol ke keadaan normal
             saveButton.disabled = false;
-            saveButton.textContent = "Save";
+            saveButton.textContent = "Saved";
           });
       });
     });

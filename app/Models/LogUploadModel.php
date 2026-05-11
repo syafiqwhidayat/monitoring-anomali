@@ -14,6 +14,8 @@ class LogUploadModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'nama_file',
+        'nama_file_awal',
+        'wilayah',
         'status',
         'total_baris',
         'berhasil',

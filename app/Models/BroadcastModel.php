@@ -16,6 +16,7 @@ class BroadcastModel extends Model
     protected $allowedFields    = [
         'id_user',
         'id_kegiatan',
+        'wilayah',
         'judul',
         'isi',
     ];
@@ -55,18 +56,25 @@ class BroadcastModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
-    public function getBroadcast($id_kegiatan = null, $wilayah_kerja = null)
+    public function getBroadcast($filterWilayah = null)
     {
-        if (!$id_kegiatan || !$wilayah_kerja) {
+        $id_kegiatan = session('aktif_kegiatan') ?? null;
+        if (!$id_kegiatan) {
             return null;
         }
 
-        $data = $this->select('broadcasts.*,us.wilayah_kerja')
+        $data = $this->select('broadcasts.*,wilayah')
             ->where('id_kegiatan', $id_kegiatan)
-            ->whereIn('us.wilayah_kerja', ['1300', $wilayah_kerja])
-            ->join('users us', 'us.id =id_user')
             ->orderBy('created_at', 'DESC');
+
+        if (!$filterWilayah) {
+            $data->whereIn('wilayah', ['1300', $filterWilayah]);
+        } else {
+            $data->where('wilayah', ['1300']);
+        }
+
         $data = $data->findAll();
+
         foreach ($data as $key => $dat) {
             $warna = null;
             switch ($dat['kategori']) {
@@ -86,7 +94,7 @@ class BroadcastModel extends Model
             }
 
             $data[$key]['warna'] = $warna;
-            if (substr($dat['wilayah_kerja'], -2) === "00") {
+            if (substr($dat['wilayah'], -2) === "00") {
                 $data[$key]['level'] = 'provinsi';
             } else {
                 $data[$key]['level'] = 'kabupaten';

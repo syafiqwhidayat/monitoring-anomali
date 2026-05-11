@@ -150,15 +150,19 @@ class WilayahTugasModel extends Model
 
         if ($idProv) {
             $data->where('kd_prov', $idProv);
+            $data->where('kd_kab !=', "");
         }
         if ($idKab) {
             $data->where('kd_kab', $idKab);
+            $data->where('kd_kec !=', "");
         }
         if ($idKec) {
             $data->where('kd_kec', $idKec);
+            $data->where('kd_des !=', "");
         }
         if ($idDes) {
             $data->where('kd_des', $idDes);
+            $data->where('kd_sls !=', "");
         }
 
         return ($data->findAll());
