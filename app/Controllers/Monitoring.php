@@ -71,17 +71,24 @@ class Monitoring extends BaseController
             'nama' => "Pilih Kode Anomali",
             'level' => ''
         ]];
+
+        // list kode anomali
         $listAnom = $this->anomaliModel->getKdAnomaliByUser() ?? [];
         $data['listKodeAnom'] = array_merge($data['listKodeAnom'], $listAnom);
+        // list kabupaten
         $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov']);
 
 
         $general = $this->katAnomaliModel->getDataUmum($data['filterAnomali'])[0];
-        $dataHead = $this->anomaliModel->jumlahKonfirmasiByPublik($data['filterAnomali']);
+
+        // jumlah data
+        $dataHead = $this->anomaliModel->jumlahKonfirmasiByPublik($data['filterAnomali']); //data jumlah menurut wilayah.
         $data["title"] = "Monitoring Anomali " . $general['kode_anomali'];
         $data["kode_anomali"] = $general['kode_anomali'];
         $data["is_public"] = $general['is_show'];
         $data["flag"] = $general['flag'];
+        $data["detil"] = $general['detil_anomali'];
+        $data["definisi"] = $general['definisi_anomali'];
         $data["dataCharJmlAnom"] = $this->dataChartJmlAnom($data['filterAnomali']);
         $data["dataHead"] = [
             'total seluruh' => $dataHead[0]['jumlah_total'],

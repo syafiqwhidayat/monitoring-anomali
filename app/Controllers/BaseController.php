@@ -84,7 +84,7 @@ abstract class BaseController extends Controller
             if ($daftarKegiatan) {
                 // Simpan ke session otomatis setelah login
                 session()->set('aktif_kegiatan', $terbaru['id']);
-                session()->set('nama_kegiatan', $terbaru['nama_kegiatan']);
+                session()->set('nama_kegiatan', $terbaru['nama']);
                 session()->set('is_rt', $terbaru['is_rt']);
                 session()->set('level_wilayah', $terbaru['level_wilayah']);
             }

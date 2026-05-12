@@ -42,7 +42,7 @@ class KatAnomaliModel extends Model
     public function getDataUmum($id)
     {
         $data = $this
-            ->select('kode_anomali,is_show,flag')
+            ->select('kode_anomali,is_show,flag,detil_anomali,definisi_anomali')
             ->where("id", $id);
         $data = $data->findAll();
         return ($data);

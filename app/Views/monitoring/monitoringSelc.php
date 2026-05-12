@@ -26,8 +26,8 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100" id="tombolFilterEdit">
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100 text-nowrap" id="tombolFilterEdit">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-filter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                 <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-4 2v-8.5l-4.414 -4.414a2 2 0 0 1 -.586 -1.414v-2.172z" />
@@ -39,7 +39,7 @@
             </div>
         </div>
     </form>
-    <div class="card card-body">
+    <!-- <div class="card card-body">
         <div class="row">
             <div class="col mb-3">
                 <div class="d-flex justify-content-center align-items-center gap-3">
@@ -51,6 +51,57 @@
                         <i class="bi <?= ($is_public) ? 'bi-eye-fill text-success' : 'bi-eye-slash-fill text-warning'; ?>"></i> <?= ($is_public) ? '' : 'Not'; ?> Public
                     </div>
                     <i class="btn-warning-bps rounded-pill py-1 px-2">Flag <?= ($flag) ? $flag : "?"; ?></i>
+                </div>
+            </div>
+        </div>
+    </div> -->
+    <div class="card card-stacked">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <!-- Bagian Kiri: Identitas Utama -->
+                <div class="col-md-auto text-center mb-3 mb-md-0">
+                    <div class="avatar avatar-xl rounded-pill bg-primary-lt mb-2" style="width: 80px; height: 80px; font-size: 1.5rem; font-weight: bold;">
+                        <?= $kode_anomali; ?>
+                    </div>
+                    <div>
+                        <span class="badge <?= ($is_public) ? 'bg-success-lt' : 'bg-warning-lt'; ?> px-2 py-1">
+                            <i class="bi <?= ($is_public) ? 'bi-eye-fill' : 'bi-eye-slash-fill'; ?> me-1"></i>
+                            <?= ($is_public) ? 'Public' : 'Internal Only'; ?>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Bagian Tengah: Judul dan Badge Flag -->
+                <div class="col">
+                    <div class="row">
+                        <div class="d-flex align-items-center">
+                            <h1 class="m-0 me-2">Statistik Anomali <?= $kode_anomali; ?></h1>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-warning text-warning-fg rounded-pill">Prioritas <?= $flag ?: "?"; ?></span>
+                        </div>
+
+
+                        <!-- Detail & Definisi (Ditambahkan) -->
+                        <div class="text-muted mt-2">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h4 class="mb-1 text-dark">Definisi Anomali</h4>
+                                    <p class="text-secondary small">
+                                        <!-- Isi dengan variabel definisi jika ada, atau teks statis -->
+                                        <?= $definisi ?? "Belum ada Definisi Anomali"; ?>
+                                    </p>
+                                </div>
+                                <div class="col-md-6 border-start">
+                                    <h4 class="mb-1 text-dark">Detail Teknis</h4>
+                                    <p class="text-primary small">
+                                        <!-- Isi dengan variabel definisi jika ada, atau teks statis -->
+                                        <?= $detil ?? "Belum ada Detil Anomali"; ?>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -155,6 +206,17 @@
             const container = document.getElementById('canvas-container');
             const dbData = <?php echo $dataWordCloud; ?>;
             // console.log(ctx);
+
+            // menghitung weight untuk wordcloud
+            const totalData = dbData.length;
+            let dynamicWeightFactor = 5;
+            if (totalData > 0 && totalData <= 5) {
+                dynamicWeightFactor = 40; // Sangat sedikit data
+            } else if (totalData > 5 && totalData <= 20) {
+                dynamicWeightFactor = 15; // Data sedang
+            } else {
+                dynamicWeightFactor = 5; // Data banyak (default Anda)
+            }
 
             // option legend
             const legend_donut = {
@@ -288,7 +350,7 @@
 
                 backgroundColor: '#ffffff',
                 gridSize: 10, // Jarak antar kata
-                weightFactor: 5, // Faktor pengali ukuran (sesuaikan jika kata terlalu kecil)
+                weightFactor: dynamicWeightFactor, // Faktor pengali ukuran (sesuaikan jika kata terlalu kecil)
                 rotateRatio: 0.3, // Persentase kata yang tampil vertikal (0.3 = 30%)
                 rotationSteps: 2, // Sudut rotasi (hanya horizontal dan vertikal)
                 ellipticity: 0.65, // Membuat bentuk sebaran agak oval (lebih estetik)
