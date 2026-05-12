@@ -7,75 +7,78 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 
-$routes->get('/broadcast', 'Broadcast::index'); //untuk halaman awal broadcast
-$routes->post('/broadcast/simpan', 'Broadcast::simpan'); //untuk simpang/edit broadcast
-$routes->post('/broadcast/hapus', 'Broadcast::hapus'); //untuk hapus broadcast
-// untuk memberi respon broadcast
-// untuk lihat respon broadcast
+$routes->get('access-denied', function () {
+    return view('errors/html/error_403');
+});
 
-$routes->get('/anomali', 'Anom::list'); //untuk halaman awal konfirmasi anomali dan konfirmasi anomali edit
-$routes->get('/anomali/listDetil', 'Anom::listDetil'); //untuk memunculkan part accordion
-$routes->post('/anomali/updateKonfirmasi', 'Anom::updateKonfirmasi');
-// $routes->get('/anomali/listEdit', 'Anom::listEdit');
-$routes->get('/anomali/listEdit', 'Anom::list/1');
-$routes->get('/anomali/konfirmasiBulk', 'Anom::konfirmasiBulk');
+$routes->get('/broadcast', 'Broadcast::index', ['filter' => 'activeRole:superadmin,admin,operator,mitra']); //untuk halaman awal broadcast
+$routes->group('broadcast', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
+    $routes->post('simpan', 'Broadcast::simpan'); //untuk tambah dan edit broadcast
+    $routes->post('hapus', 'Broadcast::hapus'); //untuk hapus broadcast
+});
 
-$routes->get('/manajemen-anomali/list', 'ManajAnom::manajemenList');  //daftar kategori anomali
-$routes->post('/manajemen-anomali/action', 'ManajAnom::manajemenAction');
-$routes->get('manajemen-anomali/edit/(:any)', 'ManajAnom::edit/$1');
-$routes->post('/manajemen-anomali/updateKategori', 'ManajAnom::updateKategori'); //update kategori anomali
-$routes->get('/manajemen-anomali/log', 'ManajAnom::log');
-$routes->get('/manajemen-anomali/template', 'ManajAnom::downloadTemplate');
-$routes->post('/manajemen-anomali/store', 'ManajAnom::store'); //menambah log tambahan anomali
-$routes->get('/manajemen-anomali/log-detil/(:num)', 'ManajAnom::logDetil/$1');
+$routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator,mitra'], static function ($routes) {
+    $routes->get('/', 'Anom::list'); //untuk halaman awal konfirmasi anomali dan konfirmasi anomali edit
+    $routes->get('listDetil', 'Anom::listDetil'); //untuk memunculkan part accordion
+    $routes->post('updateKonfirmasi', 'Anom::updateKonfirmasi'); //untuk update anomali
+    $routes->get('listEdit', 'Anom::list/1'); //memunculkan anomali yg mau di edit
+});
+$routes->get('/anomali/konfirmasiBulk', 'Anom::konfirmasiBulk', ['filter' => 'activeRole:superadmin,admin,operator']); //konfirmasi bulk anomali
 
-$routes->get('monitoring/', 'Monitoring::index');
-$routes->get('monitoring-sel', 'Monitoring::view');
+$routes->group('manajemen-anomali', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
+    $routes->get('list', 'ManajAnom::manajemenList');  //daftar kategori anomali
+    $routes->post('action', 'ManajAnom::manajemenAction'); //mati dan munculkan is public
+    $routes->get('edit/(:any)', 'ManajAnom::edit/$1'); //edit kategori anomali
+    $routes->post('updateKategori', 'ManajAnom::updateKategori'); //update kategori anomali
+    $routes->get('log', 'ManajAnom::log'); //memunculkan log upload
+    $routes->get('template', 'ManajAnom::downloadTemplate'); //download template
+    $routes->post('store', 'ManajAnom::store'); //menambah log tambahan anomali
+    $routes->get('log-detil/(:num)', 'ManajAnom::logDetil/$1'); //memunculkan error log
+});
 
-$routes->get('se/monitoring', 'SeMonitoring::index');
-$routes->get('se/upload', 'SeMonitoring::logs');
-$routes->get('se/downloadTemplate', 'SeMonitoring::downloadTemplate');
-$routes->post('se/store', 'SeMonitoring::store');
-$routes->post('se/hapus', 'SeMonitoring::hapus');
+$routes->get('monitoring/', 'Monitoring::index', ['filter' => 'activeRole:superadmin,admin,operator']); //menampilkan seluruh anomali
+$routes->get('monitoring-sel', 'Monitoring::view', ['filter' => 'activeRole:superadmin,admin,operator']); //menampilkan selected
+
+$routes->group('se', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
+    $routes->get('monitoring', 'SeMonitoring::index');
+});
+$routes->group('se', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
+    $routes->get('upload', 'SeMonitoring::logs');
+    $routes->get('downloadTemplate', 'SeMonitoring::downloadTemplate');
+    $routes->post('store', 'SeMonitoring::store');
+    $routes->post('hapus', 'SeMonitoring::hapus');
+});
 
 // $routes->get('/upload', 'Upload::index');
 // $routes->get('/upload/download-template', 'Upload::downloadTemplate');
 // $routes->post('/uploadFile', 'Upload::import');
+$routes->group('user', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
+    $routes->get('organik', 'ManajUser::list');
+    $routes->get('mitra', 'ManajUser::list/1');
+    $routes->get('tambah', 'ManajUser::tambah');
+    $routes->post('tambah-organik/store', 'ManajUser::simpan');
+    $routes->get('edit/(:num)', 'ManajUser::edit/$1');
+    $routes->post('edit/store', 'ManajUser::simpanEdit');
+    $routes->get('hapus', 'ManajUser::hapus');
+});
 
-// $routes->get('/pages', 'Pages::index');
-// $routes->get('/about', 'Pages::about');
-// $routes->get('/contact', 'Pages::contact');
-// $routes->get('/comics', 'Comics::index');
-// $routes->get('/comics/create', 'Comics::create');
-// $routes->get('/comics/edit/(:any)', 'Comics::edit/$1');
-// $routes->post('/comics/save', 'Comics::save');
-// $routes->post('/comics/update/(:num)', 'Comics::update/$1');
-// $routes->delete('/comics/(:num)', 'Comics::delete/$1');
-// $routes->get('/comics/(:any)', 'Comics::detail/$1');
+$routes->group('wilayah', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
+    $routes->get('wilayah', 'Wilayah::manajWilayahTugas');
+    $routes->get('wilayah/downloadTemplate', 'Wilayah::downloadTemplate');
+    $routes->post('wilayah/upload', 'Wilayah::store');
+    $routes->get('wilayah/logs', 'Wilayah::logsWilayah');
+    $routes->get('wilayah/log-detil/(:num)', 'Wilayah::logDetil/$1');
+    $routes->post('wilayah/edit', 'Wilayah::edit');
+});
 
-$routes->get('/user/organik', 'ManajUser::list');
-$routes->get('/user/mitra', 'ManajUser::list/1');
-$routes->get('/user/tambah', 'ManajUser::tambah');
-$routes->post('/user/tambah-organik/store', 'ManajUser::simpan');
-$routes->get('/user/edit/(:num)', 'ManajUser::edit/$1');
-$routes->post('/user/edit/store', 'ManajUser::simpanEdit');
-$routes->get('/user/hapus', 'ManajUser::hapus');
-
-$routes->get('/wilayah', 'Wilayah::manajWilayahTugas');
-$routes->get('/wilayah/downloadTemplate', 'Wilayah::downloadTemplate');
-$routes->post('/wilayah/upload', 'Wilayah::store');
-$routes->get('/wilayah/logs', 'Wilayah::logsWilayah');
-$routes->get('/wilayah/log-detil/(:num)', 'Wilayah::logDetil/$1');
-$routes->post('/wilayah/edit', 'Wilayah::edit');
-
-$routes->group('admin', ['filter' => 'group:admin'], static function ($routes) {
+$routes->group('admin', ['filter' => 'activeRole:admin'], static function ($routes) {
     $routes->get('users', 'Admin\UserController::index');
     $routes->post('users/store', 'Admin\UserController::store');
     // Tambahkan route edit/delete di sini
 });
 
-$routes->get('set_kegiatan/(:any)', 'Kegiatan::set/$1'); // untuk ubah kegiatan di header
-$routes->get('set_role', 'Admin\UserController::gantiRole'); // untuk ubah kegiatan di header
+$routes->get('set_kegiatan/(:any)', 'Kegiatan::set/$1', ['filter' => 'activeRole:superadmin,admin,operator,mitra']); // untuk ubah kegiatan di header
+$routes->get('set_role', 'Admin\UserController::gantiRole', ['filter' => 'activeRole:superadmin,admin,operator,mitra']); // untuk ubah kegiatan di header
 
 service('auth')->routes($routes);
 $routes->setAutoRoute(true);

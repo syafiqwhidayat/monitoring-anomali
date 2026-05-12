@@ -5,16 +5,20 @@ namespace App\Controllers;
 use CodeIgniter\Model;
 use App\Models\BroadcastModel;
 use App\Models\UserModel;
+use CodeIgniter\Validation\Validation;
+use PhpOffice\PhpSpreadsheet\RichText\Run;
 
 class Broadcast extends BaseController
 {
     protected $broadcastModel;
     protected $userModel;
+    protected $validator;
 
     public function __construct()
     {
         $this->broadcastModel = new BroadcastModel();
         $this->userModel = new UserModel();
+        $this->validator = \Config\Services::validation();
     }
 
     public function index()
@@ -56,10 +60,23 @@ class Broadcast extends BaseController
         $currentUser = auth()->user();
 
         $data['id'] = $this->request->getPost('br-id') ?? null;
-        $data['judul'] = $this->request->getPost('br-judul');
-        $data['isi'] = $this->request->getPost('br-isi');
+        $data['judul'] = strip_tags($this->request->getPost('br-judul'));
+        $data['isi'] = strip_tags($this->request->getPost('br-isi'));
         $data['kategori'] = $this->request->getPost('br-kategori');
         $data['wilayah'] = $currentUser->wilayah_kerja;
+        $rule = [
+            'judul' => "max_length[40]|trim",
+            'isi' => "max_length[300]|trim"
+        ];
+        $this->validator->reset();
+        if (!$this->validator->setRules($rule)->run($data)) {
+            $error = $this->validator->getErrors();
+            $firstError = !empty($error) ? array_values($error)[0] : null;
+            // memunculkan appaun pesan error yang pertama
+            return redirect()->back()->with('error', "Kesalahan Input : $firstError");
+        }
+
+
         if ($data['id']) {
             // cek apakah super admin bisa edit semua
             $selectedBroadcast = $this->broadcastModel->find($data['id']);

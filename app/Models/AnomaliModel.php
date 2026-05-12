@@ -213,42 +213,49 @@ class AnomaliModel extends Model
         return ($hasil);
     }
 
-    public function jumlahKonfirmasiByWiayah($idKat = 1)
+    public function jumlahKonfirmasiByWiayah($idKat = 1, $idkab = null, $level = null, $levelOuput = 4)
     {
-        // $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
         $id_kegiatan = session()->get('aktif_kegiatan');
+        $level_wilayah = session()->get('aktif_kegiatan');
 
         $hasil = $this
-            ->select("LEFT(id_wilayah,10) as 'id_kec'")
+            ->select("LEFT(id_wilayah,$levelOuput) as 'id_wil'")
             ->select('COUNT(*) as jumlah_total')
             ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi")
             ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
             ->where('id_kategori_anomali', $idKat)
-            ->where('id_kegiatan', $id_kegiatan)
-            ->groupBy("id_kec");
+            ->groupBy("id_wil");
+        if ($idkab) {
+            $hasil->where('LEFT(anomali.id_wilayah,4)', $idkab);
+        }
+        if ($level) {
+            $hasil->where('kategori_anomali', $level);
+        }
 
         $hasil = $hasil->findAll();
-        // dd($hasil);
         return ($hasil);
     }
     public function jumlahKonfirmasiByPublik($idKat = null)
     {
         $idKegiatan = session()->get('aktif_kegiatan');
+
         $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
+
         $joinKatAnomali->select('COUNT(*) as jumlah_total')
             ->select("SUM(CASE WHEN kategori_anomali.is_show = 1 THEN 1 ELSE 0 END) as jumlah_public")
             ->select("SUM(CASE WHEN kategori_anomali.is_show = 0 THEN 1 ELSE 0 END) as jumlah_non_public");
         if ($idKat) {
             $joinKatAnomali->where('anomali.id_kategori_anomali', $idKat);
         }
+
         $joinKatAnomali->where('id_kegiatan', $idKegiatan);
         $hasil = $joinKatAnomali->findAll();
         return ($hasil);
     }
-    public function jumlahProses($jenis = "all", $idKat = null)
+    public function jumlahProses($jenis = "all", $idKat = null, $idWilayah = null)
     {
-        $idKegiatan = session()->get('aktif_kegiatan');
         $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
+
         $joinKatAnomali->select('COUNT(*) as jumlah_total')
             ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi");
 
@@ -268,18 +275,18 @@ class AnomaliModel extends Model
             case "flag3":
                 $joinKatAnomali->where('kategori_anomali.flag', 3);
                 break;
-                dafault:
+            default:
                 $joinKatAnomali->where('kategori_anomali.is_show', 1);
                 break;
         }
         if ($idKat) {
             $joinKatAnomali->where('anomali.id_kategori_anomali', $idKat);
         }
-        if ($idKegiatan) {
-            $joinKatAnomali->where('id_kegiatan', $idKegiatan);
+        if ($idWilayah) {
+            $joinKatAnomali->whereIn('kategori_anomali.level_anomali', ['1300', $idWilayah]);
         }
         $hasil = $joinKatAnomali->findAll();
-        // dd($hasil);
+
         return ($hasil);
     }
     public function jumlahByTanggal($idKat = '')

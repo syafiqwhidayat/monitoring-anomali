@@ -244,17 +244,17 @@
             const myChart = new Chart(ctx, {
                 type: 'bar', // Tipe grafik (bar, line, pie)
                 data: {
-                    labels: <?= $dataCharJmlAnom['labels'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
+                    labels: <?= $data_proses_wilayah['labels'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                     datasets: [{
-                            label: <?= $dataCharJmlAnom['datesets'][0]['label'] ?>,
-                            data: <?= $dataCharJmlAnom['datesets'][0]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                            label: <?= $data_proses_wilayah['datesets'][0]['label'] ?>,
+                            data: <?= $data_proses_wilayah['datesets'][0]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                             backgroundColor: '#94C11F',
                             borderColor: 'rgba(255, 255, 255, 1)',
                             borderWidth: 1
                         },
                         {
-                            label: <?= $dataCharJmlAnom['datesets'][1]['label'] ?>,
-                            data: <?= $dataCharJmlAnom['datesets'][1]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                            label: <?= $data_proses_wilayah['datesets'][1]['label'] ?>,
+                            data: <?= $data_proses_wilayah['datesets'][1]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                             backgroundColor: '#0369A1',
                             borderColor: 'rgba(255, 255, 255, 1)',
                             borderWidth: 1
@@ -284,9 +284,9 @@
             const grafPersenAnom = new Chart(persenAnom, {
                 type: 'doughnut', // Tipe grafik (bar, line, pie)
                 data: {
-                    labels: <?= $dataProses['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
+                    labels: <?= $data_proses['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                     datasets: [{
-                        data: <?= $dataProses['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        data: <?= $data_proses['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                         backgroundColor: ['#0369A1', '#B3B3B3'],
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1

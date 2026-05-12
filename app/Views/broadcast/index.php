@@ -7,16 +7,19 @@
             <div class="col">
                 <h2 class="page-title">Broadcast Informasi</h2>
             </div>
-            <div class="col-auto ms-auto">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-broadcast">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M12 5l0 14" />
-                        <path d="M5 12l14 0" />
-                    </svg>
-                    Buat Pengumuman
-                </button>
-            </div>
+            <?php $allowedRoles = ['superadmin', 'admin'];
+            if (in_array(session('aktif_role'), $allowedRoles)): ?>
+                <div class="col-auto ms-auto">
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-tambah-broadcast">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M12 5l0 14" />
+                            <path d="M5 12l14 0" />
+                        </svg>
+                        Buat Pengumuman
+                    </button>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -64,7 +67,7 @@
             <div class="col-lg-10">
 
                 <!-- filter -->
-                <?php if (auth()->user()->wilayah_kerja === "1300"): ?>
+                <?php if (auth()->user()->wilayah_kerja === "1300" && session('aktif_role') !== 'mitra'): ?>
                     <div class="card card-body mb-5">
                         <div class="hr-text hr-text-left fs-5 mb-3">Filter Broadcast</div>
                         <div class="mb-3">
@@ -244,12 +247,12 @@
                     <div class="mb-3">
                         <label class="form-label">Judul Broadcast</label>
                         <input type="text" name="br-judul" id="br-judul" class="form-control" required>
-                        <small class="form-hint mt-2">Masukkan Judul Broadcast</small>
+                        <small class="form-hint mt-2">Masukkan Judul Broadcast. Panjang maksimal 40 karakter.</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Isi Broadbast</label>
                         <textarea type="text" name="br-isi" id="br-isi" class="form-control" required></textarea>
-                        <small class="form-hint mt-2">Masukkan Isi Broadcast</small>
+                        <small class="form-hint mt-2">Masukkan Isi Broadcast. Panjang maksimal 300 karakter.</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Kategori Broadcast</label>

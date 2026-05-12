@@ -54,7 +54,7 @@ class AuthGroups extends ShieldAuthGroups
             'description' => 'hanya bisa melakukan konfirmasi anomali diseluruh wilayah',
         ],
         'mitra' => [
-            'title'       => 'Operator',
+            'title'       => 'Mitra',
             'description' => 'hanya bisa melakukan konfirmasi anomali di beberapa wilayah',
         ],
     ];

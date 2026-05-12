@@ -46,32 +46,36 @@
                             <span class="nav-link-title"> Home </span>
                         </a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-device-desktop-analytics">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M3 5a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1l0 -10" />
-                                    <path d="M7 20h10" />
-                                    <path d="M9 16v4" />
-                                    <path d="M15 16v4" />
-                                    <path d="M9 12v-4" />
-                                    <path d="M12 12v-1" />
-                                    <path d="M15 12v-2" />
-                                    <path d="M12 12v-1" />
-                                </svg>
-                            </span>
-                            <span class="nav-link-title">Monitoring SE2026</span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <div class="dropdown-menu-columns">
-                                <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="<?= base_url('/se/monitoring') ?>">Moniroing Keseluruhan</a>
-                                    <a class="dropdown-item" href="<?= base_url('/se/upload') ?>">Upload Monitoring SE2026</a>
+                    <?php if (session('aktif_role') !== 'mitra'): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-device-desktop-analytics">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M3 5a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1l0 -10" />
+                                        <path d="M7 20h10" />
+                                        <path d="M9 16v4" />
+                                        <path d="M15 16v4" />
+                                        <path d="M9 12v-4" />
+                                        <path d="M12 12v-1" />
+                                        <path d="M15 12v-2" />
+                                        <path d="M12 12v-1" />
+                                    </svg>
+                                </span>
+                                <span class="nav-link-title">Monitoring SE2026</span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu-columns">
+                                    <div class="dropdown-menu-column">
+                                        <a class="dropdown-item" href="<?= base_url('/se/monitoring') ?>">Moniroing Keseluruhan</a>
+                                        <?php if (session('aktif_role') !== 'operator'): ?>
+                                            <a class="dropdown-item" href="<?= base_url('/se/upload') ?>">Upload Monitoring SE2026</a>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </li>
+                        </li>
+                    <?php endif; ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
                             <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -116,79 +120,85 @@
                                 <div class="dropdown-menu-column">
                                     <a class="dropdown-item" href="<?= base_url('/anomali') ?>">Konfirmasi Anomali</a>
                                     <a class="dropdown-item" href="<?= base_url('/anomali/listEdit') ?>">Edit Konfirmasi Anomali</a>
-                                    <a class="dropdown-item" href="<?= base_url('/anomali/konfirmasiBulk') ?>">Konfirmasi Bulk Anomali</a>
-                                    <!-- <a class="dropdown-item" href="#">Konfirmasi Menurut Anomali</a> -->
+                                    <?php if (session('aktif_role') !== 'mitra'): ?>
+                                        <a class="dropdown-item" href="<?= base_url('/anomali/konfirmasiBulk') ?>">Konfirmasi Bulk Anomali</a>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
-                                    <path d="M12 12l8 -4.5" />
-                                    <path d="M12 12l0 9" />
-                                    <path d="M12 12l-8 -4.5" />
-                                    <path d="M16 5.25l-8 4.5" />
-                                </svg>
-                            </span>
-                            <span class="nav-link-title"> Manajemen Anomali </span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <div class="dropdown-menu-columns">
-                                <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="<?= base_url('/manajemen-anomali/list') ?>">Manajemen Anomali</a>
-                                    <a class="dropdown-item" href="<?= base_url('/manajemen-anomali/log') ?>">Log Upload Anomali</a>
+                    <?php if (session('aktif_role') !== 'mitra'): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5" />
+                                        <path d="M12 12l8 -4.5" />
+                                        <path d="M12 12l0 9" />
+                                        <path d="M12 12l-8 -4.5" />
+                                        <path d="M16 5.25l-8 4.5" />
+                                    </svg>
+                                </span>
+                                <span class="nav-link-title"> Manajemen Anomali </span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu-columns">
+                                    <div class="dropdown-menu-column">
+                                        <a class="dropdown-item" href="<?= base_url('/manajemen-anomali/list') ?>">Manajemen Anomali</a>
+                                        <a class="dropdown-item" href="<?= base_url('/manajemen-anomali/log') ?>">Log Upload Anomali</a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-dashboard">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M10 13a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                                    <path d="M13.45 11.55l2.05 -2.05" />
-                                    <path d="M6.4 20a9 9 0 1 1 11.2 0l-11.2 0" />
-                                </svg>
-                            </span>
-                            <span class="nav-link-title"> Monitoring Anomali</span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <div class="dropdown-menu-columns">
-                                <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="<?= base_url('/monitoring') ?>">Monitoring Anomali All</a>
-                                    <a class="dropdown-item" href="<?= base_url('monitoring-sel') ?>">Monitoring Anomali Tertentu</a>
-                                    <a class="dropdown-item" href="<?= base_url('') ?>">Evaluasi Petugas <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-dashboard">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M10 13a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                                        <path d="M13.45 11.55l2.05 -2.05" />
+                                        <path d="M6.4 20a9 9 0 1 1 11.2 0l-11.2 0" />
+                                    </svg>
+                                </span>
+                                <span class="nav-link-title"> Monitoring Anomali</span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu-columns">
+                                    <div class="dropdown-menu-column">
+                                        <a class="dropdown-item" href="<?= base_url('/monitoring') ?>">Monitoring Anomali All</a>
+                                        <a class="dropdown-item" href="<?= base_url('monitoring-sel') ?>">Monitoring Anomali Tertentu</a>
+                                        <a class="dropdown-item" href="<?= base_url('') ?>">Evaluasi Petugas <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-user">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                                    <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                                </svg>
-                            </span>
-                            <span class="nav-link-title">Manajemen Akun</span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <div class="dropdown-menu-columns">
-                                <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Manajemen User Organik</a>
-                                    <a class="dropdown-item" href="<?= base_url('/user/mitra') ?>">Manajemen User Mitra</a>
-                                    <a class="dropdown-item" href="<?= base_url('/wilayah') ?>">Manajemen Wilayah Tugas</a>
-                                    <a class=" dropdown-item" href="<?= base_url('/wilayah/logs') ?>">Log Upload Wilayah Tugas</a>
+                        </li>
+                    <?php endif; ?>
+                    <?php $allowedRoles = ['superadmin', 'admin'];
+                    if (in_array(session('aktif_role'), $allowedRoles)): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-user">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                                        <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                                    </svg>
+                                </span>
+                                <span class="nav-link-title">Manajemen Akun</span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu-columns">
+                                    <div class="dropdown-menu-column">
+                                        <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Manajemen User Organik</a>
+                                        <a class="dropdown-item" href="<?= base_url('/user/mitra') ?>">Manajemen User Mitra</a>
+                                        <a class="dropdown-item" href="<?= base_url('/wilayah') ?>">Manajemen Wilayah Tugas</a>
+                                        <a class=" dropdown-item" href="<?= base_url('/wilayah/logs') ?>">Log Upload Wilayah Tugas</a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </li>
+                        </li>
+                    <?php endif; ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
                             <span class="nav-link-icon d-md-none d-lg-inline-block">
@@ -206,35 +216,41 @@
                         <div class="dropdown-menu">
                             <div class="dropdown-menu-columns">
                                 <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Manajemen Kegiatan <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                                    <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Daftar Kegiatan <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                                    <?php $allowedRoles = ['superadmin', 'admin'];
+                                    if (in_array(session('aktif_role'), $allowedRoles)): ?>
+                                        <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Manajemen Kegiatan <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
-                            <span class="nav-link-icon d-md-none d-lg-inline-block">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-file-type-sql">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
-                                    <path d="M5 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75" />
-                                    <path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" />
-                                    <path d="M18 15v6h2" />
-                                    <path d="M13 15a2 2 0 0 1 2 2v2a2 2 0 1 1 -4 0v-2a2 2 0 0 1 2 -2" />
-                                    <path d="M14 20l1.5 1.5" />
-                                </svg>
-                            </span>
-                            <span class="nav-link-title">Generate SQL</span>
-                        </a>
-                        <div class="dropdown-menu">
-                            <div class="dropdown-menu-columns">
-                                <div class="dropdown-menu-column">
-                                    <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Genarte SQL Lab <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                    <?php if (session('aktif_role') !== 'mitra'): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-file-type-sql">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                        <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+                                        <path d="M5 20.25c0 .414 .336 .75 .75 .75h1.25a1 1 0 0 0 1 -1v-1a1 1 0 0 0 -1 -1h-1a1 1 0 0 1 -1 -1v-1a1 1 0 0 1 1 -1h1.25a.75 .75 0 0 1 .75 .75" />
+                                        <path d="M5 12v-7a2 2 0 0 1 2 -2h7l5 5v4" />
+                                        <path d="M18 15v6h2" />
+                                        <path d="M13 15a2 2 0 0 1 2 2v2a2 2 0 1 1 -4 0v-2a2 2 0 0 1 2 -2" />
+                                        <path d="M14 20l1.5 1.5" />
+                                    </svg>
+                                </span>
+                                <span class="nav-link-title">Generate SQL</span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu-columns">
+                                    <div class="dropdown-menu-column">
+                                        <a class="dropdown-item" href="<?= base_url('/user/organik') ?>">Genarte SQL Lab <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </li>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>

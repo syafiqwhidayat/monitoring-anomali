@@ -79,21 +79,21 @@ class Monitoring extends BaseController
         $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov']);
 
 
-        $general = $this->katAnomaliModel->getDataUmum($data['filterAnomali'])[0];
+        $general = $this->katAnomaliModel->getDataUmum($data['filterAnomali'])[0] ?? [];
 
         // jumlah data
         $dataHead = $this->anomaliModel->jumlahKonfirmasiByPublik($data['filterAnomali']); //data jumlah menurut wilayah.
         $data["title"] = "Monitoring Anomali " . $general['kode_anomali'];
-        $data["kode_anomali"] = $general['kode_anomali'];
-        $data["is_public"] = $general['is_show'];
-        $data["flag"] = $general['flag'];
-        $data["detil"] = $general['detil_anomali'];
-        $data["definisi"] = $general['definisi_anomali'];
-        $data["dataCharJmlAnom"] = $this->dataChartJmlAnom($data['filterAnomali']);
+        $data["kode_anomali"] = $general['kode_anomali'] ?? null;
+        $data["is_public"] = $general['is_show'] ?? null;
+        $data["flag"] = $general['flag'] ?? null;
+        $data["detil"] = $general['detil_anomali'] ?? null;
+        $data["definisi"] = $general['definisi_anomali'] ?? null;
+        $data["data_proses_wilayah"] = $this->dataChartJmlAnom($data['filterAnomali']);
         $data["dataHead"] = [
             'total seluruh' => $dataHead[0]['jumlah_total'],
         ];
-        $data["dataProses"] = [
+        $data["data_proses"] = [
             'label' => json_encode(['Selesai', 'Belum']),
             'nilai' => json_encode($this->dataChartProses('proses', $data['filterAnomali'])),
         ];
@@ -198,15 +198,21 @@ class Monitoring extends BaseController
     {
         $dataModel = null;
         $judulBaris = null;
+
         if ($id_kat) {
+            // jika id kategori ada, maka ambil jumlah konfirmasi by wilayah menurut kategori
             $dataModel = $this->anomaliModel->jumlahKonfirmasiByWiayah($id_kat);
-            $judulBaris = array_column($dataModel, 'id_kec');
+            $judulBaris = array_column($dataModel, 'id_wil');
         } else {
+            // jika id kategori null, maka ambil jumlah anomali by kategori menurut kegiatan
             $dataModel = $this->anomaliModel->jumlahKonfirmasiByAnoamli(session()->get('aktif_kegiatan'));
             $judulBaris = array_column($dataModel, 'kode_anomali');
         };
+
+        // map agar sesuai dengan format.
         $jumlah_terisi = array_column($dataModel, 'jumlah_terisi');
         $jumlah_total = array_column($dataModel, 'jumlah_total');
+
         $selisih = array_map(fn($a, $b) => $a - $b, $jumlah_total, $jumlah_terisi);
         $data =  [
             'labels' => json_encode($judulBaris),
