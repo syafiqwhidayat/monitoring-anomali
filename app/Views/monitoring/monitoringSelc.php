@@ -3,6 +3,42 @@
 <?= $this->section('content'); ?>
 
 <div class="container" jenis-konf="0">
+    <form action="<?= base_url('/monitoring-sel') ?>" method="get">
+        <input type="hidden" name="fil-anomali-old" value="<?= $filterAnomali; ?>">
+        <div class="card card-body mb-5 ">
+            <div class="hr-text hr-text-left fs-5 mb-3">Filter Broadcast</div>
+            <div class="mb-3">
+                <div class="row g-3">
+                    <div class="col-md-5">
+                        <label class="form-label">Pilih Kode Anomali</label>
+                        <select name="fil-anomali" class="form-select" id="filter-anomali">
+                            <?php foreach ($listKodeAnom as $l): ?>
+                                <option value="<?= $l['id']; ?>" <?= ($l['id'] == $filterAnomali) ? 'selected' : ''; ?>><?= $l['nama']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Kabupaten</label>
+                        <select name="sel-kab" class="form-select">
+                            <option value="">Semua Kabupaten</option>
+                            <?php foreach ($list_kab ?? [] as $kab): ?>
+                                <option value="<?= $kab['id']; ?>" <?= ($sel_kab == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100" id="tombolFilterEdit">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-filter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-4 2v-8.5l-4.414 -4.414a2 2 0 0 1 -.586 -1.414v-2.172z" />
+                            </svg>
+                            Pilih Anomali
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
     <div class="card card-body">
         <div class="row">
             <div class="col mb-3">
@@ -115,7 +151,7 @@
             const ctx = document.getElementById('grafikAnomali');
             const persenAnom = document.getElementById('grafPersenAnom');
             const timelineAnom = document.getElementById('grafTimeline');
-            const canvas = document.getElementById('myWordCloud');
+            const wordCld = document.getElementById('myWordCloud');
             const container = document.getElementById('canvas-container');
             const dbData = <?php echo $dataWordCloud; ?>;
             // console.log(ctx);
@@ -238,9 +274,9 @@
                 }
             });
 
-            canvas.width = container.offsetWidth;
-            canvas.height = container.offsetHeight;
-            WordCloud(canvas, {
+            wordCld.width = container.offsetWidth;
+            wordCld.height = container.offsetHeight;
+            WordCloud(wordCld, {
                 list: dbData,
                 fontFamily: 'Segoe UI, Arial, sans-serif',
                 fontWeight: 'bold',
@@ -253,7 +289,7 @@
                 backgroundColor: '#ffffff',
                 gridSize: 10, // Jarak antar kata
                 weightFactor: 5, // Faktor pengali ukuran (sesuaikan jika kata terlalu kecil)
-                rotateRatio: 0.1, // Persentase kata yang tampil vertikal (0.3 = 30%)
+                rotateRatio: 0.3, // Persentase kata yang tampil vertikal (0.3 = 30%)
                 rotationSteps: 2, // Sudut rotasi (hanya horizontal dan vertikal)
                 ellipticity: 0.65, // Membuat bentuk sebaran agak oval (lebih estetik)
                 shuffle: true // Mengacak posisi setiap kali refresh

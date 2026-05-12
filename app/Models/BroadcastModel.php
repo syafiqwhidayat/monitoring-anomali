@@ -17,6 +17,7 @@ class BroadcastModel extends Model
         'id_user',
         'id_kegiatan',
         'wilayah',
+        'kategori',
         'judul',
         'isi',
     ];
@@ -67,7 +68,7 @@ class BroadcastModel extends Model
             ->where('id_kegiatan', $id_kegiatan)
             ->orderBy('created_at', 'DESC');
 
-        if (!$filterWilayah) {
+        if ($filterWilayah) {
             $data->whereIn('wilayah', ['1300', $filterWilayah]);
         } else {
             $data->where('wilayah', ['1300']);
@@ -87,7 +88,6 @@ class BroadcastModel extends Model
                 case 'kondef':
                     $warna = 'orange';
                     break;
-
                 default:
                     $warna = 'blue';
                     break;

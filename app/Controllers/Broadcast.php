@@ -69,11 +69,12 @@ class Broadcast extends BaseController
                 if (!$this->userModel->cekKesamaanWilayahTugas($selectedBroadcast['id_user'], $currentUser->id)) {
                     return redirect()->back()->with('error', 'User tidak punya akses ubah');
                 }
-                return redirect()->back()->with('error', 'anda tidak punya akses untuk edit');
             } else {
                 return redirect()->back()->with('error', 'anda tidak punya akses untuk edit');
             }
-            if (!$this->broadcastModel->update($selectedBroadcast->id, $data)) {
+            // jika aman semuanya.
+            unset($data['id']);
+            if (!$this->broadcastModel->update($selectedBroadcast['id'], $data)) {
                 return redirect()->back()->with('error', 'gagal edit broadcast');
             } else {
                 return redirect()->back()->with('message', 'berhasil edit broadcast');

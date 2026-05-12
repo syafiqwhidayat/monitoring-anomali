@@ -27,17 +27,23 @@ class SeMonitoring extends BaseController
 
     public function index()
     {
-        $dataHead = $this->seMonitoringModel->jumlahKonfirmasiByPublik();
-        $submitED = $dataHead[0]['submit_ED'];
-        $sumbitNED = $dataHead[0]['submit_NED'];
-        $open = $dataHead[0]['open'];
+        $dataHead = $this->seMonitoringModel->jumlahSeluruhWilayah();
+        $submitED = $dataHead[0]['jml_ed'];
+        $sumbitNED = $dataHead[0]['jml_submit'] + $dataHead[0]['tbh_submit'] - $dataHead[0]['jml_ed'];
+        $totalSubmit = $dataHead[0]['jml_submit'] + $dataHead[0]['tbh_submit'];
+        $open = $dataHead[0]['jml_open'] + $dataHead[0]['tbh_open'];
+        $ngibar = $dataHead[0]['tbh_submit'];
         $data = [
             "title" => "Monitoring Progress Sensus Ekonomi",
-            "dataCharJmlKab" => $this->dataChartNgibar(),
+            "dataStatusKab" => $this->dataChartNgibar(),
             "dataHead" => [
-                'total_submit' => $dataHead[0]['submit_total'],
-                'total_ED' => $dataHead[0]['submit_ED'],
-                'total_NED' => $dataHead[0]['submit_NED']
+                'total_submit' => $totalSubmit,
+                'total_ED' => $submitED,
+                'total_NED' => $sumbitNED
+            ],
+            "dataProgresNgibar" => [
+                'label' => json_encode(['Ngibar/Mandiri', 'Submit Petugas', 'Open']),
+                'nilai' => json_encode([$ngibar, ($totalSubmit - $ngibar), $open]),
             ],
             "dataProgresFasih" => [
                 'label' => json_encode(['Submit Ekonomi Digital', 'Submit Non Ekonomi Digital', 'Open']),
@@ -322,6 +328,8 @@ class SeMonitoring extends BaseController
     {
         $dataModel = null;
         $judulBaris = null;
+        $idPotensiED = 2;
+        $dataPotensi = $this->anomaliModel;
 
         $dataModel = $this->seMonitoringModel->jumlahKonfirmasiByWiayah();
         $judulBaris = array_column($dataModel, 'kd_wilayah');
@@ -362,27 +370,29 @@ class SeMonitoring extends BaseController
         $dataModel = null;
         $judulBaris = null;
 
-        $dataModel = $this->seMonitoringModel->jumlahKonfirmasiByWiayah();
+        $dataModel = $this->seMonitoringModel->getDataTerbaru();
         $judulBaris = array_column($dataModel, 'kd_wilayah');
-        $jumlah_ed = array_column($dataModel, 'jumlah_ED');
-        $jumlah_submit = array_column($dataModel, 'jumlah_submit');
+        $jml_submit = array_column($dataModel, 'jml_submit');
+        $jml_open = array_column($dataModel, 'jml_open');
+        $tbh_submit = array_column($dataModel, 'tbh_submit');
+        $tbh_open = array_column($dataModel, 'tbh_open');
+        $jml_ed = array_column($dataModel, 'jml_ed');
         $jumlah_total = array_column($dataModel, 'jumlah_total');
-        $tampil_submit = array_map(fn($a, $b) => $a - $b, $jumlah_submit, $jumlah_ed);
-        $tampil_sisa = array_map(fn($a, $b) => $a - $b, $jumlah_total, $jumlah_submit);
+        $open = array_map(fn($a, $b) => $a + $b, $tbh_open, $jml_open);
         $data =  [
             'labels' => json_encode($judulBaris),
             'datesets' => [
                 [
                     'label' => json_encode(['Submit Ngibar/Mandiri']),
-                    'nilai' => json_encode($jumlah_ed),
+                    'nilai' => json_encode($tbh_submit),
                 ],
                 [
                     'label' => json_encode(['Submit Petugas']),
-                    'nilai' => json_encode($tampil_submit),
+                    'nilai' => json_encode($jml_submit),
                 ],
                 [
                     'label' => json_encode(['Open']),
-                    'nilai' => json_encode($tampil_sisa),
+                    'nilai' => json_encode($open),
                 ],
             ],
         ];

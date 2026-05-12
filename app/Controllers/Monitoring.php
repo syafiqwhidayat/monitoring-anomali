@@ -59,27 +59,41 @@ class Monitoring extends BaseController
         return view('monitoring/monitoringAll', $data);
     }
 
-    public function view($id_kat)
+    public function view()
     {
-        $general = $this->katAnomaliModel->getDataUmum($id_kat)[0];
-        $dataHead = $this->anomaliModel->jumlahKonfirmasiByPublik($id_kat);
-        $data = [
-            "title" => "Monitoring Anomali " . $general['kode_anomali'],
-            "kode_anomali" => $general['kode_anomali'],
-            "is_public" => $general['is_show'],
-            "flag" => $general['flag'],
-            "dataCharJmlAnom" => $this->dataChartJmlAnom($id_kat),
-            "dataHead" => [
-                'total seluruh' => $dataHead[0]['jumlah_total'],
-            ],
-            "dataProses" => [
-                'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode($this->dataChartProses('proses', $id_kat)),
-            ],
-            "dataTimeline" => $this->dataTimeline($id_kat),
-            "dataWordCloud" => json_encode($this->dataWordCloud($id_kat)),
-            "dataTop5" => $this->anomaliModel->getTop5($id_kat)
+        // filter terpilih
+        $data['filterAnomali'] = $this->request->getGet('fil-anomali') ?? '2';
+        $data['sel_prov'] = $this->request->getGet('sel-prov') ?? 13;
+        $data['sel_kab'] = $data['sel_prov'] ? $this->request->getGet('sel-kab') ?? null : null;
+
+        $data['listKodeAnom'] = [[
+            'id' => '',
+            'nama' => "Pilih Kode Anomali",
+            'level' => ''
+        ]];
+        $listAnom = $this->anomaliModel->getKdAnomaliByUser() ?? [];
+        $data['listKodeAnom'] = array_merge($data['listKodeAnom'], $listAnom);
+        $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov']);
+
+
+        $general = $this->katAnomaliModel->getDataUmum($data['filterAnomali'])[0];
+        $dataHead = $this->anomaliModel->jumlahKonfirmasiByPublik($data['filterAnomali']);
+        $data["title"] = "Monitoring Anomali " . $general['kode_anomali'];
+        $data["kode_anomali"] = $general['kode_anomali'];
+        $data["is_public"] = $general['is_show'];
+        $data["flag"] = $general['flag'];
+        $data["dataCharJmlAnom"] = $this->dataChartJmlAnom($data['filterAnomali']);
+        $data["dataHead"] = [
+            'total seluruh' => $dataHead[0]['jumlah_total'],
         ];
+        $data["dataProses"] = [
+            'label' => json_encode(['Selesai', 'Belum']),
+            'nilai' => json_encode($this->dataChartProses('proses', $data['filterAnomali'])),
+        ];
+        $data["dataTimeline"] = $this->dataTimeline($data['filterAnomali']);
+        $data["dataWordCloud"] = json_encode($this->dataWordCloud($data['filterAnomali']));
+        // dd($data['dataWordCloud']);
+        $data["dataTop5"] = $this->anomaliModel->getTop5($data['filterAnomali']);
         return view('monitoring/monitoringSelc', $data);
     }
 

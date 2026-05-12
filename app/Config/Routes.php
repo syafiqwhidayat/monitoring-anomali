@@ -30,7 +30,7 @@ $routes->post('/manajemen-anomali/store', 'ManajAnom::store'); //menambah log ta
 $routes->get('/manajemen-anomali/log-detil/(:num)', 'ManajAnom::logDetil/$1');
 
 $routes->get('monitoring/', 'Monitoring::index');
-$routes->get('monitoring-sel/(:num)', 'Monitoring::view/$1');
+$routes->get('monitoring-sel', 'Monitoring::view');
 
 $routes->get('se/monitoring', 'SeMonitoring::index');
 $routes->get('se/upload', 'SeMonitoring::logs');

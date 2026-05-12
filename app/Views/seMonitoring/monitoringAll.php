@@ -30,16 +30,23 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col">
-                        <div class="d-flex">
-                            <canvas id="grafPersenAnom" aria-label="grafik_persen_anomali" role="img">
+                    <div class="col-12">
+                        <div class="d-flex heigtMax">
+                            <canvas id="grafNgibar" aria-label="grafik_persen_ngibar" role="img">
                                 <p>Browser Kamu tidak Support Canvas Element</p>
                             </canvas>
                         </div>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-12">
+                    <div class="col-6">
+                        <div class="d-flex heigtMax">
+                            <canvas id="grafPersenAnom" aria-label="grafik_persen_anomali" role="img">
+                                <p>Browser Kamu tidak Support Canvas Element</p>
+                            </canvas>
+                        </div>
+                    </div>
+                    <div class="col-6">
                         <div class="d-flex">
                             <canvas id="grafPersenEkonomiDigital" aria-label="grafik_persen_anomali_public" role="img">
                                 <p>Browser Kamu tidak Support Canvas Element</p>
@@ -84,6 +91,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         // 1. Ambil konteks canvas
         const ctx = document.getElementById('grafikAnomali');
+        const persenNgibar = document.getElementById('grafNgibar');
         const persenAssigment = document.getElementById('grafPersenAnom');
         const persenSubmit = document.getElementById('grafPersenEkonomiDigital');
         const timelineAnom = document.getElementById('grafTimeline');
@@ -117,24 +125,24 @@
         const myChart = new Chart(ctx, {
             type: 'bar', // Tipe grafik (bar, line, pie)
             data: {
-                labels: <?= $dataCharJmlKab['labels'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
+                labels: <?= $dataStatusKab['labels'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                 datasets: [{
-                        label: <?= $dataCharJmlKab['datesets'][0]['label'] ?>,
-                        data: <?= $dataCharJmlKab['datesets'][0]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        label: <?= $dataStatusKab['datesets'][0]['label'] ?>,
+                        data: <?= $dataStatusKab['datesets'][0]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                         backgroundColor: '#94C11F',
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     },
                     {
-                        label: <?= $dataCharJmlKab['datesets'][1]['label'] ?>,
-                        data: <?= $dataCharJmlKab['datesets'][1]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        label: <?= $dataStatusKab['datesets'][1]['label'] ?>,
+                        data: <?= $dataStatusKab['datesets'][1]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                         backgroundColor: '#EE8911',
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     },
                     {
-                        label: <?= $dataCharJmlKab['datesets'][2]['label'] ?>,
-                        data: <?= $dataCharJmlKab['datesets'][2]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                        label: <?= $dataStatusKab['datesets'][2]['label'] ?>,
+                        data: <?= $dataStatusKab['datesets'][2]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                         backgroundColor: '#0369A1',
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
@@ -148,6 +156,13 @@
                 plugins: {
                     legend: {
                         display: false
+                    },
+                    title: {
+                        display: true,
+                        text: "Status Dokumen Menurut Wilayah", // Judul akan berubah sesuai input
+                        font: {
+                            size: 16
+                        }
                     }
                 },
                 scales: {
@@ -161,6 +176,23 @@
             }
         });
 
+        const grafPersenNgibar = new Chart(persenNgibar, {
+            type: 'doughnut', // Tipe grafik (bar, line, pie)
+            data: {
+                labels: <?= $dataProgresNgibar['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
+                datasets: [{
+                    data: <?= $dataProgresNgibar['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                    backgroundColor: ['#94C11F', '#EE8911', '#0369A1', '#B3B3B3'],
+                    borderColor: 'rgba(255, 255, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                maintainAspectRatio: false,
+                plugins: getBaseOptions('Status Ngibar')
+            }
+        });
         const grafPersenAssigment = new Chart(persenAssigment, {
             type: 'doughnut', // Tipe grafik (bar, line, pie)
             data: {
@@ -175,7 +207,7 @@
             options: {
                 indexAxis: 'y',
                 maintainAspectRatio: false,
-                plugins: getBaseOptions('% Status Dokumen')
+                plugins: getBaseOptions('Status Dokumen')
             }
         });
 
@@ -193,7 +225,7 @@
             options: {
                 indexAxis: 'y',
                 maintainAspectRatio: false,
-                plugins: getBaseOptions('% Usaha Ekonomi Digital')
+                plugins: getBaseOptions('Usaha Ekonomi Digital')
             }
         });
 
@@ -307,13 +339,13 @@
                         label: 'Level 2',
                         backgroundColor: ['#94C11F', '#6E9115', '#8C8C8C'],
                         data: [30, 40, 30],
-                        customLabels: ['Submit ED', 'Submit NED', 'Submit Open']
+                        customLabels: ['Submit ED', 'Submit NED', 'Fasih Open']
                     },
                     {
                         label: 'Level 3',
                         backgroundColor: ['#F4AD58', '#EE8911', '#B86A0D', '#B3B3B3'],
                         data: [30, 25, 15, 30],
-                        customLabels: ['Potensi Submit', 'Potensi ED', 'Potensi NED', 'Potensi Open']
+                        customLabels: ['Potensi Submit', 'Potensi ED', 'Potensi NED', 'Fasih Open']
                     },
                     {
                         label: 'Level 4',
@@ -360,6 +392,10 @@
         height: 100%;
         /* kontrol tinggi */
         /* width: 100%; lebar mengikuti container */
+    }
+
+    .heigtMax {
+        height: 100%;
     }
 
     #grafPersenAnom,

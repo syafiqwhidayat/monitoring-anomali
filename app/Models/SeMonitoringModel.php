@@ -62,25 +62,36 @@ class SeMonitoringModel extends Model
         return ($hasil->findAll());
     }
 
-    public function jumlahKonfirmasiByPublik($idKat = null)
+    public function getDataTerbaru()
     {
         $subQuery = $this->builder()
             ->select('kd_wilayah, MAX(created_at) as terbaru')
             ->groupBy('kd_wilayah')
             ->getCompiledSelect();
 
-        // $hasil = $this
-        //     ->select("(jml_submit + tbh_submit) AS 'jumlah_total'")
-        //     ->select("(jml_submit + tbh_submit) as jumlah_ED")
-        //     ->select("(jml_submit + tbh_submit) as jumlah_NED")
-        //     ->join("($subQuery) t", 'se_monitoring.kd_wilayah = t.kd_wilayah AND se_monitoring.created_at = t.terbaru')
-        //     ->orderBy('se_monitoring.kd_wilayah', 'ASC');
+        $hasil = $this->select('se_monitoring.*')
+            // ->select("(jml_open + jml_submit + tbh_open +tbh_submit) AS 'jumlah_total'")
+            // ->select("(jml_submit + tbh_submit) as jumlah_submit")
+            // ->select("(jml_ed) as jumlah_ED")
+            ->join("($subQuery) t", 'se_monitoring.kd_wilayah = t.kd_wilayah AND se_monitoring.created_at = t.terbaru')
+            ->orderBy('se_monitoring.kd_wilayah', 'ASC');
+        // dd($hasil->findAll());
+        return ($hasil->findAll());
+    }
+
+    public function jumlahSeluruhWilayah($idKat = null)
+    {
+        $subQuery = $this->builder()
+            ->select('kd_wilayah, MAX(created_at) as terbaru')
+            ->groupBy('kd_wilayah')
+            ->getCompiledSelect();
 
         $hasil = $this
-            ->select("SUM(jml_submit + tbh_submit) AS 'submit_total'")
-            ->select("SUM(jml_ed) as submit_ED")
-            ->select("SUM(jml_submit + tbh_submit - jml_ed) as submit_NED")
-            ->select("SUM(jml_open +tbh_open) as open")
+            ->select("SUM(jml_submit) AS 'jml_submit'")
+            ->select("SUM(jml_open) as jml_open")
+            ->select("SUM(tbh_submit) as tbh_submit")
+            ->select("SUM(tbh_open) as tbh_open")
+            ->select("SUM(jml_ed) as jml_ed")
             ->join("($subQuery) t", 'se_monitoring.kd_wilayah = t.kd_wilayah AND se_monitoring.created_at = t.terbaru')
             ->where('se_monitoring.kd_wilayah LIKE', '13%');
 

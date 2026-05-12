@@ -39,50 +39,52 @@
                     </div>
                 </div>
             </div>
-            <div>
-                <div class="hr-text hr-text-left fs-5 mb-3">Filter Wilayah</div>
-                <div class="mb-3">
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label">Kabupaten</label>
-                            <select name="sel-kab" class="form-select">
-                                <option value="">Semua Kabupaten</option>
-                                <?php foreach ($list_kab ?? [] as $kab): ?>
-                                    <option value="<?= $kab['id']; ?>" <?= ($sel_kab == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Kecamatan</label>
-                            <select name="sel-kec" class="form-select">
-                                <option value="">Semua Kecamatan</option>
-                                <?php foreach ($list_kec ?? [] as $kab): ?>
-                                    <option value="<?= $kab['id']; ?>" <?= ($sel_kec == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Desa</label>
-                            <select name="sel-des" class="form-select">
-                                <option value="">Semua Desa</option>
-                                <?php foreach ($list_des ?? [] as $kab): ?>
-                                    <option value="<?= $kab['id']; ?>" <?= ($sel_des == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+            <?php if (!empty($data)) : ?>
+                <div>
+                    <div class="hr-text hr-text-left fs-5 mb-3">Filter Wilayah</div>
+                    <div class="mb-3">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Kabupaten</label>
+                                <select name="sel-kab" class="form-select">
+                                    <option value="">Semua Kabupaten</option>
+                                    <?php foreach ($list_kab ?? [] as $kab): ?>
+                                        <option value="<?= $kab['id']; ?>" <?= ($sel_kab == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Kecamatan</label>
+                                <select name="sel-kec" class="form-select">
+                                    <option value="">Semua Kecamatan</option>
+                                    <?php foreach ($list_kec ?? [] as $kab): ?>
+                                        <option value="<?= $kab['id']; ?>" <?= ($sel_kec == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Desa</label>
+                                <select name="sel-des" class="form-select">
+                                    <option value="">Semua Desa</option>
+                                    <?php foreach ($list_des ?? [] as $kab): ?>
+                                        <option value="<?= $kab['id']; ?>" <?= ($sel_des == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
 
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="submit" class="btn btn-primary w-100" id="tombolFilterEdit">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-filter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                    <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-4 2v-8.5l-4.414 -4.414a2 2 0 0 1 -.586 -1.414v-2.172z" />
-                                </svg>
-                                Pilih Wilayah
-                            </button>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100" id="tombolFilterEdit">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-filter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M4 4h16v2.172a2 2 0 0 1 -.586 1.414l-4.414 4.414v7l-4 2v-8.5l-4.414 -4.414a2 2 0 0 1 -.586 -1.414v-2.172z" />
+                                    </svg>
+                                    Pilih Wilayah
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            <?php endif; ?>
         </div>
     </form>
 
