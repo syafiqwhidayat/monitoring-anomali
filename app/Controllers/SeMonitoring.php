@@ -128,7 +128,7 @@ class SeMonitoring extends BaseController
 
     public function downloadTemplate()
     {
-        return $this->response->download(FCPATH . 'assets\templates\template_monitoring.xlsx', null);
+        return $this->response->download(FCPATH . 'assets/templates/template_monitoring.xlsx', null);
     }
 
     public function store()
