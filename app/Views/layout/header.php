@@ -51,7 +51,7 @@
                                 style="background-image: url(/img/bps.svg)"></span> -->
                         </div>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                            <a href="<?= base_url('profile') ?>" class="dropdown-item">Profil</a>
+                            <a href="<?= base_url('profile') ?>" class="dropdown-item">Profil <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
                             <a href="<?= base_url('set_role') ?>?return=<?= current_url() ?>" class="dropdown-item">Ganti Role</a>
                             <div class="dropdown-divider"></div>
                             <a href="<?= base_url('logout') ?>" class="dropdown-item text-danger">

@@ -5,6 +5,11 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
+$routes = service('routes');
+
+service('auth')->routes($routes);
+$routes->setAutoRoute(true);
+
 $routes->get('/', 'Home::index');
 
 $routes->get('access-denied', function () {
@@ -79,6 +84,3 @@ $routes->group('admin', ['filter' => 'activeRole:admin'], static function ($rout
 
 $routes->get('set_kegiatan/(:any)', 'Kegiatan::set/$1', ['filter' => 'activeRole:superadmin,admin,operator,mitra']); // untuk ubah kegiatan di header
 $routes->get('set_role', 'Admin\UserController::gantiRole', ['filter' => 'activeRole:superadmin,admin,operator,mitra']); // untuk ubah kegiatan di header
-
-service('auth')->routes($routes);
-$routes->setAutoRoute(true);

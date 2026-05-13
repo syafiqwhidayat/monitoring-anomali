@@ -365,7 +365,7 @@ class AnomaliModel extends Model
         $words = str_word_count($text, 1);
 
         // Filter stopwords (kata yang tidak penting)
-        $stopWords = ['dan', 'yang', 'untuk', 'di', 'dari', 'ke', 'ini', 'itu', 'dengan', 'ada', 'telah', 'perlu'];
+        $stopWords = ['bulk', 'sistem', 'dan', 'yang', 'untuk', 'di', 'dari', 'ke', 'ini', 'itu', 'dengan', 'ada', 'telah', 'perlu', 'lagi', 'apakah', 'sudah', 'adalah', 'tidak', 'bukan', 'juga', 'saya', 'kami', 'dia', 'mereka', 'oleh', 'pada', 'serta', 'sebagai'];
         $filteredWords = array_diff($words, $stopWords);
 
         $counts = array_count_values($filteredWords);

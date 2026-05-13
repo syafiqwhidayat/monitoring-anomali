@@ -11,7 +11,7 @@
                 <div class="row g-3">
                     <div class="col-md-5">
                         <label class="form-label">Pilih Kode Anomali</label>
-                        <select name="fil-anomali" class="form-select" id="filter-anomali">
+                        <select name="fil-anomali" class="form-select" id="filter-anomali" placeholder="Cari kode anomali...">
                             <?php foreach ($listKodeAnom as $l): ?>
                                 <option value="<?= $l['id']; ?>" <?= ($l['id'] == $filterAnomali) ? 'selected' : ''; ?>><?= $l['nama']; ?></option>
                             <?php endforeach; ?>
@@ -336,26 +336,42 @@
                 }
             });
 
-            wordCld.width = container.offsetWidth;
-            wordCld.height = container.offsetHeight;
-            WordCloud(wordCld, {
-                list: dbData,
-                fontFamily: 'Segoe UI, Arial, sans-serif',
-                fontWeight: 'bold',
-
-                // Warna: Menggunakan warna utama BPS dan variasi transparansinya
-                color: function(word, weight) {
-                    return (weight > 20) ? '#0369A1' : '#38bdf8';
-                },
-
-                backgroundColor: '#ffffff',
-                gridSize: 10, // Jarak antar kata
-                weightFactor: dynamicWeightFactor, // Faktor pengali ukuran (sesuaikan jika kata terlalu kecil)
-                rotateRatio: 0.3, // Persentase kata yang tampil vertikal (0.3 = 30%)
-                rotationSteps: 2, // Sudut rotasi (hanya horizontal dan vertikal)
-                ellipticity: 0.65, // Membuat bentuk sebaran agak oval (lebih estetik)
-                shuffle: true // Mengacak posisi setiap kali refresh
+            // 1. Ambil nilai maksimal dari data
+            const maxVal = Math.max(...dbData.map(d => d[1]));
+            // 2. Normalisasi data agar ukuran font masuk akal (misal 10px - 80px)
+            const normalizedData = dbData.map(d => {
+                // Rumus sederhana: (nilai / max) * ukuran_maksimal_yang_diinginkan
+                // Ditambah 10 agar kata yang nilainya 1 tetap terbaca
+                let size = (d[1] / maxVal) * 80 + 10;
+                return [d[0], size];
             });
+            const dpr = window.devicePixelRatio || 1;
+            wordCld.width = container.offsetWidth * dpr;
+            wordCld.height = container.offsetHeight * dpr;
+            wordCld.style.width = container.offsetWidth + 'px';
+            wordCld.style.height = container.offsetHeight + 'px';
+            setTimeout(function() {
+                WordCloud(wordCld, {
+                    list: normalizedData,
+                    fontFamily: 'Segoe UI, Arial, sans-serif',
+                    fontWeight: 'bold',
+
+                    // Warna: Menggunakan warna utama BPS dan variasi transparansinya
+                    color: function(word, weight) {
+                        return (weight > 20) ? '#0369A1' : '#38bdf8';
+                    },
+
+                    backgroundColor: '#ffffff',
+                    gridSize: 15, // Jarak antar kata
+                    weightFactor: 1, //dynamicWeightFactor, // Faktor pengali ukuran (sesuaikan jika kata terlalu kecil)
+                    rotateRatio: 0.3, // Persentase kata yang tampil vertikal (0.3 = 30%)
+                    rotationSteps: 2, // Sudut rotasi (hanya horizontal dan vertikal)
+                    ellipticity: 0.65, // Membuat bentuk sebaran agak oval (lebih estetik)
+                    shuffle: false, // Mengacak posisi setiap kali refresh
+                    drawOutOfBound: false, // Jangan gambar kata jika melebihi canvas
+                    shrinkToFit: true, // Otomatis mengecilkan kata jika tidak muat
+                })
+            }, 900)
         })
     </script>
 

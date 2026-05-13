@@ -39,6 +39,8 @@ class Autoload extends AutoloadConfig
      */
     public $psr4 = [
         APP_NAMESPACE => APPPATH,
+        // 'Config'      => CONFPATH,
+        // 'CodeIgniter\Shield' => VENDORPATH . 'codeigniter4/shield/src', // Pastikan baris ini ada jika manual
     ];
 
     /**

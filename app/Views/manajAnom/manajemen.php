@@ -26,7 +26,7 @@
                         <select name="fil-flag" class="form-select" id="filter-flag">
                             <option value="">Semua Jenis</option>
                             <?php foreach ($listSelFlag as $l): ?>
-                                <option value="<?= $l['value']; ?>" <?= ($l['value'] == $filterFlag) ? 'selected' : ''; ?>> Flag <?= $l['value']; ?></option>
+                                <option value="<?= $l['value']; ?>" <?= ($l['value'] == $filterFlag) ? 'selected' : ''; ?>> Prioritas <?= $l['value']; ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>

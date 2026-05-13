@@ -1,44 +1,87 @@
 /* Root */
 :root {
-    --biru-bps: #0369A1;
-    --biru-bps-hover: rgb(9, 98, 146);
-    --oren-bps:#EE8911;
-    --oren-bps-hover:#d87e10;
-    --hijau-bps:#94C11F;
-    --hijau-bps-hover:#7ca31a;
-    --sidik-prm:#182433;
-    --tblr-primary: #1e7960;    /* Contoh warna biru BPS */
-    --tblr-primary-rgb: 6, 78, 59;
-    --tblr-secondary: #f76707;  /* Contoh warna sekunder */
-    --tblr-secondary-rgb: 247, 103, 7;
-    /* --tblr-gradasi-rgb:81, 209, 175; */
-    --tblr-gradasi-rgb:114, 202, 253;
-    --tblr-gradasi:rgb(114, 202, 253);
-
+  --biru-bps: #0369a1;
+  --biru-bps-hover: rgb(9, 98, 146);
+  --oren-bps: #ee8911;
+  --oren-bps-hover: #d87e10;
+  --hijau-bps: #94c11f;
+  --hijau-bps-hover: #7ca31a;
+  --sidik-prm: #182433;
+  --tblr-primary: #1e7960; /* Contoh warna biru BPS */
+  --tblr-primary-rgb: 6, 78, 59;
+  --tblr-secondary: #f76707; /* Contoh warna sekunder */
+  --tblr-secondary-rgb: 247, 103, 7;
+  /* --tblr-gradasi-rgb:81, 209, 175; */
+  --tblr-gradasi-rgb: 114, 202, 253;
+  --tblr-gradasi: rgb(114, 202, 253);
 }
 
 .nav-item.active {
-    border-left: 4px solid var(--se-orange); /* Garis oranye di samping menu aktif */
+  border-left: 4px solid var(--se-orange); /* Garis oranye di samping menu aktif */
 }
 
-.bg-bps-prm{
-    background-color: #0369A1;
+.bg-bps-prm {
+  background-color: #0369a1;
 }
 
-.bg-sidik-prm{
-    background-color: #182433;
+.bg-sidik-prm {
+  background-color: #182433;
 }
 
 .card {
-    border-radius: 12px !important; /* Sesuaikan angka ini */
-    overflow: hidden; /* Penting agar isi card tidak "bocor" keluar sudut */
-    margin-bottom: 1rem;
+  border-radius: 12px !important; /* Sesuaikan angka ini */
+  overflow: hidden; /* Penting agar isi card tidak "bocor" keluar sudut */
+  margin-bottom: 1rem;
 }
 
 /* Jika card memiliki card-header atau card-footer */
-.card-header, .card-footer {
-    border-top-left-radius: 12px !important;
-    border-top-right-radius: 12px !important;
+.card-header,
+.card-footer {
+  border-top-left-radius: 12px !important;
+  border-top-right-radius: 12px !important;
+}
+
+/* semua dropdown */
+/* Tambahkan di style CSS Anda */
+.form-select {
+  max-height: 50px; /* Membatasi tinggi dropdown */
+  overflow-y: auto; /* Menambah scroll jika isinya terlalu panjang */
+  display: block;
+  width: 100%;
+  padding: 0.375rem 2.25rem 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition:
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out;
+}
+
+/* Khusus untuk tampilan mobile agar tidak aneh */
+@media (max-width: 768px) {
+  .form-select {
+    font-size: 0.875rem;
+  }
+}
+
+* Mengatur tinggi area daftar pilihan */ .ts-dropdown .ts-dropdown-content {
+  max-height: 200px !important; /* Tinggi maksimal sebelum muncul scroll */
+  overflow-y: auto;
+}
+
+/* Mengatur tampilan kotak input agar tetap konsisten dengan Tabler */
+.ts-control {
+  border-color: #ced4da !important;
+  border-radius: 0.25rem !important;
+}
+
+/* Menangani agar dropdown tidak melebihi lebar layar */
+.ts-dropdown {
+  z-index: 2000; /* Pastikan di atas elemen lain */
 }
 
 /* .bg-bps-prm-grd{
@@ -48,185 +91,183 @@
 /* Layout Header */
 /* Transisi halus saat sidebar bergeser */
 .page {
-    transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
 }
 
 /* Saat class sidebar-collapsed aktif di body */
 body.sidebar-collapsed .navbar-vertical {
-    margin-left: -15rem; /* Sesuaikan dengan lebar sidebar Anda */
-    transition: margin-left 0.3s ease-in-out;
+  margin-left: -15rem; /* Sesuaikan dengan lebar sidebar Anda */
+  transition: margin-left 0.3s ease-in-out;
 }
 
 body.sidebar-collapsed .page-wrapper {
-    margin-left: 0 !important;
-    transition: margin-left 0.3s ease-in-out;
+  margin-left: 0 !important;
+  transition: margin-left 0.3s ease-in-out;
 }
 
 /* Memperbaiki posisi sidebar saat muncul kembali */
 .navbar-vertical {
-    transition: margin-left 0.3s ease-in-out !important;
-    transform: translateX(0);
+  transition: margin-left 0.3s ease-in-out !important;
+  transform: translateX(0);
 }
 
 .header-sidik {
-    background-color: var(--tblr-primary);
+  background-color: var(--tblr-primary);
 }
 
-.icon-burger{
-    width: 32px !important;  /* Ganti angka sesuai selera */
-    height: 32px !important;
-    stroke-width: 1.5;       /* Agar garis tidak terlihat tipis saat membesar */
+.icon-burger {
+  width: 32px !important; /* Ganti angka sesuai selera */
+  height: 32px !important;
+  stroke-width: 1.5; /* Agar garis tidak terlihat tipis saat membesar */
 }
 
 /* Halaman Daftar Anomali */
-.accordionKec{
-    background-color: rgba(var(--tblr-gradasi-rgb), 0);
+.accordionKec {
+  background-color: rgba(var(--tblr-gradasi-rgb), 0);
 }
-.accordionDes{
-    background-color: rgba(var(--tblr-gradasi-rgb),0.15) !important;
+.accordionDes {
+  background-color: rgba(var(--tblr-gradasi-rgb), 0.15) !important;
 }
-.accordionSLS{
-    background-color: rgba(var(--tblr-gradasi-rgb),0.40) !important;
+.accordionSLS {
+  background-color: rgba(var(--tblr-gradasi-rgb), 0.4) !important;
 }
-.accordionRuta{
-    background-color: rgba(var(--tblr-gradasi-rgb),0.65) !important;
+.accordionRuta {
+  background-color: rgba(var(--tblr-gradasi-rgb), 0.65) !important;
 }
-.accordionRuta{
-    background-color: rgba(var(--tblr-gradasi-rgb),0.80) !important;
+.accordionRuta {
+  background-color: rgba(var(--tblr-gradasi-rgb), 0.8) !important;
 }
-.accordionArt{
-    background-color: rgba(var(--tblr-gradasi-rgb),1) !important;
+.accordionArt {
+  background-color: rgba(var(--tblr-gradasi-rgb), 1) !important;
 }
 
-
-
-.sampul{
-    width: 70px;
+.sampul {
+  width: 70px;
 }
 
 .table > tbody > tr > * {
-    vertical-align: middle;
+  vertical-align: middle;
 }
 
-.text-family-logo{
-    font-family: Arial;
-    color: #fff;
+.text-family-logo {
+  font-family: Arial;
+  color: #fff;
 }
 
 .text-full-justify {
-    text-align: justify;
+  text-align: justify;
 }
 
 .btn-with-icon {
-    /* Gunakan d-flex untuk mengelola ::before dan span */
-    display: inline-flex;
-    align-items: center;
+  /* Gunakan d-flex untuk mengelola ::before dan span */
+  display: inline-flex;
+  align-items: center;
 }
 
-.a-butt{
-    width: fit-content;
-    height: fit-content;
+.a-butt {
+  width: fit-content;
+  height: fit-content;
 }
 
 .dropdown-scrollable {
-    max-height: 250px; /* Batasi tinggi */
-    overflow-y: auto;  /* Aktifkan scroll vertikal */
-    width: 300px;      /* Batasi lebar agar tidak terlalu panjang ke samping */
+  max-height: 250px; /* Batasi tinggi */
+  overflow-y: auto; /* Aktifkan scroll vertikal */
+  width: 300px; /* Batasi lebar agar tidak terlalu panjang ke samping */
 }
 
 .label-bps {
-    opacity: 1 !important;
+  opacity: 1 !important;
 }
 
 /* 1. Kondisi Normal */
 .btn-primary-bps {
-    background-color: var(--biru-bps);
-    border-color: var(--biru-bps);
-    color: #ffffff;
+  background-color: var(--biru-bps);
+  border-color: var(--biru-bps);
+  color: #ffffff;
 }
 
 /* 2. Kondisi Hover (Saat kursor di atas tombol) */
 .btn-primary-bps:hover {
-    background-color: #025582; /* Warna lebih gelap 15% */
-    border-color: #025582;
-    color: #ffffff;
+  background-color: #025582; /* Warna lebih gelap 15% */
+  border-color: #025582;
+  color: #ffffff;
 }
 
 /* 3. Kondisi Disabled (Saat tombol dimatikan) */
 .btn-primary-bps:disabled,
 .btn-primary-bps.disabled {
-    background-color: var(--biru-bps);
-    border-color: var(--biru-bps);
-    opacity: 0.65; /* Standar Bootstrap untuk efek pudar */
-    color: #ffffff;
-    cursor: not-allowed; /* Mengubah kursor jadi tanda dilarang */
-    pointer-events: none; /* Mencegah klik */
+  background-color: var(--biru-bps);
+  border-color: var(--biru-bps);
+  opacity: 0.65; /* Standar Bootstrap untuk efek pudar */
+  color: #ffffff;
+  cursor: not-allowed; /* Mengubah kursor jadi tanda dilarang */
+  pointer-events: none; /* Mencegah klik */
 }
 
 /* 4. Kondisi Active (Saat ditekan) */
 .btn-primary-bps:active {
-    background-color: var(--biru-bps) !important;
-    border-color: var(--biru-bps) !important;
+  background-color: var(--biru-bps) !important;
+  border-color: var(--biru-bps) !important;
 }
 
 /* 1. Kondisi Normal */
 .btn-warning-bps {
-    background-color: var(--oren-bps);
-    border-color: var(--oren-bps);
-    color: #ffffff;
+  background-color: var(--oren-bps);
+  border-color: var(--oren-bps);
+  color: #ffffff;
 }
 
 /* 2. Kondisi Hover (Saat kursor di atas tombol) */
 .btn-warning-bps:hover {
-    background-color: var(--oren-bps-hover); /* Warna lebih gelap 15% */
-    border-color: var(--oren-bps-hover);
-    color: #ffffff;
+  background-color: var(--oren-bps-hover); /* Warna lebih gelap 15% */
+  border-color: var(--oren-bps-hover);
+  color: #ffffff;
 }
 
 /* 3. Kondisi Disabled (Saat tombol dimatikan) */
 .btn-warning-bps:disabled,
 .btn-warning-bps.disabled {
-    background-color: var(--oren-bps);
-    border-color: var(--oren-bps);
-    opacity: 0.65; /* Standar Bootstrap untuk efek pudar */
-    color: #ffffff;
-    cursor: not-allowed; /* Mengubah kursor jadi tanda dilarang */
-    pointer-events: none; /* Mencegah klik */
+  background-color: var(--oren-bps);
+  border-color: var(--oren-bps);
+  opacity: 0.65; /* Standar Bootstrap untuk efek pudar */
+  color: #ffffff;
+  cursor: not-allowed; /* Mengubah kursor jadi tanda dilarang */
+  pointer-events: none; /* Mencegah klik */
 }
 
 /* 4. Kondisi Active (Saat ditekan) */
 .btn-warning-bps:active {
-    background-color: var(--oren-bps) !important;
-    border-color: var(--oren-bps) !important;
+  background-color: var(--oren-bps) !important;
+  border-color: var(--oren-bps) !important;
 }
 
 /* 1. Kondisi Normal */
 .btn-sucess-bps {
-    background-color: var(--hijau-bps);
-    border-color: var(--hijau-bps);
-    color: #ffffff;
+  background-color: var(--hijau-bps);
+  border-color: var(--hijau-bps);
+  color: #ffffff;
 }
 
 /* 2. Kondisi Hover (Saat kursor di atas tombol) */
 .btn-sucess-bps:hover {
-    background-color: var(--hijau-bps-hover); /* Warna lebih gelap 15% */
-    border-color: var(--hijau-bps-hover);
-    color: #ffffff;
+  background-color: var(--hijau-bps-hover); /* Warna lebih gelap 15% */
+  border-color: var(--hijau-bps-hover);
+  color: #ffffff;
 }
 
 /* 3. Kondisi Disabled (Saat tombol dimatikan) */
 .btn-sucess-bps:disabled,
 .btn-sucess-bps.disabled {
-    background-color: var(--hijau-bps);
-    border-color: var(--hijau-bps);
-    opacity: 0.65; /* Standar Bootstrap untuk efek pudar */
-    color: #ffffff;
-    cursor: not-allowed; /* Mengubah kursor jadi tanda dilarang */
-    pointer-events: none; /* Mencegah klik */
+  background-color: var(--hijau-bps);
+  border-color: var(--hijau-bps);
+  opacity: 0.65; /* Standar Bootstrap untuk efek pudar */
+  color: #ffffff;
+  cursor: not-allowed; /* Mengubah kursor jadi tanda dilarang */
+  pointer-events: none; /* Mencegah klik */
 }
 
 /* 4. Kondisi Active (Saat ditekan) */
 .btn-sucess-bps:active {
-    background-color: var(--hijau-bps) !important;
-    border-color: var(--hijau-bps) !important;
+  background-color: var(--hijau-bps) !important;
+  border-color: var(--hijau-bps) !important;
 }

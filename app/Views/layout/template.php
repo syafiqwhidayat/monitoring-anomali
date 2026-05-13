@@ -15,6 +15,8 @@
     <!-- my css -->
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- css tom select -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <title><?= $title; ?></title>
     <!-- Ini kodenya -->
     <link rel="icon" type="image/png" href="<?= base_url('img/logoBulat.png'); ?>">
@@ -150,6 +152,8 @@
         src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta20/dist/js/tabler.min.js">
     </script>
     <script src="<?= base_url('js/script.js'); ?>"></script>
+    <!-- js tom select -->
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 </body>
 
 </html>
