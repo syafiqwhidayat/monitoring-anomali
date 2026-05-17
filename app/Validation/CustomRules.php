@@ -42,6 +42,7 @@ class CustomRules extends BaseConfig
         FormatRules::class,
         FileRules::class,
         CreditCardRules::class,
+        // \App\Validation\CustomRules::class,
     ];
 
     public $customErrors = [

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use \App\Models\AnomaliModel;
 use App\Models\KatAnomaliModel;
+// use App\Models\AnomaliKegiatanWilayahTugasModel;
 use Config\Services;
 use Faker\Provider\Lorem;
 
@@ -13,12 +14,14 @@ class Anom extends BaseController
 {
     protected $anomaliModel;
     protected $katAnomaliModel;
+    protected $akwtModel;
     protected $validation;
 
     public function __construct()
     {
         $this->anomaliModel = new AnomaliModel();
         $this->katAnomaliModel = new KatAnomaliModel();
+        // $this->akwtModel = new AnomaliKegiatanWilayahTugasModel();
         $this->validation = \Config\Services::validation();
     }
 
@@ -33,13 +36,6 @@ class Anom extends BaseController
         $data['filterFlag'] = $this->request->getGet('fil-flag') ?? '';
         $data['message'] = null;
         $isRT = (session()->get('is_rt') == 1);
-
-        // cek filter wilayah inisial value
-        // $data['filterWilayah'] = ($userWilayah !== '1300')
-        //     ? $userWilayah
-        //     : ($this->request->getGet('fil-wilayah') ?? '1300');
-
-        // Persiapan data dropdown
 
         $data['title'] = 'List Anomali';
         $data['listLevel'] = [
@@ -73,11 +69,22 @@ class Anom extends BaseController
         $data['listWilayah'] = $listSelWilayah;
         // dd($data['message']);
 
-        $listAnom = null;
-        // dd($data['filterWilayah']);
-
-        try {
-            $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah(
+        if (true) {
+            try {
+                $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah(
+                    $data['filterWilayah'],
+                    $data['isEdit'],
+                    $data['filterKategori'],
+                    $data['filterFlag'],
+                    $data['filterLevel'],
+                    $isRT
+                );
+            } catch (\Throwable $th) {
+                $data['listAnom'] = [];
+                $data['message'] = "Gagal memuat data: " . $th->getMessage();
+            };
+        } else {
+            $data['listAnom'] = $this->akwtModel->getAnomaliByWilayah(
                 $data['filterWilayah'],
                 $data['isEdit'],
                 $data['filterKategori'],
@@ -85,11 +92,8 @@ class Anom extends BaseController
                 $data['filterLevel'],
                 $isRT
             );
-            // dd($data['listAnom']);
-        } catch (\Throwable $th) {
-            $data['listAnom'] = [];
-            $data['message'] = "Gagal memuat data: " . $th->getMessage();
-        };
+        }
+
 
         return view('anomali/listAnomali', $data);
     }
@@ -173,7 +177,7 @@ class Anom extends BaseController
                 };
             };
         };
-
+        // dd($data['listAnom']);
         return view('anomali/listAnomaliPart', $data);
     }
 

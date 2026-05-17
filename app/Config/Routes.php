@@ -68,12 +68,12 @@ $routes->group('user', ['filter' => 'activeRole:superadmin,admin'], static funct
 });
 
 $routes->group('wilayah', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
-    $routes->get('wilayah', 'Wilayah::manajWilayahTugas');
-    $routes->get('wilayah/downloadTemplate', 'Wilayah::downloadTemplate');
-    $routes->post('wilayah/upload', 'Wilayah::store');
-    $routes->get('wilayah/logs', 'Wilayah::logsWilayah');
-    $routes->get('wilayah/log-detil/(:num)', 'Wilayah::logDetil/$1');
-    $routes->post('wilayah/edit', 'Wilayah::edit');
+    $routes->get('/', 'Wilayah::manajWilayahTugas');
+    $routes->get('downloadTemplate', 'Wilayah::downloadTemplate');
+    $routes->post('upload', 'Wilayah::store');
+    $routes->get('logs', 'Wilayah::logsWilayah');
+    $routes->get('log-detil/(:num)', 'Wilayah::logDetil/$1');
+    $routes->post('edit', 'Wilayah::edit');
 });
 
 $routes->group('admin', ['filter' => 'activeRole:admin'], static function ($routes) {

@@ -61,14 +61,8 @@
     box-shadow 0.15s ease-in-out;
 }
 
-/* Khusus untuk tampilan mobile agar tidak aneh */
-@media (max-width: 768px) {
-  .form-select {
-    font-size: 0.875rem;
-  }
-}
-
-* Mengatur tinggi area daftar pilihan */ .ts-dropdown .ts-dropdown-content {
+/* Mengatur tinggi area daftar pilihan */
+.ts-dropdown .ts-dropdown-content {
   max-height: 200px !important; /* Tinggi maksimal sebelum muncul scroll */
   overflow-y: auto;
 }
@@ -90,29 +84,205 @@
 
 /* Layout Header */
 /* Transisi halus saat sidebar bergeser */
-.page {
+/* .page {
   transition: all 0.3s ease-in-out;
-}
+} */
 
 /* Saat class sidebar-collapsed aktif di body */
-body.sidebar-collapsed .navbar-vertical {
-  margin-left: -15rem; /* Sesuaikan dengan lebar sidebar Anda */
+/* body.sidebar-collapsed .navbar-vertical { */
+/* margin-left: -15rem; Sesuaikan dengan lebar sidebar Anda */
+/* transition: margin-left 0.3s ease-in-out; */
+/* } */
+
+/* body.sidebar-collapsed .page-wrapper {
+  margin-left: 0 !important;
   transition: margin-left 0.3s ease-in-out;
+} */
+
+/* Keadaan Default: Sidebar Terlihat */
+.navbar-vertical {
+  width: 15rem;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  z-index: 1050;
+  /* Transition diletakkan di sini agar berlaku saat MUNCUL dan HILANG */
+  transition: transform 0.3s ease-in-out !important;
+  transform: translateX(0); /* Posisi normal */
+}
+
+/* Keadaan Default: Konten terdorong ke kanan */
+.page-wrapper {
+  margin-left: 15rem;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* --- SAAT SIDEBAR DISEMBUNYIKAN (Desktop & Mobile) --- */
+body.sidebar-collapsed .navbar-vertical {
+  transform: translateX(-100%); /* Geser mulus ke kiri luar layar */
 }
 
 body.sidebar-collapsed .page-wrapper {
   margin-left: 0 !important;
-  transition: margin-left 0.3s ease-in-out;
 }
 
-/* Memperbaiki posisi sidebar saat muncul kembali */
-.navbar-vertical {
-  transition: margin-left 0.3s ease-in-out !important;
-  transform: translateX(0);
+.navbar-vertical .navbar-nav .nav-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px; /* Garis vertikal di kiri menu */
+  background-color: #206bc4; /* Warna biru primer Tabler */
+}
+
+.navbar-brand {
+  width: 100%;
+  justify-content: center; /* Membuat isi logo ke tengah */
+  margin-right: 0;
+}
+
+.navbar-vertical .navbar-brand {
+  display: flex !important;
+  width: 100% !important;
+  justify-content: center !important; /* Logo ke tengah secara horizontal */
+  margin: 0 !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05); /* Garis halus pembatas logo & menu */
+}
+
+/* Memperbaiki tag <a> agar isinya (gambar) berada di tengah */
+.navbar-vertical .navbar-brand a {
+  display: flex !important;
+  justify-content: center !important; /* Tengah secara horizontal */
+  align-items: center !important; /* Tengah secara vertikal */
+  width: 100% !important; /* Mengambil seluruh lebar yang tersedia */
+}
+
+/* 2. Memperbesar Gambar Logo */
+.navbar-vertical .navbar-brand-image {
+  height: 55px !important; /* Tambah tinggi agar teks logo jelas */
+  width: auto !important; /* Biarkan lebar menyesuaikan proporsi */
+  max-width: 90% !important;
+  object-fit: contain;
+}
+
+/* --- DESKTOP (Layar Lebar) --- */
+@media (min-width: 992px) {
+  .navbar-vertical {
+    transform: translateX(0); /* Muncul default */
+    transition: transform 0.3s ease;
+  }
+  /* Class untuk menyembunyikan di desktop */
+  body.sidebar-collapsed .navbar-vertical {
+    transform: translateX(-100%);
+  }
+  body.sidebar-collapsed .page-wrapper {
+    margin-left: 0 !important;
+  }
+  .kegiatan-wrapper .dropdown-toggle {
+    max-width: 300px; /* Lebih kecil lagi untuk layar HP sempit */
+  }
+}
+
+/* Khusus untuk tampilan mobile agar tidak aneh */
+@media (max-width: 991.98px) {
+  .form-select {
+    font-size: 0.875rem;
+  }
+
+  /* Paksa navbar-collapse untuk tidak turun dari atas */
+  .navbar-collapse {
+    display: block !important;
+    overflow-y: auto;
+    flex-grow: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  /* Hilangkan margin pada page-wrapper di HP agar konten full layar */
+  .page-wrapper {
+    margin-left: 0 !important; /* Di HP jangan pernah ada margin kiri */
+  }
+
+  /* Sidebar defaultnya sembunyi di HP */
+  .navbar-vertical {
+    transform: translateX(-100%); /* Sembunyi default */
+    position: fixed;
+    z-index: 1060;
+    transition: transform 0.3s ease;
+  }
+
+  /* Class untuk menyembunyikan di desktop */
+  body.sidebar-collapsed .navbar-vertical {
+    transform: translateX(0);
+  }
+
+  /* Overlay/Latar belakang gelap saat menu muncul di HP (Opsional) */
+  body.sidebar-collapsed::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+  }
+
+  /* Memastikan container navbar di HP tidak terlalu tinggi */
+  .navbar.navbar-expand-lg {
+    min-height: 56px; /* Standar tinggi navbar mobile yang ideal */
+  }
+
+  /* Menghilangkan margin auto yang sering membuat menu melayang di tengah */
+  .navbar-nav {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+    flex-direction: column !important;
+  }
+
+  /* Memastikan container fluid di dalam sidebar tidak membagi ruang secara rata (spacer) */
+  #sidebar-main .container-fluid {
+    display: block !important;
+    height: auto !important;
+  }
+  .kegiatan-wrapper .dropdown-toggle {
+    max-width: 200px; /* Lebih kecil lagi untuk layar HP sempit */
+  }
+}
+
+@media (max-width: 575.98px) {
+  .kegiatan-wrapper .dropdown-toggle {
+    max-width: 150px; /* Lebih kecil lagi untuk layar HP sempit */
+  }
 }
 
 .header-sidik {
   background-color: var(--tblr-primary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Mengatur tombol dropdown di dalam KegiatanCell agar tidak merusak layout HP */
+.kegiatan-wrapper .dropdown-toggle {
+  display: flex;
+  align-items: center;
+  /* max-width: 300px; Batasi lebar tombolnya saja */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+/* Pastikan list dropdown-nya tetap lebar (tidak ikut mengecil) */
+.kegiatan-wrapper .dropdown-menu {
+  min-width: 250px;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .icon-burger {

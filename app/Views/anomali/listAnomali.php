@@ -100,5 +100,9 @@
 </div>
 
 
+<script>
+    // Variabel ini akan otomatis berisi https://bps1311.com/sidikanomali/
+    const BASE_URL = "<?= base_url() ?>";
+</script>
 <script src="<?= base_url('js/scriptDaftarAnomali.js'); ?>"></script>
 <?= $this->endSection(); ?>

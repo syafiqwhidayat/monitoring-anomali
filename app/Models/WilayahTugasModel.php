@@ -63,7 +63,7 @@ class WilayahTugasModel extends Model
         $this->builder()->resetQuery();
 
         $builder = $this->builder();
-        $builder->select('w.*,ppl.name AS nm_ppl, id_ppl.secret AS em_ppl,pml.name AS nm_pml, id_pml.secret AS em_pml')
+        $builder->select('wilayah_tugas.id AS id_wt,w.*,ppl.name AS nm_ppl, id_ppl.secret AS em_ppl,pml.name AS nm_pml, id_pml.secret AS em_pml')
             ->join('wilayah w', 'w.id = id_wilayah', 'left')
             ->join('users ppl', 'ppl.id = id_ppl', 'left')
             ->join('auth_identities id_ppl', 'id_ppl.user_id = ppl.id', 'left')
@@ -91,7 +91,7 @@ class WilayahTugasModel extends Model
     {
         $userModel = new UserModel();
         $db = \Config\Database::connect();
-        $wilayahKerja = auth()->user()->wilayah_kerja;
+        $wilayahKerja = auth()->user()->wilayah_kerja; //wilayah kerja user yang request
 
         $subquery = $db->table('wilayah_tugas')
             ->select('id_pml AS id_user, 1 as prioritas')

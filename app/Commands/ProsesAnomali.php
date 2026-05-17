@@ -184,17 +184,18 @@ class ProsesAnomali extends BaseCommand
                 CLI::write("Kabuten yg dijalankan: $kdKab");
                 $len = count($rows);
                 CLI::write("panjang data: $len");
-                // Cari semua ID di tabel anomali menurut kegiatan tertentu.
+                // Cari semua ID di tabel anomali menurut kegiatan tertentu dan kabupaten tertentu.
                 $ids = $this->anomaliModel
                     ->builder()
                     ->select('anomali.id')
                     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali')
                     ->where('k.id_kegiatan', $this->idKegiatan)
                     ->where('left(anomali.id_wilayah,4)', $kdKab)
+                    ->where('k.level_anomali', $this->levelAnomali)
                     ->get()
                     ->getResultArray();
 
-                // Ambil array ID-nya saja
+                // Ambil array ID Anomali dari kegiatan tertentu saja
                 $idsArray = array_column($ids, 'id');
 
                 // batas mulai transaksi data.
@@ -277,7 +278,7 @@ class ProsesAnomali extends BaseCommand
                                     'nm_nrt' => $data['nama_nrt'] ?? null,
                                 ];
 
-                                $id_assigment = $this->assigmentModel->insert($data);
+                                $id_assigment = $this->assigmentModel->insert($datum);
                                 if (!$id_assigment) {
                                     $existing = $this->assigmentModel
                                         ->where('id_kegiatan', $this->idKegiatan)
@@ -378,7 +379,8 @@ class ProsesAnomali extends BaseCommand
                         $jumlahBalik = $this->db->affectedRows();
                         CLI::write("Berhasil mengembalikan ke aktif : $jumlahBalik", 'yellow');
                     } else {
-                        CLI::write("ℹ️ Tidak ada ID anomali untuk diproses di kabupaten ini.", 'gray');
+                        // jika tidak ada anomali yg diubah dari upload sebelumnya.
+                        CLI::write("ℹ️ Tidak ada ID anomali untuk diproses di kabupaten ini.", 'white');
                     }
 
                     //batas write db selesai 
@@ -466,6 +468,7 @@ class ProsesAnomali extends BaseCommand
 
             // cek apakah kategori ditemukan.
             if ($idKat) {
+                // data sabe anomali
                 $dataSave = [
                     'id_kategori_anomali' => $idKat,
                     'id_wilayah'          => $id_wilayah,
@@ -482,6 +485,7 @@ class ProsesAnomali extends BaseCommand
             // jika sudah ada anomali pada assigment tersebut, maka tinggal update anomali. jika belum maka insert.
             // CLI::write($idKat);
             if (isset($mappedExisting[$idKat])) {
+                // jika ditemukan anomali diassigment ini
                 // UPDATE: Menggunakan ID unik dari tabel anomali (primary key)
                 $idAnomaliTabel = $mappedExisting[$idKat];
 
@@ -495,21 +499,25 @@ class ProsesAnomali extends BaseCommand
                     ->update(['is_insert' => 1]);
                 CLI::write("id anomali : $idAnomaliTabel");
             } else {
+                // jika tidak ditemukan id kategori anomali
                 // INSERT baru
                 $this->anomaliModel->builder()->resetQuery();
                 $this->anomaliModel->insert($dataSave);
-                $jes = $this->anomaliModel->getInsertID();
+                $newAnomaliId = $this->anomaliModel->getInsertID();
                 // CLI::write("id anomali baru : $jes");
-                if ($jes == 0) {
+                if ($newAnomaliId == 0) {
                     $err = $this->anomaliModel->errors();
                     foreach ($err as $rr) {
-                        // CLI::write("error menambahkan anomali : $$rr");
                     }
+                    continue;
                 }
 
+                // menambahkan pada mapped Exiting
+                $mappedExisting[$idKat] = $newAnomaliId;
+
                 // insert langusng pakai db
-                $this->db->table('anomali')->insert($dataSave);
-                $newAnomaliId = $this->db->insertID();
+                // $this->db->table('anomali')->insert($dataSave);
+                // $newAnomaliId = $this->db->insertID();
                 // CLI::write("✨ Berhasil Insert Anomali Baru ID: $newAnomaliId (Kategori: $idKat)");
             }
         }

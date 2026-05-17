@@ -5,117 +5,128 @@ namespace App\Models;
 use CodeIgniter\Model;
 use PhpParser\Node\Stmt\Case_;
 
-class AnomaliModel extends Model
+class AnomaliKegiatanWilayahTugasModel extends Model
 {
-    protected $table = 'anomali';
+    protected $table = 'v_anomali_kegiatan_wilayah_tugas';
     protected $useTimestamps = true;
     protected $dateFormat = 'datetime';
     protected $createdField = 'date_created';
     protected $updatedField = 'date_updated';
     protected $primaryKey = 'id';
-    protected $allowedFields = [
-        'id_kategori_anomali',
-        'id_user',
-        'id_wilayah',
-        'id_assigment',
-        'konfirmasi',
-        'is_lap',
-        'is_insert',
-        'is_sistem',
-    ];
+    protected $allowedFields = [];
 
     public function getAnomaliByWilayah($wilayah = null, $isEdit = null, $kode_anomali = null, $flag = null, $levelAnomali = null, $isRT = true)
     {
         $id_kegiatan = session()->get('aktif_kegiatan') ?? null;
         $level_wilayah = session()->get('level_wilayah') ?? null;
         $idUser = auth()->user()->id;
-        $isRoleMitra = session('aktif_role') == 'mitra';
-
-        $data = $this
-            ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-            ->join('wilayah', 'wilayah.id = art.id_wilayah', 'left')
-            ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-            ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left');
+        $isOrganik = session('isOrganik') ?? true;
 
         // mengambil panjang id wilayah
         $len = strlen($wilayah);
-        // $data = null;
+        $data = null;
         if ($len == $level_wilayah && !$isRT) {
             $data = $this
-                ->select("art.kd_assigment AS id , art.kd_nrt AS kd, art.nm_nrt AS nm, COUNT(*) AS jmlAnom")
-                // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                ->where('art.id_wilayah', $wilayah)
-                ->where('k.is_show', true)
-                ->groupBy('art.kd_assigment');
+                ->select("kd_assigment AS id, kd_nrt as kd, nm_nrt AS nm, COUNT(*) AS jmlAnom")
+                ->where('id_wilayah', $wilayah)
+                ->where('is_show', true)
+                ->groupBy('id_assigment');
+
+            // $data = $this
+            //     ->select("art.kd_assigment AS id , art.kd_nrt AS kd, art.nm_nrt AS nm, COUNT(*) AS jmlAnom")
+            //     ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
+            //     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+            //     ->where('art.id_wilayah', $wilayah)
+            //     ->where('k.is_show', true)
+            //     ->groupBy('art.kd_assigment');
         } else {
             // memasukkan filter by wilayah
             switch ($len) {
                 case '0':
-                    $data->select("LEFT(art.kd_assigment,4) AS id, wilayah.kd_kab AS kd,wilayah.nm_kab AS nm,COUNT(DISTINCT anomali.id) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('wilayah', 'wilayah.id = art.id_wilayah', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(anomali.id_wilayah, 1, 2)', '13')
-                        ->where('k.is_show', true)
-                        ->groupBy('wilayah.kd_kab');
+                    // $data = $this->select("LEFT(art.kd_assigment,4) AS id, wilayah.kd_kab AS kd,wilayah.nm_kab AS nm,COUNT(DISTINCT anomali.id) AS jmlAnom")
+                    //     ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
+                    //     ->join('wilayah', 'wilayah.id = art.id_wilayah', 'left')
+                    //     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                    //     ->where('SUBSTRING(anomali.id_wilayah, 1, 2)', '13')
+                    //     ->where('k.is_show', true)
+                    //     ->groupBy('wilayah.kd_kab');
+                    $data = $this->select("LEFT(kd_assigment,4) AS id, kd_kab AS kd,nm_kab AS nm, COUNT(DISTINCT id) AS jmlAnom")
+                        ->where('SUBSTRING(id_wilayah, 1, 2)', '13')
+                        ->where('is_show', true)
+                        ->groupBy('kd_kab');
                     break;
                 case '4':
-                    $data
-                        ->select("SUBSTRING(art.kd_assigment, 1, 7) AS id, wilayah.kd_kec AS kd,wilayah.nm_kec AS nm,COUNT(DISTINCT anomali.id) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('wilayah', 'wilayah.id = art.id_wilayah', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(anomali.id_wilayah, 1, 4)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('wilayah.kd_kec');
+                    // $data = $this
+                    //     ->select("SUBSTRING(art.kd_assigment, 1, 7) AS id, wilayah.kd_kec AS kd,wilayah.nm_kec AS nm,COUNT(DISTINCT anomali.id) AS jmlAnom")
+                    //     ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
+                    //     ->join('wilayah', 'wilayah.id = art.id_wilayah', 'left')
+                    //     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                    //     ->where('SUBSTRING(anomali.id_wilayah, 1, 4)', $wilayah)
+                    //     ->where('k.is_show', true)
+                    //     ->groupBy('wilayah.kd_kec');
+                    $data = $this
+                        ->select("SUBSTRING(kd_assigment, 1, 7) AS id, kd_kec AS kd,nm_kec AS nm, COUNT(DISTINCT id) AS jmlAnom")
+                        ->where('SUBSTRING(id_wilayah, 1, 4)', $wilayah)
+                        ->where('is_show', true)
+                        ->groupBy('kd_kec');
                     break;
                 case '7':
-                    $data
-                        ->select("SUBSTRING(art.kd_assigment, 1, 10) AS id, w.kd_des AS kd, w.nm_des AS nm,COUNT(*) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('wilayah w', 'LEFT(w.id,LENGTH(art.id_wilayah)) = art.id_wilayah', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(anomali.id_wilayah, 1, 7)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('w.kd_des');
+                    // $data = $this
+                    //     ->select("SUBSTRING(art.kd_assigment, 1, 10) AS id, w.kd_des AS kd, w.nm_des AS nm,COUNT(*) AS jmlAnom")
+                    //     ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
+                    //     ->join('wilayah w', 'LEFT(w.id,LENGTH(art.id_wilayah)) = art.id_wilayah', 'left')
+                    //     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                    //     ->where('SUBSTRING(anomali.id_wilayah, 1, 7)', $wilayah)
+                    //     ->where('k.is_show', true)
+                    //     ->groupBy('w.kd_des');
+                    $data = $this
+                        ->select("SUBSTRING(kd_assigment, 1, 10) AS id, kd_des AS kd, nm_des AS nm,COUNT(DISTINCT id) AS jmlAnom")
+                        ->where('SUBSTRING(id_wilayah, 1, 7)', $wilayah)
+                        ->where('is_show', true)
+                        ->groupBy('kd_des');
                     break;
                 case '10':
-                    $data
-                        // ->select("SUBSTRING(art.kd_assigment, 1, 16) AS id,wilayah.nm_sls AS nm, CONCAT(wilayah.kd_sls,wilayah.kd_subsls) AS kd ,COUNT(*) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('wilayah', 'LEFT(wilayah.id,LENGTH(art.id_wilayah)) = art.id_wilayah', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(art.id_wilayah, 1, 10)', $wilayah)
+                    // $data = $this
+                    //     ->select("SUBSTRING(art.kd_assigment, 1, 16) AS id,wilayah.nm_sls AS nm, CONCAT(wilayah.kd_sls,wilayah.kd_subsls) AS kd ,COUNT(*) AS jmlAnom")
+                    //     ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
+                    //     ->join('wilayah', 'LEFT(wilayah.id,LENGTH(art.id_wilayah)) = art.id_wilayah', 'left')
+                    //     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                    //     ->where('SUBSTRING(art.id_wilayah, 1, 10)', $wilayah)
+                    //     ->where('k.is_show', true)
+                    //     ->groupBy('CONCAT(wilayah.kd_sls,wilayah.kd_subsls)');
+                    $data = $this
+                        ->select("SUBSTRING(kd_assigment, 1, 16) AS id,nm_sls AS nm, CONCAT(wilayah.kd_sls,wilayah.kd_subsls) AS kd ,COUNT(DISTINCT id) AS jmlAnom")
+                        ->where('SUBSTRING(id_wilayah, 1, 10)', $wilayah)
                         ->where('k.is_show', true)
                         ->groupBy('CONCAT(wilayah.kd_sls,wilayah.kd_subsls)');
                     break;
                 case '16':
-                    $data
-                        ->select("SUBSTRING(art.kd_assigment, 1, 19) AS id , art.kd_krt AS kd, art.nm_krt AS nm, COUNT(*) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(anomali.id_wilayah, 1, 16)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('art.kd_krt');
+                    // $data = $this
+                    //     ->select("SUBSTRING(art.kd_assigment, 1, 19) AS id , art.kd_krt AS kd, art.nm_krt AS nm, COUNT(*) AS jmlAnom")
+                    //     ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
+                    //     ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                    //     ->where('SUBSTRING(anomali.id_wilayah, 1, 16)', $wilayah)
+                    //     ->where('k.is_show', true)
+                    //     ->groupBy('art.kd_krt');
+                    $data = $this
+                        ->select("SUBSTRING(kd_assigment, 1, 19) AS id , kd_krt AS kd, nm_krt AS nm, COUNT(DISTINCT id) AS jmlAnom")
+                        ->where('SUBSTRING(id_wilayah, 1, 16)', $wilayah)
+                        ->where('is_show', true)
+                        ->groupBy("SUBSTRING(kd_assigment, 1, 19)");
                     break;
                 case '19':
-                    $data
-                        ->select("SUBSTRING(art.kd_assigment, 1, 21) AS id , art.kd_art AS kd, art.nm_art AS nm, COUNT(*) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(art.kd_assigment, 1, 19)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('art.kd_krt');
+                    $data = $this
+                        ->select("SUBSTRING(kd_assigment, 1, 21) AS id , kd_art AS kd, nm_art AS nm, COUNT(DISTINCT id) AS jmlAnom")
+                        ->where('SUBSTRING(kd_assigment, 1, 19)', $wilayah)
+                        ->where('is_show', true)
+                        ->groupBy('SUBSTRING(kd_assigment, 1, 21)');
                     break;
                 case '21':
-                    $data
-                        ->select("art.kd_assigment AS id , art.kd_art AS kd, art.nm_art AS nm, COUNT(*) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(art.kd_assigment, 1, 21)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('art.kd_krt');
+                    $data = $this
+                        ->select("kd_assigment AS id , kd_art AS kd, nm_art AS nm, COUNT(DISTINCT id) AS jmlAnom")
+                        ->where('SUBSTRING(kd_assigment, 1, 21)', $wilayah)
+                        ->where('is_show', true)
+                        ->groupBy('kd_assigment');
                     break;
                 default:
                     # code...
@@ -155,11 +166,9 @@ class AnomaliModel extends Model
         };
 
         // filter untuk wilayah tugas mitra
-        if ($isRoleMitra) {
-            $data->groupStart()
-                ->where('wt.id_ppl', $idUser)
-                ->orWhere('wt.id_pml', $idUser)
-                ->groupEnd();
+        if (!$isOrganik) {
+            $data->Where('id_ppl', $idUser)
+                ->orWhere('id_pml', $idUser);
         }
 
 
@@ -181,7 +190,6 @@ class AnomaliModel extends Model
             ->select('anomali.id AS id, art.kd_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi,anomali.is_lap as is_lap')
             ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-            ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left')
             ->where('k.is_show', true)
             ->where('art.kd_assigment', $idArt);
         // ->findAll();

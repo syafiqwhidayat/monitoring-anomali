@@ -6,12 +6,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // const filterWilayah = document.getElementsById("filter-wilayah");
   const filterKode = document.getElementById("filter-kategori");
   const filterFlag = document.getElementById("filter-flag");
-  console.log(
-    isEdit.value,
-    filterLevel.value,
-    filterKode.value,
-    filterFlag.value,
-  );
 
   const loadingContent =
     '<div class="d-flex justify-content-center"><h1>Loading<span class="animated-dots"></span></h1></div></div>';
@@ -67,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "is-edit": isEdit.value,
         "is-completed": isCompleted,
       });
-      fetch(`/anomali/listDetil?${param}`)
+      fetch(`${BASE_URL}/anomali/listDetil?${param}`)
         // fetch(`/anomali/getListKec`)
         .then((response) => response.text())
         .then((htmlContent) => {
@@ -143,7 +137,7 @@ document.addEventListener("DOMContentLoaded", function () {
         feedbackElement.innerHTML = "Mencoba Mengirim"; // Kosongkan feedback sebelumnya
 
         // 2. Kirim data menggunakan Fetch API
-        fetch("/anomali/updateKonfirmasi", {
+        fetch(`${BASE_URL}/anomali/updateKonfirmasi`, {
           method: "POST",
           body: formData,
         })

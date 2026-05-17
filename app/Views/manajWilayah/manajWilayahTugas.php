@@ -11,6 +11,43 @@
         </div>
     </div>
 
+    <!-- Allert Error -->
+    <?php if (session()->getFlashdata('message_errors')) : ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="d-flex">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <circle cx="12" cy="12" r="9" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                </div>
+                <div><?= session()->getFlashdata('message_errors'); ?></div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <!-- Allert Pesan -->
+    <?php if (session()->getFlashdata('message')) : ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="d-flex">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <circle cx="12" cy="12" r="9" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                </div>
+                <div><?= session()->getFlashdata('message'); ?></div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+
+    <!-- filter -->
     <div class="card mb-3 shadow-sm" style="border-radius: 12px;">
         <div class="card-body">
             <form action="<?php base_url('wilayah') ?>" method="get" class="row g-3">
@@ -52,6 +89,7 @@
         </div>
     </div>
 
+    <!-- isi -->
     <div class="card shadow-sm" style="border-radius: 12px; overflow: hidden;">
         <div class="table-responsive">
             <table class="table table-vcenter card-table table-hover">
@@ -116,6 +154,7 @@
                                     class="btn btn-sm btn-ghost-primary btn-edit-wilayah"
                                     data-bs-toggle="modal"
                                     data-bs-target="#modalEditPetugas"
+                                    data-id="<?= $wt['id_wt']; ?>"
                                     data-kab="<?= $wt['kd_kab'] ?> - <?= $wt['nm_kab'] ?>"
                                     data-kec="<?= $wt['kd_kec'] ?> - <?= $wt['nm_kec'] ?>"
                                     data-desa="<?= $wt['kd_des'] ?> - <?= $wt['nm_des'] ?>"
@@ -133,6 +172,7 @@
     </div>
 </div>
 
+<!-- modal edit -->
 <div class="modal modal-blur fade" id="modalEditPetugas" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -168,7 +208,7 @@
 
                     <div class="mb-3">
                         <label class="form-label">Petugas PPL</label>
-                        <select name="sel-ppl" id="select-ppl" class="form-select">
+                        <select name="sel-ppl" id="select-ppl" class="form-select" placeholder="Cari Email Petugas...">
                             <option value="">-- Pilih Petugas --</option>
                             <?php foreach ($list_user as $m): ?>
                                 <option value="<?= $m['id'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>
@@ -194,5 +234,6 @@
         </div>
     </div>
 </div>
+
 <script src="<?= base_url('js/scriptWilayahTugas.js'); ?>"></script>
 <?= $this->endSection(); ?>

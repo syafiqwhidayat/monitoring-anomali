@@ -11,11 +11,13 @@ class Wilayah extends BaseController
 {
     protected $wilayahTugasModel;
     protected $logModel;
+    protected $userModel;
 
     public function __construct()
     {
         $this->wilayahTugasModel = new WilayahTugasModel();
         $this->logModel = new LogUploadModel();
+        // $this->userModel = new UserModel();
     }
     public function index()
     {
@@ -28,11 +30,14 @@ class Wilayah extends BaseController
         $data['title'] = "Manajemen Wiayah Tugas";
         $isOrganik = session('isOrganik');
 
-        $userModel = new \App\Models\UserModel;
+        if (!$isOrganik) {
+            return redirect()->to('')->with('error', 'Mitra Tidak Punya Akses untuk Manaj Wialyah Tugas');
+        }
+
         $idKegaiatan = session('aktif_kegiatan');
 
         // isian filter
-        $data['id'] = $this->request->getGet('id') ?? null;
+        // $data['id'] = $this->request->getGet('id') ?? null;
         $data['sel_prov'] = $this->request->getGet('sel-prov') ?? 13;
         $data['sel_kab'] = $this->request->getGet('sel-kab') ?? null;
         $data['sel_kec'] = $this->request->getGet('sel-kec') ?? null;
@@ -47,7 +52,6 @@ class Wilayah extends BaseController
         // data
         $data['list_user'] = $this->wilayahTugasModel->getUserByKegiatan($idKegaiatan);
         $data['wilayah_tugas'] = $this->wilayahTugasModel->getWilayahTugasByKegaitan($idKegaiatan, $data['sel_kab'], $data['sel_kec'], $data['sel_des'], $data['sel_keyword']);
-
         return view('manajWilayah/manajWilayahTugas', $data);
     }
 
@@ -60,12 +64,11 @@ class Wilayah extends BaseController
     public function store()
     {
         $file = $this->request->getFile('file_wilayah');
-        // dd($file->hasMoved());
 
         if ($file->isValid() && !$file->hasMoved()) {
             // 1. Simpan file ke folder writable/uploads
+            $oldName = $file->getName();
             $newName = $file->getRandomName();
-            $oldName = $file->getFilename();
             $file->move(WRITEPATH . 'uploads', $newName);
             $idKegiatan = session('aktif_kegiatan');
             $wilayahTugas = auth()->user()->wilayah_kerja;
@@ -77,7 +80,7 @@ class Wilayah extends BaseController
                 'status'    => 'pending',
                 'id_user'   => auth()->id(), // Siapa yang upload
                 'id_kegiatan' => $idKegiatan,
-                'jenis' => 'anomali',
+                'jenis' => 'wilayah',
                 'wilayah' => $wilayahTugas,
             ]);
 
@@ -159,18 +162,10 @@ class Wilayah extends BaseController
     {
         // Simulasi Data Dummy berdasarkan ID
         // Dalam aplikasi nyata, data ini diambil dari $logModel->find($id)
-        $dummyLogs = [
-            1 => [
-                ['baris' => 5, 'data' => 'Ahmad Fauzi', 'pesan' => 'Email tidak valid (harus domain @bps.go.id)'],
-                ['baris' => 12, 'data' => 'Siti Aminah', 'pesan' => 'Kode Wilayah (3201) tidak ditemukan di database'],
-                ['baris' => 45, 'data' => 'Budi Sudarsono', 'pesan' => 'Jabatan tidak sesuai dengan referensi'],
-            ],
-            2 => [
-                ['baris' => 2, 'data' => 'Tono Supono', 'pesan' => 'Data NIP duplikat dengan baris sebelumnya'],
-            ]
-        ];
+
         $log = $this->logModel->find($id);
-        $errors = json_decode($log->error_details, true);
+        $errors = json_decode($log['error_details'], true);
+        $data['errors'] = $errors;
 
 
 
@@ -227,9 +222,9 @@ class Wilayah extends BaseController
 
     public function edit()
     {
-        $data['id'] = $this->request->getGet('id') ?? null;
-        $data['id_ppl'] = $this->request->getGet('sel-ppl') ?? null;
-        $data['id_pml'] = $this->request->getGet('sel-pml') ?? null;
+        $data['id'] = $this->request->getPost('id') ?? null;
+        $data['id_ppl'] = $this->request->getPost('sel-ppl') ?? null;
+        $data['id_pml'] = $this->request->getPost('sel-pml') ?? null;
 
         $updateData = [];
 
@@ -250,7 +245,7 @@ class Wilayah extends BaseController
         if ($wiltug) {
             return redirect()->back()->with('message', 'User berhasil diedit');
         } else {
-            return redirect()->back()->withInput()->with('errors', 'gagal edit wilayah tugas');
+            return redirect()->back()->withInput()->with('message_errors', 'gagal edit wilayah tugas');
         }
     }
 }

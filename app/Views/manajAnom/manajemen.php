@@ -122,16 +122,16 @@
                                     name="action" value="toggle"
                                     class="btn btn-primary p-1 d-flex align-items-center"
                                     <?= ($l['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
-                                    <img src="<?= ($l['is_show']) ? '/img/icons/eye-slash.svg' : '/img/icons/eye.svg'; ?>"
+                                    <img src="<?= ($l['is_show']) ? base_url('/img/icons/eye-slash.svg') : base_url('/img/icons/eye.svg'); ?>"
                                         alt="Ikon Simpan" width="16" height="16">
                                 </button>
-                                <a aria-current="page" class="btn btn-warning p-1 d-flex justify-content-center a-butt" href="<?= base_url('/manajemen-anomali/edit/' . $l['id']); ?>"><img src="/img/icons/edit.svg" alt="Ikon Simpan" width="16" height="16"></a>
+                                <a aria-current="page" class="btn btn-warning p-1 d-flex justify-content-center a-butt" href="<?= base_url('/manajemen-anomali/edit/' . $l['id']); ?>"><img src="<?= base_url("/img/icons/edit.svg"); ?>" alt="Ikon Simpan" width="16" height="16"></a>
                                 <button type="button"
                                     name="action" value="delete"
                                     data-bs-toggle="modal" data-bs-target="#konfirHapus"
                                     data-id="<?= $l['id']; ?>"
                                     data-kode="<?= $l['kode_anomali']; ?>"
-                                    class="btn btn-danger p-1 d-flex align-items-center"><img src="/img/icons/trash.svg" alt="Ikon Simpan" width="16" height="16"></button>
+                                    class="btn btn-danger p-1 d-flex align-items-center"><img src='<?= base_url("/img/icons/trash.svg"); ?>' alt="Ikon Simpan" width="16" height="16"></button>
                             </form>
                         </td>
                     </tr>

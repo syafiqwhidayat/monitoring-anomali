@@ -4,7 +4,7 @@ namespace App\Commands;
 
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
-use App\Models\WilUploadLogModel;
+use App\Models\LogUploadModel;
 use App\Models\UserModel;
 use App\Models\WilayahTugasModel;
 use App\Models\KegiatanModel;
@@ -62,6 +62,9 @@ class ProsesWilayah extends BaseCommand
      * @param array $params
      */
 
+    protected $mapUserName = [];
+    protected $mapUsers = [];
+
 
     public function run(array $params)
     {
@@ -77,9 +80,17 @@ class ProsesWilayah extends BaseCommand
             return;
         }
 
+        // cek provinsi tidak bisa menambahkan wilayah tugas
+        if ($wilayahKerja === '1300') {
+            CLI::error("Tidak bisa untuk upload wilayah tugas 1300");
+            return;
+        }
+
+
+
         // inisiasi model
         $kegiatanModel = new KegiatanModel();
-        $logModel  = new WilUploadLogModel();
+        $logModel  = new LogUploadModel();
         $userModel = new UserModel();
         $wilayaTugasModel = new WilayahTugasModel();
 
@@ -93,16 +104,27 @@ class ProsesWilayah extends BaseCommand
         $logModel->update($logId, ['status' => 'proses']);
 
         // mapped user
-        $mapUsers = [];
-        $listUser = $this->userModel
+        $listUser = $userModel
             ->distinct()
             ->from('users u')
-            ->select('u.id, u.wilayah_kerja,iden.secret')
+            ->select('u.id as id,u.username as username, u.wilayah_kerja as wilayah_kerja,iden.secret as email')
             ->join('auth_identities iden', 'u.id=iden.user_id')
             ->asArray()->findAll();
+
         if (!empty($listUser)) {
             foreach ($listUser as $use) {
-                $mapUsers[$use['secret']] = ['id' => $use['id'], 'level_wilayah' => $use['wilayah_kerja']];
+                $this->mapUsers[strtolower($use['email'])] = ['id' => $use['id'], 'wilayah_kerja' => $use['wilayah_kerja'], 'username' => $use['username']];
+                $this->mapUserName[$use['username']] = ['id' => $use['id']];
+            }
+        }
+
+        $mapWilayahTugas = [];
+        $listWilayahTugas = $wilayaTugasModel->where([
+            'id_kegiatan' => $idKegiatan
+        ])->asArray()->findAll();
+        if (!empty($listWilayahTugas)) {
+            foreach ($listWilayahTugas as $tugas) {
+                $mapWilayahTugas[$tugas['id_wilayah']] = $tugas['id'];
             }
         }
 
@@ -119,37 +141,34 @@ class ProsesWilayah extends BaseCommand
             $db = \Config\Database::connect();
             $db->transStart(); // Mulai Transaksi
 
+            // 3. Validasi Manual
+            $validation = \Config\Services::validation();
+
 
             // 2. Mulai membaca data (Skip baris 0/header)
             for ($i = 1; $i <= $totalBaris; $i++) {
                 $row = $sheetData[$i];
+                CLI::write("sedang proses bari ke- $i");
 
                 // data ppl dan pml
                 $dataUserPPL = [
-                    'email'         => $row[7], // Kolom H
+                    'email'         => strtolower($row[7]), // Kolom H
                     'name'          => ucwords($row[7]),
-                    'wilayah_kerja' => $this->wilayah_kerja, // Kolom C
-                    'username'      => explode('@', $row[7])[0], // Ambil depan email untuk username
+                    'wilayah_kerja' => $wilayahKerja, // Kolom C
+                    'username'      => $this->generateUniqueUsername($row[7]), // Jalankan fungsi untuk generate username
                 ];
                 $dataUserPML = [
-                    'email'         => $row[6], // Kolom H
+                    'email'         => strtolower($row[6]), // Kolom H
                     'name'         =>  ucwords($row[6]), // Kolom H
-                    'wilayah_kerja' => $this->wilayah_kerja, // Kolom C
-                    'username'      => explode('@', $row[6])[0], // Ambil depan email untuk username
+                    'wilayah_kerja' => $wilayahKerja, // Kolom C
+                    'username'      => $this->generateUniqueUsername($row[6]), // Jalankan fungsi untuk generate username
                 ];
-
-                // mengkalkulasi id wilayah
-                $kode = (trim($row[0] ?? '')) . (trim($row[1] ?? '')) . (trim($row[2] ?? '')) . (trim($row[3] ?? '')) . (trim($row[4] ?? '')) . (trim($row[5] ?? ''));
-                $idWilayah = [
-                    'idWilayah' => $kode,
-                ];
-
-                // 3. Validasi Manual
-                $validation = \Config\Services::validation();
 
                 $ruleEmail = [
                     'email' => "required|valid_email",
                 ];
+
+
                 $validation->reset();
                 $validation->setRules($ruleEmail);
 
@@ -173,6 +192,12 @@ class ProsesWilayah extends BaseCommand
                     continue;
                 }
 
+                // mengkalkulasi id wilayah
+                $idWilayah = (trim($row[0] ?? '')) . (trim($row[1] ?? '')) . (trim($row[2] ?? '')) . (trim($row[3] ?? '')) . (trim($row[4] ?? '')) . (trim($row[5] ?? ''));
+                $wilayahData = [
+                    'idWilayah' => $idWilayah,
+                ];
+
                 // validasi id wilayah
                 $validation->reset();
                 $ruleWilayah = [
@@ -191,34 +216,31 @@ class ProsesWilayah extends BaseCommand
                 }
                 $validation->setRules($ruleWilayah, $messageWilayah);
 
-                // validasi Email PPL
-                if (!$validation->run($idWilayah)) {
+                // validasi Wilayah
+                if (!$validation->run($wilayahData)) {
                     $gagal++;
                     $errorDetails[] = [
                         'baris' => $i + 1,
-                        'data'  => $idWilayah['idWilayah'] ?? 'Baris ' . ($i + 1),
+                        'data'  => $wilayah['idWilayah'] ?? 'Baris ' . ($i + 1),
                         'pesan' => $validation->getErrors()
                     ];
                     continue;
                 }
 
-                // cek apakah user sudah ada di database
-                // $userPPL = $userModel->findByCredentials(['email' => $dataUserPPL['email']]);
-                // $userPML = $userModel->findByCredentials(['email' => $dataUserPML['email']]);
-
                 // Jika user belum ada, Simpan User ke Database
-                if (!isset($mapUsers[$dataUserPPL['email']])) {
+                if (!isset($this->mapUsers[$dataUserPPL['email']])) {
                     $userPPL = new \App\Entities\User($dataUserPPL);
                     $userPPL->password = 'password123'; // Password default
                     if ($userModel->save($userPPL)) {
                         $userPPL->id = $userModel->getInsertID();
                         if (str_contains($dataUserPPL['email'], '@bps.go.id')) {
-                            $userPPL->addGroup('organik');
-                        } else {
-                            $userPPL->addGroup('mitra');
+                            $userPPL->addGroup('operator');
                         }
-                        $mapUsers[$dataUserPPL['email']]['id'] = $userPPL->id;
-                        $mapUsers[$dataUserPPL['email']]['level_wilayah'] = $dataUserPPL['wilayah_kerja'];
+                        // semua akun punya role mitra
+                        $userPPL->addGroup('mitra');
+                        $this->mapUsers[$dataUserPPL['email']]['id'] = $userPPL->id;
+                        $this->mapUsers[$dataUserPPL['email']]['wilayah_kerja'] = $dataUserPPL['wilayah_kerja'];
+                        $this->mapUserName[$dataUserPPL['username']] = $userPPL->id;
                     } else {
                         $gagal++;
                         $errorDetails[] = [
@@ -229,8 +251,9 @@ class ProsesWilayah extends BaseCommand
                         continue;
                     }
                 } else {
+                    // jika usernya ditemukan
                     // cek apakah user berada pada wilayah_kerja yang sesuai?
-                    if ($mapUsers[$dataUserPPL['email']] !== $wilayahKerja) {
+                    if ($this->mapUsers[$dataUserPPL['email']]['wilayah_kerja'] !== $wilayahKerja) {
                         $gagal++;
                         $errorDetails[] = [
                             'baris' => $i + 1,
@@ -241,19 +264,22 @@ class ProsesWilayah extends BaseCommand
                     }
                 }
 
-                if (!isset($mapUsers[$dataUserPML['email']])) {
+                if (!isset($this->mapUsers[$dataUserPML['email']])) {
                     $userPML = new \App\Entities\User($dataUserPML);
                     $userPML->password = 'password123'; // Password default
                     if ($userModel->save($userPML)) {
+                        CLI::write('berhasil dijalankan');
                         $userPML->id = $userModel->getInsertID();
                         if (str_contains($dataUserPML['email'], '@bps.go.id')) {
-                            $userPML->addGroup('organik');
-                        } else {
-                            $userPML->addGroup('mitra');
+                            $userPML->addGroup('operator');
                         }
-                        $mapUsers[$dataUserPML['email']]['id'] = $userPML->id;
-                        $mapUsers[$dataUserPML['email']]['level_wilayah'] = $dataUserPML['wilayah_kerja'];
+                        // setiap organik punya role mitra
+                        $userPML->addGroup('mitra');
+                        $this->mapUsers[$dataUserPML['email']]['id'] = $userPML->id;
+                        $this->mapUsers[$dataUserPML['email']]['wilayah_kerja'] = $dataUserPML['wilayah_kerja'];
+                        $this->mapUserName[$dataUserPML['username']] = $userPML->id;
                     } else {
+                        CLI::write('gagal ini dijalankan');
                         $gagal++;
                         $errorDetails[] = [
                             'baris' => $i + 1,
@@ -263,8 +289,9 @@ class ProsesWilayah extends BaseCommand
                         continue;
                     }
                 } else {
+                    // jika user ditemukan
                     // cek apakah user berada pada wilayah_kerja yang sesuai?
-                    if ($mapUsers[$dataUserPML['email']] !== $wilayahKerja) {
+                    if ($this->mapUsers[$dataUserPML['email']]['wilayah_kerja'] !== $wilayahKerja) {
                         $gagal++;
                         $errorDetails[] = [
                             'baris' => $i + 1,
@@ -275,53 +302,41 @@ class ProsesWilayah extends BaseCommand
                     }
                 }
 
-                $existing = $wilayaTugasModel->where([
-                    'id_wilayah'  => $idWilayah['idWilayah'],
-                    'id_kegiatan' => $idKegiatan
-                ])->first();
-
                 $dataWilayahTugas = [
-                    'id_wilayah' => $idWilayah['idWilayah'],
-                    'id_kegiatan' => $idKegiatan,
-                    'id_ppl' => $userPPL->id,
-                    'id_pml' => $userPML->id,
+                    // 'id_wilayah' => $idWilayah,
+                    // 'id_kegiatan' => $idKegiatan,
+                    'id_ppl' => $this->mapUsers[$dataUserPPL['email']]['id'],
+                    'id_pml' => $this->mapUsers[$dataUserPML['email']]['id'],
                 ];
 
-                if ($existing) {
+                if (isset($mapWilayahTugas[$idWilayah])) {
                     // Jika wilayah tugas sudah ada, lakukan Update berdasarkan ID primer yang ditemukan
-                    if (!$wilayaTugasModel->update($existing['id'], $dataWilayahTugas)) {
+                    $dad = $mapWilayahTugas[$idWilayah];
+                    CLI::write($dad);
+                    if (!$wilayaTugasModel->update($mapWilayahTugas[$idWilayah], $dataWilayahTugas)) {
                         $gagal++;
                         $errorDetails[] = [
                             'baris' => $i + 1,
-                            'data'  => "ID Wilayah: " . $idWilayah['idWilayah'],
-                            'pesan' => "Gagal update wilayah tugas"
+                            'data'  => "ID Wilayah: " . $idWilayah,
+                            'pesan' => "Gagal Mengubah Wilayah Tugas Sebelumnya",
                         ];
                         continue;
                     }
                 } else {
                     // Jika wilayah tugas belum ada, lakukan Insert baru wilayah tugas
+                    $dataWilayahTugas['id_kegiatan'] = $idKegiatan;
+                    $dataWilayahTugas['id_wilayah'] = $idWilayah;
                     if (!$wilayaTugasModel->insert($dataWilayahTugas)) {
                         $gagal++;
                         $errorDetails[] = [
                             'baris' => $i + 1,
-                            'data'  => "ID Wilayah: " . $idWilayah['idWilayah'],
-                            'pesan' => "Gagal input wilayah tugas baru"
+                            'data'  => "ID Wilayah: " . $idWilayah,
+                            'pesan' => "Gagal membuat wilayah tugas baru"
                         ];
                         continue;
                     }
                 }
-
-                if (!$wilayaTugasModel->save($dataWilayahTugas)) {
-                    $gagal++;
-                    $errorDetails[] = [
-                        'baris' => $i + 1,
-                        'data'  => "gagal input wilayah tugas: " . $idWilayah['idWilayah'],
-                        'pesan' => 'gagal input wilayah tugas'
-                    ];
-                    continue;
-                } else {
-                    $berhasil++;
-                };
+                $berhasil++;
             }
             // tidak update databse jika gagal
             $db->transComplete();
@@ -337,10 +352,41 @@ class ProsesWilayah extends BaseCommand
 
             CLI::write("Proses selesai. Berhasil: $berhasil, Gagal: $gagal", 'green');
         } catch (\Exception $e) {
+            CLI::error("ADA ERROR: " . $e->getMessage());
+            CLI::error("DI BARIS: " . $e->getLine());
+            CLI::error("FILE: " . $e->getFile());
             $logModel->update($logId, [
                 'status' => 'gagal',
                 'error_details' => json_encode([['baris' => '-', 'data' => 'Sistem', 'pesan' => [$e->getMessage()]]])
             ]);
         }
+    }
+    public function generateUniqueUsername($email)
+    {
+        $email = strtolower($email);
+        // jika sudah ada, kembalikan
+        if (isset($this->mapUsers[$email])) {
+            $username = $this->mapUsers[$email]['username'];
+            return $username;
+        }
+
+        // jika tidak ada, maka buat username
+        // 1. Ambil bagian depan email
+        $baseUsername = explode('@', $email)[0];
+
+        // 2. Bersihkan karakter aneh (opsional, Shield biasanya hanya boleh karakter alfanumerik/titik)
+        $baseUsername = preg_replace('/[^a-zA-Z0-9._]/', '', $baseUsername);
+
+        $username = $baseUsername;
+        $i = 1;
+
+        // 3. Cek ke database, jika ada yang sama, tambah angka di belakangnya
+        while (isset($this->mapUserName[$username])) {
+            $username = $baseUsername . $i;
+            $i++;
+        }
+        $this->mapUserName[$username] =  0;
+
+        return $username;
     }
 }

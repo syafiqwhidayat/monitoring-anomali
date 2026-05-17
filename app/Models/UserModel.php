@@ -80,4 +80,52 @@ class UserModel extends ShieldUserModel
             return false;
         }
     }
+
+    public function getUserByKegiatan($wilayah_kerja = null)
+    {
+        $db = \Config\Database::connect();
+        $wilayahKerja = auth()->user()->wilayah_kerja; //wilayah kerja user yang request
+        $idKegiatan = session('aktif_kegiatan');
+
+        // sub query untuk menggabungkan id PML dan id PPL
+        $subquery = $db->table('wilayah_tugas')
+            ->select('id_pml AS id_user, 1 as prioritas')
+            ->where('id_kegiatan', $idKegiatan) // Filter untuk PML
+            ->union(
+                $db->table('wilayah_tugas')->select('id_ppl AS id_user,2 as prioritas')
+                    ->where('id_kegiatan', $idKegiatan) // Filter untuk PML
+            )
+            ->getCompiledSelect();
+
+        $data = $this->select('users.id AS id,users.name AS nama,ide.secret AS email')
+            ->join('auth_identities ide', 'ide.user_id = users.id', 'left')
+            ->join("($subquery) AS tabel_gabung", 'tabel_gabung.id_user = users.id', 'inner')
+            ->orderBy('tabel_gabung.prioritas', 'ASC');
+
+        if ($wilayahKerja != '1300') {
+            $data->where('users.wilayah_kerja', $wilayahKerja);
+        }
+
+        return ($data->asArray()->findAll());
+    }
+
+    public function generateUniqueUsername($email)
+    {
+        // 1. Ambil bagian depan email
+        $baseUsername = explode('@', $email)[0];
+
+        // 2. Bersihkan karakter aneh (opsional, Shield biasanya hanya boleh karakter alfanumerik/titik)
+        $baseUsername = preg_replace('/[^a-zA-Z0-9._]/', '', $baseUsername);
+
+        $username = $baseUsername;
+        $i = 1;
+
+        // 3. Cek ke database, jika ada yang sama, tambah angka di belakangnya
+        while ($this->where('username', $username)->first()) {
+            $username = $baseUsername . $i;
+            $i++;
+        }
+
+        return $username;
+    }
 }
