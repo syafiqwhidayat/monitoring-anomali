@@ -71,7 +71,7 @@
                             <div class="dropdown-menu">
                                 <div class="dropdown-menu-columns">
                                     <a class="dropdown-item" href="<?= base_url('/se/monitoring') ?>">Moniroing Keseluruhan</a>
-                                    <?php if (session('aktif_role') !== 'operator'): ?>
+                                    <?php if (session('aktif_role') === 'superadmin'): ?>
                                         <a class="dropdown-item" href="<?= base_url('/se/upload') ?>">Upload Monitoring SE2026</a>
                                     <?php endif; ?>
                                 </div>

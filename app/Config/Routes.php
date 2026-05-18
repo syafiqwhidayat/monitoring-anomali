@@ -84,3 +84,5 @@ $routes->group('admin', ['filter' => 'activeRole:admin'], static function ($rout
 
 $routes->get('set_kegiatan/(:any)', 'Kegiatan::set/$1', ['filter' => 'activeRole:superadmin,admin,operator,mitra']); // untuk ubah kegiatan di header
 $routes->get('set_role', 'Admin\UserController::gantiRole', ['filter' => 'activeRole:superadmin,admin,operator,mitra']); // untuk ubah kegiatan di header
+$routes->get('profile', 'Admin\UserController::profile');
+$routes->post('profile/update', 'Admin\UserController::updateProfile');

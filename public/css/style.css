@@ -249,6 +249,24 @@ body.sidebar-collapsed .page-wrapper {
   .kegiatan-wrapper .dropdown-toggle {
     max-width: 200px; /* Lebih kecil lagi untuk layar HP sempit */
   }
+
+  /* untuk halaman login */
+  .container-tight {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .login-logo {
+    max-height: 60px; /* Logo sedikit mengecil di HP agar tidak makan tempat */
+  }
+
+  h2 {
+    font-size: 1.25rem; /* Judul sedikit mengecil */
+  }
+
+  .card-body {
+    padding: 1.5rem !important; /* Padding lebih rapat di HP */
+  }
 }
 
 @media (max-width: 575.98px) {

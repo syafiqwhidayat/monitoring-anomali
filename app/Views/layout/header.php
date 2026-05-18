@@ -38,10 +38,11 @@
                     <div class="text-end d-none d-sm-block text-white">
                         <h3 class="page-title mb-0 fs-4"><?php echo ucwords($user->name) ?></h3>
                         <small class="page-subtitle opacity-75 d-flex align-items-center justify-content-end">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-inline me-1" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none">
-                                <path d="M5 12l5 5l10 -10" />
-                            </svg>
-                            <?php echo ucwords(session()->get('aktif_role')) ?>
+                            <span class="badge bg-warning-lt text-capitalize">
+                                <!-- <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-inline me-1" width="14" height="14" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none">
+                                    <path d="M5 12l5 5l10 -10" />
+                                </svg> -->
+                                <?php echo ucwords(session()->get('aktif_role')) ?></span>
                         </small>
                     </div>
 
@@ -52,7 +53,7 @@
                             </span>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                            <a href="<?= base_url('profile') ?>" class="dropdown-item">Profil <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                            <a href="<?= base_url('profile') ?>" class="dropdown-item">Profil</a>
                             <a href="<?= base_url('set_role') ?>?return=<?= urlencode(current_url()) ?>" class="dropdown-item">Ganti Role</a>
                             <div class="dropdown-divider"></div>
                             <a href="<?= base_url('logout') ?>" class="dropdown-item text-danger">Logout</a>

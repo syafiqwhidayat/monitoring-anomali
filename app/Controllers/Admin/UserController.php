@@ -84,4 +84,49 @@ class UserController extends BaseController
         $target = $this->request->getGet('return') ?? base_url('/');
         return redirect()->to($target)->with('message', 'Berhasil Ganti Role: ' . session()->get('aktif_role'));
     }
+
+    public function profile()
+    {
+        $user = auth()->user();
+        // Ambil maksimal 2 role
+        $roles = array_slice($user->getGroups(), 0, 2);
+
+        return view('auth/profile_view', [
+            'title' => "User Profile",
+            'user'  => $user,
+            'roles' => $roles
+        ]);
+    }
+
+    public function updateProfile()
+    {
+        $user = auth()->user();
+        $userModel = model(UserModel::class);
+
+        $rules = [
+            'nama' => 'required|min_length[3]|max_length[100]',
+        ];
+
+        // Validasi password jika diisi
+        if ($this->request->getPost('password')) {
+            $rules['password']     = 'required|strong_password';
+            $rules['pass_confirm'] = 'required|matches[password]';
+        }
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        // Update data nama
+        $user->name = ucwords($this->request->getPost('nama'));
+
+        // Update password jika ada input
+        if ($this->request->getPost('password')) {
+            $user->password = $this->request->getPost('password');
+        }
+
+        $userModel->save($user);
+
+        return redirect()->to('profile')->with('message', 'Profil berhasil diperbarui!');
+    }
 }

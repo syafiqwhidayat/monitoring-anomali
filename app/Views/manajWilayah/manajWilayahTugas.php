@@ -159,8 +159,8 @@
                                     data-kec="<?= $wt['kd_kec'] ?> - <?= $wt['nm_kec'] ?>"
                                     data-desa="<?= $wt['kd_des'] ?> - <?= $wt['nm_des'] ?>"
                                     data-sls="<?= $wt['kd_sls'] . $wt['kd_subsls'] ?> - <?= $wt['nm_sls'] ?>"
-                                    data-ppl="<?= $wt['nm_ppl'] ?>"
-                                    data-pml="<?= $wt['nm_pml'] ?>">
+                                    data-ppl="<?= $wt['id_ppl'] ?>"
+                                    data-pml="<?= $wt['id_pml'] ?>">
                                     Edit Petugas
                                 </button>
                             </td>
@@ -209,7 +209,7 @@
                     <div class="mb-3">
                         <label class="form-label">Petugas PPL</label>
                         <select name="sel-ppl" id="select-ppl" class="form-select" placeholder="Cari Email Petugas...">
-                            <option value="">-- Pilih Petugas --</option>
+                            <option value=""></option>
                             <?php foreach ($list_user as $m): ?>
                                 <option value="<?= $m['id'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>
                             <?php endforeach; ?>
@@ -219,7 +219,7 @@
                     <div class="mb-3">
                         <label class="form-label">Petugas PML</label>
                         <select name="sel-pml" id="select-pml" class="form-select">
-                            <option value="">-- Pilih Petugas --</option>
+                            <option value=""></option>
                             <?php foreach ($list_user as $m): ?>
                                 <option value="<?= $m['id'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>
                             <?php endforeach; ?>

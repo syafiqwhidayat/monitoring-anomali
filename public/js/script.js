@@ -48,41 +48,41 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Mencari semua elemen dengan class .form-select
-  document.querySelectorAll(".form-select:not(.no-tom)").forEach((el) => {
-    new TomSelect(el, {
-      copyClassesToDropdown: false,
-      dropdownParent: "body",
-      controlInput: null, // Sembunyikan search box jika tidak ingin fitur cari
-      render: {
-        option: function (data, escape) {
-          return '<div class="py-1 px-2">' + escape(data.text) + "</div>";
-        },
-      },
-      // Tambahkan baris ini agar tingginya terkontrol
-      maxOptions: null,
-    });
-  });
-
-  // const selects = document.querySelectorAll(".form-select:not(.no-tom)");
-
-  // selects.forEach((el) => {
+  // document.querySelectorAll(".form-select:not(.no-tom)").forEach((el) => {
   //   new TomSelect(el, {
-  //     copyClassesToDropdown: true, // Ubah ke true agar styling Bootstrap terbawa ke dropdown
+  //     copyClassesToDropdown: false,
   //     dropdownParent: "body",
-  //     controlInput: el.getAttribute("data-search") ? null : undefined, // Dinamis: tambah data-search="false" di HTML jika tak mau search
-  //     placeholder: el.getAttribute("placeholder") || "Pilih data...",
-  //     allowEmptyOption: true,
-  //     maxOptions: null,
+  //     controlInput: null, // Sembunyikan search box jika tidak ingin fitur cari
   //     render: {
-  //       no_results: function (data, escape) {
-  //         return '<div class="no-results">Data tidak ditemukan...</div>';
+  //       option: function (data, escape) {
+  //         return '<div class="py-1 px-2">' + escape(data.text) + "</div>";
   //       },
   //     },
-  //     // Perbaikan agar ukuran dropdown sesuai dengan Tabler
-  //     onDropdownOpen: function () {
-  //       const dropdown = this.dropdown;
-  //       dropdown.style.zIndex = "2000"; // Pastikan di atas elemen Tabler lain
-  //     },
+  //     // Tambahkan baris ini agar tingginya terkontrol
+  //     maxOptions: null,
   //   });
   // });
+
+  const selects = document.querySelectorAll(".form-select:not(.no-tom)");
+
+  selects.forEach((el) => {
+    new TomSelect(el, {
+      copyClassesToDropdown: false, // Ubah ke true agar styling Bootstrap terbawa ke dropdown
+      dropdownParent: "body",
+      // controlInput: el.getAttribute("data-search") ? null : undefined, // Dinamis: tambah data-search="false" di HTML jika tak mau search
+      placeholder: el.getAttribute("placeholder") || "Pilih data...",
+      allowEmptyOption: true,
+      maxOptions: null,
+      render: {
+        no_results: function (data, escape) {
+          return '<div class="no-results">Data tidak ditemukan...</div>';
+        },
+      },
+      // Perbaikan agar ukuran dropdown sesuai dengan Tabler
+      onDropdownOpen: function () {
+        const dropdown = this.dropdown;
+        dropdown.style.zIndex = "2000"; // Pastikan di atas elemen Tabler lain
+      },
+    });
+  });
 });

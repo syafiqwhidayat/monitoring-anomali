@@ -89,7 +89,24 @@ class Wilayah extends BaseController
             // Tanda '&' di akhir perintah adalah kunci agar berjalan di background
             // $command = "php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId . " > /dev/null 2>&1 &"; //command linux
             $command = "start /B php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId . " " . $idKegiatan . " " . $wilayahTugas; //command windows
-            shell_exec($command);
+            try {
+                if (function_exists('popen')) {
+                    \pclose(\popen($command, "r"));
+                } elseif (function_exists('shell_exec')) {
+                    \shell_exec($command);
+                } else {
+                    // Catat di log jika semua fungsi eksekusi mati
+                    log_message('error', 'Semua fungsi eksekusi shell (popen, shell_exec) dinonaktifkan di server.');
+
+                    // buat agar pesan akan di proses secara berkala
+                    $this->logModel->update($logId, [
+                        'status' => 'pending',
+                        'error_details' => json_encode([['baris' => '-', 'data' => 'Sistem', 'messages' => 'File akan di proses secara berkala sesuai antrian']])
+                    ]);
+                }
+            } catch (\Exception $e) {
+                log_message('error', $e->getMessage());
+            }
 
             return redirect()->to('/wilayah/logs')->with('message', 'Upload berhasil! Sistem sedang memproses data di latar belakang.');
         }
