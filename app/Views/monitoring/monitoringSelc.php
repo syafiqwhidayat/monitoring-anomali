@@ -6,7 +6,7 @@
     <form action="<?= base_url('/monitoring-sel') ?>" method="get">
         <input type="hidden" name="fil-anomali-old" value="<?= $filterAnomali; ?>">
         <div class="card card-body mb-5 ">
-            <div class="hr-text hr-text-left fs-5 mb-3">Filter Broadcast</div>
+            <div class="hr-text hr-text-left fs-5 mb-3">Filter Anomali</div>
             <div class="mb-3">
                 <div class="row g-3">
                     <div class="col-md-5">
@@ -39,22 +39,6 @@
             </div>
         </div>
     </form>
-    <!-- <div class="card card-body">
-        <div class="row">
-            <div class="col mb-3">
-                <div class="d-flex justify-content-center align-items-center gap-3">
-                    <h1 class="text-center">Statistik Anomali</h1>
-                    <h1 class="btn btn-primary-bps rounded-pill"><?= $kode_anomali; ?></h1>
-                </div>
-                <div class="d-flex justify-content-center align-items-center gap-3">
-                    <div class="text-align-center" for="UpdateAll">
-                        <i class="bi <?= ($is_public) ? 'bi-eye-fill text-success' : 'bi-eye-slash-fill text-warning'; ?>"></i> <?= ($is_public) ? '' : 'Not'; ?> Public
-                    </div>
-                    <i class="btn-warning-bps rounded-pill py-1 px-2">Flag <?= ($flag) ? $flag : "?"; ?></i>
-                </div>
-            </div>
-        </div>
-    </div> -->
     <div class="card card-stacked">
         <div class="card-body">
             <div class="row align-items-center">

@@ -116,6 +116,7 @@ class Wilayah extends BaseController
 
     public function logsWilayah()
     {
+        $wilayahUser = auth()->user()->wilayah_kerja;
         $data['title'] = 'Log Upload Wilayah';
         $data['logs'] = [
             (object) [
@@ -169,6 +170,9 @@ class Wilayah extends BaseController
             ->where('id_kegiatan', session()->get('aktif_kegiatan'))
             ->where('jenis', 'wilayah')
             ->orderBy('created_at', 'DESC');
+        if ($wilayahUser !== '1300') {
+            $datalog->where('wilayah', $wilayahUser);
+        }
 
         $data['logs'] = $datalog->findAll();
 

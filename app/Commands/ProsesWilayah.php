@@ -11,6 +11,8 @@ use App\Models\KegiatanModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use SebastianBergmann\Environment\Console;
 
+use function PHPUnit\Framework\isNull;
+
 class ProsesWilayah extends BaseCommand
 {
     /**
@@ -149,19 +151,23 @@ class ProsesWilayah extends BaseCommand
             for ($i = 1; $i <= $totalBaris; $i++) {
                 $row = $sheetData[$i];
                 CLI::write("sedang proses bari ke- $i");
+                if (empty(trim($row[0] ?? '')) || empty(trim($row[0] ?? '')) && empty(trim($row[0] ?? ''))) {
+                    // Lewati baris ini jika email kosong agar tidak terjadi error data
+                    break;
+                }
 
                 // data ppl dan pml
                 $dataUserPPL = [
-                    'email'         => strtolower($row[7]), // Kolom H
-                    'name'          => ucwords($row[7]),
+                    'email'         => strtolower($row[7] ?? ''), // Kolom H
+                    'name'          => ucwords($row[7] ?? ''),
                     'wilayah_kerja' => $wilayahKerja, // Kolom C
-                    'username'      => $this->generateUniqueUsername($row[7]), // Jalankan fungsi untuk generate username
+                    'username'      => $this->generateUniqueUsername($row[7] ?? ''), // Jalankan fungsi untuk generate username
                 ];
                 $dataUserPML = [
-                    'email'         => strtolower($row[6]), // Kolom H
-                    'name'         =>  ucwords($row[6]), // Kolom H
+                    'email'         => strtolower($row[6] ?? ''), // Kolom H
+                    'name'         =>  ucwords($row[6] ?? ''), // Kolom H
                     'wilayah_kerja' => $wilayahKerja, // Kolom C
-                    'username'      => $this->generateUniqueUsername($row[6]), // Jalankan fungsi untuk generate username
+                    'username'      => $this->generateUniqueUsername($row[6] ?? ''), // Jalankan fungsi untuk generate username
                 ];
 
                 $ruleEmail = [
@@ -363,9 +369,12 @@ class ProsesWilayah extends BaseCommand
     }
     public function generateUniqueUsername($email)
     {
+        if (empty($email)) {
+            return '';
+        }
         $email = strtolower($email);
         // jika sudah ada, kembalikan
-        if (isset($this->mapUsers[$email])) {
+        if (isset($this->mapUsers[$email]['username'])) {
             $username = $this->mapUsers[$email]['username'];
             return $username;
         }

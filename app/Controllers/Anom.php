@@ -302,19 +302,14 @@ class Anom extends BaseController
         return view('anomali/tanya', $data);
     }
 
+
     public function konfirmasiBulk()
     {
+        $userWialyah = auth()->user()->wilayah_kerja;
+        $userWialyah = substr($userWialyah, -2);
+
         $data = [
             'title' => 'Konfirmasi Bulk Anomali',
-            'data' => [
-                'kode_anomali' => "AN01",
-                'is_show' => false,
-                'flag' => 1,
-                'definisi' => "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nisi doloremque earum voluptatum rem vitae laboriosam laudantium dignissimos expedita nostrum id nobis sint obcaecati, molestias perferendis ullam ipsam ab deserunt unde voluptas ratione sit quasi consectetur debitis dolores! Reprehenderit, autem ipsum.",
-                'detil' => "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Nisi doloremque earum voluptatum rem vitae laboriosam laudantium dignissimos expedita nostrum id nobis sint obcaecati, molestias perferendis ullam ipsam ab deserunt unde voluptas ratione sit quasi consectetur debitis dolores! Reprehenderit, autem ipsum.",
-                'id' => 1,
-            ],
-            'jumlah_anomali' => 30,
         ];
 
         // filter terpilih
@@ -323,10 +318,10 @@ class Anom extends BaseController
 
         // filter wilayah
         $data['sel_prov'] = $this->request->getGet('sel-prov') ?? 13;
-        $data['sel_kab'] = $data['sel_prov'] ? $this->request->getGet('sel-kab') ?? null : null;
+        $data['sel_kab'] = ($userWialyah === '00') ? $data['sel_prov'] ? $this->request->getGet('sel-kab') ?? null : null : $userWialyah;
         // reset filter wilayah ketika ganti filter
         if ($oldFilter !== $data['filterAnomali']) {
-            $data['sel_kab'] = null;
+            $data['sel_kab'] = ($userWialyah === '00') ? $data['sel_prov'] ? $this->request->getGet('sel-kab') ?? null : null : $userWialyah;
         }
         $data['sel_kec'] = $data['sel_kab'] ? $this->request->getGet('sel-kec') ?? null : null;
         $data['sel_des'] = $data['sel_kec'] ? $this->request->getGet('sel-des') ?? null : null;
@@ -341,7 +336,13 @@ class Anom extends BaseController
         $listAnom = $this->anomaliModel->getKdAnomaliByUser() ?? [];
 
         $data['listKodeAnom'] = array_merge($data['listKodeAnom'], $listAnom);
-        $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov']);
+
+        // jika bukan provinsi
+        if ($userWialyah !== '00') {
+            $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov'], $data['sel_kab']);
+        } else {
+            $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov']);
+        }
         $data['list_kec'] = $this->anomaliModel->getWilayah('kec', $data['filterAnomali'], $data['sel_prov'], $data['sel_kab']);
         $data['list_des'] = $this->anomaliModel->getWilayah('des', $data['filterAnomali'], $data['sel_prov'], $data['sel_kab'], $data['sel_kec']);
 

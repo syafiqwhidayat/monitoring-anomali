@@ -68,6 +68,7 @@ class ManajAnom extends BaseController
     public function log()
     {
         $data['title'] = "Log Upload";
+        $userWilayah = auth()->user()->wilayah_kerja;
 
         // filter
         $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
@@ -91,6 +92,9 @@ class ManajAnom extends BaseController
 
         if ($data['filterLevel'] != '') {
             $datalog->where('log_upload.wilayah', $data['filterLevel']);
+        }
+        if ($userWilayah !== '1300') {
+            $datalog->where('wilayah', $userWilayah);
         }
 
         $data['logs'] = $datalog->findAll();

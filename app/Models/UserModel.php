@@ -38,20 +38,21 @@ class UserModel extends ShieldUserModel
     // ];
 
     // fungsi untuk mengembalikan semua user berdasarkan Grup nya
-    public function findAllByGroup($groupName = null, $isNotIn = False, $idWilayah = null, $keyword = null)
+    public function findAllByGroup($isOrganik = true, $idWilayah = null, $keyword = null)
     {
         $users = $this->select('users.id, users.name as nama, auth_identities.secret as email,users.wilayah_kerja , auth_groups_users.group AS role')
             ->join('auth_groups_users', 'auth_groups_users.user_id = users.id')
             ->join('auth_identities', 'auth_identities.user_id = users.id')
             ->where('auth_identities.type', 'email_password')
             ->orderBy('users.created_at', "ASCD");
-        if (!$groupName) {
-            return ($users->asArray());
-        }
-        if ($isNotIn) {
-            $users->where('auth_groups_users.group !=', $groupName);
+        // Logika Filter Domain Email @bps.go.id
+        if ($isOrganik) {
+            // Jika Organik: Email berakhiran @bps.go.id
+            $users->where('auth_identities.secret LIKE', '%@bps.go.id');
+            $users->where('auth_groups_users.group !=', 'mitra');
         } else {
-            $users->where('auth_groups_users.group', $groupName);
+            // Jika Bukan Organik: Email TIDAK berakhiran @bps.go.id
+            $users->where('auth_identities.secret NOT LIKE', '%@bps.go.id');
         }
         if ($idWilayah) {
             $users->where('wilayah_kerja', $idWilayah);

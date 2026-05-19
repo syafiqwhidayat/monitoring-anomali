@@ -40,7 +40,7 @@
                                 </svg>
                             </span>
                             <div class="ms-3">
-                                <div class="h2 fw-bold mb-0"><?= $total_petugas ?></div>
+                                <div class="h2 fw-bold mb-0"><?= number_format($total_petugas, 0, ',', '.') ?></div>
                                 <div class="text-secondary">Petugas Terdaftar</div>
                             </div>
                         </div>
@@ -79,7 +79,7 @@
                                 </svg>
                             </span>
                             <div class="ms-3">
-                                <div class="h2 fw-bold mb-0"><?= $total_anomali ?></div>
+                                <div class="h2 fw-bold mb-0"><?= number_format($total_anomali, 0, ',', '.') ?></div>
                                 <div class="text-secondary">Anomali Terdeteksi</div>
                             </div>
                         </div>

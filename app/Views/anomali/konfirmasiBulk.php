@@ -16,7 +16,7 @@
     <form action="<?= base_url('/anomali/konfirmasiBulk') ?>" method="get">
         <input type="hidden" name="fil-anomali-old" value="<?= $filterAnomali; ?>">
         <div class="card card-body mb-5 ">
-            <div class="hr-text hr-text-left fs-5 mb-3">Filter Broadcast</div>
+            <div class="hr-text hr-text-left fs-5 mb-3">Filter Anomali</div>
             <div class="mb-3">
                 <div class="row g-3">
                     <div class="col-md-5">
@@ -98,7 +98,7 @@
                     </h3>
                     <div class="card-actions">
                         <span class="badge bg-blue-lt">
-                            <i class="ti ti-database-edit me-1"></i> <?= $jumlah_anomali; ?> data terdampak
+                            <i class="ti ti-database-edit me-1"></i> <?= number_format($jumlah_anomali, 0, ',', '.'); ?> data terdampak
                         </span>
                     </div>
                 </div>

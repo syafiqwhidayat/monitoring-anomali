@@ -61,10 +61,13 @@ class Monitoring extends BaseController
 
     public function view()
     {
+        $userWilayah = auth()->user()->wilayah_kerja;
+        $userWilayah = substr($userWilayah, -2);
         // filter terpilih
         $data['filterAnomali'] = $this->request->getGet('fil-anomali') ?? '2';
         $data['sel_prov'] = $this->request->getGet('sel-prov') ?? 13;
-        $data['sel_kab'] = $data['sel_prov'] ? $this->request->getGet('sel-kab') ?? null : null;
+        // $data['sel_kab'] = ($userWilayah === '00') ? ($this->request->getGet('sel-kab') ?? null) : null : $userWilayah;
+        $data['sel_kab'] = ($userWilayah === '00') ? ($this->request->getGet('sel-kab') ?? null) : $userWilayah;
 
         $data['listKodeAnom'] = [[
             'id' => '',
@@ -76,7 +79,11 @@ class Monitoring extends BaseController
         $listAnom = $this->anomaliModel->getKdAnomaliByUser() ?? [];
         $data['listKodeAnom'] = array_merge($data['listKodeAnom'], $listAnom);
         // list kabupaten
-        $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov']);
+        if ($userWilayah === '00') {
+            $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov']);
+        } else {
+            $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov'], $data['sel_kab']);
+        }
 
 
         $general = $this->katAnomaliModel->getDataUmum($data['filterAnomali'])[0] ?? [];

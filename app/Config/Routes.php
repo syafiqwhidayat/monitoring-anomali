@@ -69,7 +69,7 @@ $routes->group('user', ['filter' => 'activeRole:superadmin,admin'], static funct
 
 $routes->group('wilayah', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
     $routes->get('/', 'Wilayah::manajWilayahTugas');
-    $routes->get('downloadTemplate', 'Wilayah::downloadTemplate');
+    $routes->get('download-template', 'Wilayah::downloadTemplate');
     $routes->post('upload', 'Wilayah::store');
     $routes->get('logs', 'Wilayah::logsWilayah');
     $routes->get('log-detil/(:num)', 'Wilayah::logDetil/$1');

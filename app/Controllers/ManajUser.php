@@ -20,11 +20,12 @@ class ManajUser extends BaseController
 
     public function list($isMitra = null)
     {
+        $userWialyah = auth()->user()->wilayah_kerja;
         $data['title'] = 'Manajemen User Organik';
 
         $data['isMitra'] = $this->request->getGet('fil-mitra') ?? $isMitra ?? null;
 
-        $data['filterKab'] = $this->request->getGet('fil-kab') ?? '';
+        $data['filterKab'] = ($userWialyah === '1300') ? $this->request->getGet('fil-kab') ?? '' : $userWialyah;
         $data['filterKeyword'] = $this->request->getGet('fil-word') ?? '';
 
         // filter
@@ -54,9 +55,13 @@ class ManajUser extends BaseController
             $data['title'] = "Manajemen User Mitra";
         }
 
+        // jika kabupaten tertentu
+        if ($userWialyah !== '1300') {
+            $data['listKab'] = [['id' => $userWialyah]];
+        }
+
         $perPage = 10;
         $users = $this->userModel->findAllByGroup(
-            'mitra',
             !$data['isMitra'],
             $data['filterKab'],
             $data['filterKeyword']
@@ -73,6 +78,7 @@ class ManajUser extends BaseController
 
     public function tambah()
     {
+        $userWilayah = auth()->user()->wilayah_kerja;
         $data['wilayah_sumbar'] = [
             '1300' => '[1300] SUMATERA BARAT',
             '1301' => '[1301] KEPULAUAN MENTAWAI',
@@ -96,11 +102,15 @@ class ManajUser extends BaseController
             '1377' => '[1377] PARIAMAN',
         ];
         $data['title'] = 'Tambah User Organik';
-        $data['roles'] = [
-            'superadmin' => 'SuperAdmin',
-            'admin' => 'Admin',
-            'operator' => 'Operator',
-        ];
+        $data['roles'] = [];
+        if (session('aktif_role') === 'superadmin') {
+            $data['roles']['superadmin'] = 'SuperAdmin';
+        }
+        $data['roles']['admin'] = 'Admin';
+        $data['roles']['operator'] = 'Operator';
+        if ($userWilayah !== '1300') {
+            $data['wilayah_sumbar'] = [$userWilayah => $data['wilayah_sumbar'][$userWilayah]];
+        }
 
         return view('manajUser/tambahUser', $data);
     }

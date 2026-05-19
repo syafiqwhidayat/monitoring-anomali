@@ -82,7 +82,7 @@
                             <div class="accordion-item" data-id="<?= $d['id']; ?>">
                                 <h2 class="accordion-header">
                                     <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $d['id']; ?>" aria-expanded="false" aria-controls="collapse<?= $d['id']; ?>">
-                                        <?= $d['kd'] . ' ' . $d['nm'] . ' (' . $d['jmlAnom'] . ')'; ?>
+                                        <?= $d['kd'] . ' ' . $d['nm'] . ' (' . number_format($d['jmlAnom'], 0, ',', '.') . ')'; ?>
                                     </button>
                                 </h2>
                                 <div id="collapse<?= $d['id']; ?>" class="accordion-collapse collapse" data-bs-parent="#accordionAnomaliKec">

@@ -121,7 +121,7 @@
                 </div>
                 <div class="modal-body">
                     <p> Template Upload Wiayah Tugas:</p>
-                    <a href="<?= base_url('/wilayah/downloadTemplate'); ?>" class="btn btn-outline-primary">
+                    <a href="<?= base_url('/wilayah/download-template'); ?>" class="btn btn-outline-primary">
                         <i class="bi bi-download"></i> Unduh Template Excel (.xlsx)
                     </a>
                     <div class="hr-text"></div>
