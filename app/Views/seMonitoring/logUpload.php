@@ -63,6 +63,7 @@
                     <thead>
                         <tr>
                             <th>Waktu</th>
+                            <th>Jenis</th>
                             <th>Nama File</th>
                             <th>User</th>
                             <th>Status</th>
@@ -74,6 +75,7 @@
                         <?php foreach ($logs as $log) : ?>
                             <tr>
                                 <td class="text-secondary"><?= $log['created_at'] ?></td>
+                                <td><?= $log['jenis'] ?></td>
                                 <td><?= $log['nama_file'] ?></td>
                                 <td class="text-primary"><?= $log['email']; ?></td>
                                 <td>
@@ -151,6 +153,15 @@
                         <i class="bi bi-download"></i> Unduh Template Excel (.xlsx)
                     </a>
                     <div class="hr-text"></div>
+                    <div class="mb-3">
+                        <label class="form-label">Jenis Monitoring</label>
+                        <select name="sel-jenis" class="form-select">
+                            <?php foreach ($list_jenis ?? [] as $jenis): ?>
+                                <option value="<?= $jenis; ?>"><?= ucwords($jenis); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <small class="form-hint mt-2">Upload excel akan menambahkan monitoring SE2026. Upload Excel hanya bisa dilaksanakan oleh superadmin.</small>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">Pilih File (Excel/CSV)</label>
                         <input type="file" name="file_monitoring" class="form-control" required>

@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "is-edit": isEdit.value,
         "is-completed": isCompleted,
       });
-      fetch(`${BASE_URL}/anomali/listDetil?${param}`)
+      fetch(`${BASE_URL}anomali/listDetil?${param}`)
         // fetch(`/anomali/getListKec`)
         .then((response) => response.text())
         .then((htmlContent) => {

@@ -67,8 +67,8 @@ class Anom extends BaseController
         $data['listSelFlag'] = array_merge($data['listSelFlag'], $listSelFlag ?? []);
         $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel ?? []);
         $data['listWilayah'] = $listSelWilayah;
-        // dd($data['message']);
 
+        // memunculkan isian
         if (true) {
             try {
                 $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah(
@@ -100,35 +100,24 @@ class Anom extends BaseController
 
     public function listDetil()
     {
+        // fungsi yang di panggil dari js accordion
         $data['title'] = 'List Anomali';
         $data['listAnom'] = null;
         $data['id'] = null;
         $data['jenis'] = null;
+
         // apakah base rumahtangga
         $isRT = (session()->get('is_rt') == 1);
 
         // mendapatkan nilai filter
-        $filterLevel = $this->request->getGet('fil-level');
-        $id = $this->request->getGet('id-anomali');
-        $filterKategori = $this->request->getGet('fil-kategori');
-        $filterFlag = $this->request->getGet('fil-flag');
-        $isEdit = $this->request->getGet('is-edit');
-
-        try {
-            // mengambail anomali menurut wilayah
-            $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah(
-                $id,
-                $isEdit,
-                $filterKategori,
-                $filterFlag,
-                $filterLevel,
-                $isRT
-            );
-        } catch (\Throwable $e) {
-            $data['listAnom'] = null;
-        }
+        $filterLevel = $this->request->getGet('fil-level') ?? '';
+        $id = $this->request->getGet('id-anomali') ?? '';
+        $filterKategori = $this->request->getGet('fil-kategori') ?? '';
+        $filterFlag = $this->request->getGet('fil-flag') ?? '';
+        $isEdit = $this->request->getGet('is-edit') ?? '';
 
         if ($isRT) {
+            // jika level nya menggunakan RT.
             switch (strlen($id)) {
                 case 4:
                     $data['jenis'] = 'Kec';
@@ -151,12 +140,16 @@ class Anom extends BaseController
                     break;
             }
         } else {
+            // ketika struktur tidak menggunakan RT
             if (strlen($id) == session('level_wilayah')) {
+                // jika id accordion sudah sama dengan kegiatan
                 $data['jenis'] = 'Nrt';
             } elseif (strlen($id) > session('level_wilayah')) {
+                // jika id accordion lebih besar dari kegiatan
                 $data['jenis'] = 'Anom';
                 return $this->listAnom($id, $isEdit);
             } else {
+                // jika id accordion masih lebih kecil dari kegiatan
                 switch (session('level_wilayah')) {
                     case 4:
                         // $data['listAnom'] = $dataDesa;q
@@ -177,6 +170,21 @@ class Anom extends BaseController
                 };
             };
         };
+
+        try {
+            // mengambail anomali menurut wilayah
+            $data['listAnom'] = $this->anomaliModel->getAnomaliByWilayah(
+                $id,
+                $isEdit,
+                $filterKategori,
+                $filterFlag,
+                $filterLevel,
+                $isRT
+            );
+        } catch (\Throwable $e) {
+            $data['listAnom'] = null;
+        }
+
         // dd($data['listAnom']);
         return view('anomali/listAnomaliPart', $data);
     }

@@ -46,9 +46,15 @@ $routes->get('monitoring-sel', 'Monitoring::view', ['filter' => 'activeRole:supe
 
 $routes->group('se', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
     $routes->get('monitoring', 'SeMonitoring::index');
+    $routes->get('monitoring-ngibar', 'SeMonitoring::monitorNgibar');
+    $routes->get('duplikat', 'SeMonitoring::listDuplikat');
+    $routes->get('ngibar', 'SeMonitoring::listNgibar');
+    $routes->get('flag-duplikat/(:num)/(:num)', 'SeMonitoring::flagDuplikat/$1/$2');
 });
 $routes->group('se', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
     $routes->get('upload', 'SeMonitoring::logs');
+    $routes->get('upload-ngibar', 'SeMonitoring::logs');
+    $routes->post('upload-duplikat', 'SeMonitoring::uploadDuplikat');
     $routes->get('downloadTemplate', 'SeMonitoring::downloadTemplate');
     $routes->post('store', 'SeMonitoring::store');
     $routes->post('hapus', 'SeMonitoring::hapus');

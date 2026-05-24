@@ -90,84 +90,86 @@
     </div>
 
     <!-- isi -->
-    <div class="card shadow-sm" style="border-radius: 12px; overflow: hidden;">
-        <div class="table-responsive">
-            <table class="table table-vcenter card-table table-hover">
-                <thead class="bg-light">
-                    <tr>
-                        <th>Kab / Kec</th>
-                        <th>Desa / Kel</th>
-                        <th>Kode & Nama SLS</th>
-                        <th>Petugas PPL</th>
-                        <th>Petugas PML</th>
-                        <th class="w-1">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($wilayah_tugas as $wt) : ?>
+    <div class="container-xl">
+        <div class="card shadow-sm" style="border-radius: 12px; overflow: hidden;">
+            <div class="table-responsive">
+                <table class="table table-vcenter card-table table-hover">
+                    <thead class="bg-light">
                         <tr>
-                            <td>
-                                <div class="small text-muted">
-                                    <?php if (!empty($wt['kd_kab'])) : ?>
-                                        <?= $wt['kd_kab'] ?> - <?= $wt['nm_kab'] ?>
-                                    <?php else: ?>
-                                        tidak ada
-                                    <?php endif; ?>
-                                </div>
-                                <div class="font-weight-medium">
-                                    <?php if (!empty($wt['kd_kec'])) : ?>
-                                        <?= $wt['kd_kec'] ?> - <?= $wt['nm_kec'] ?>
-                                    <?php else: ?>
-                                        tidak ada
-                                    <?php endif; ?>
-                                </div>
-                            </td>
-                            <td>
-                                <div>
-                                    <?php if (!empty($wt['kd_des'])) : ?>
-                                        <?= $wt['kd_des'] ?> - <?= $wt['nm_des'] ?>
-                                    <?php else: ?>
-                                        tidak ada
-                                    <?php endif; ?>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge bg-blue-lt mb-1">
-                                    <?php if (!empty($wt['kd_sls'])) : ?>
-                                        <?= $wt['kd_sls'] . $wt['kd_subsls'] ?>
-                                    <?php else: ?>
-                                        tidak ada
-                                    <?php endif; ?>
-                                </span>
-                                <div class="small"><?= $wt['nm_sls']  ?></div>
-                            </td>
-                            <td>
-                                <div class="font-weight-medium"><?= $wt['nm_ppl'] ?></div>
-                                <div class="small text-muted"><?= $wt['em_ppl']  ?></div>
-                            </td>
-                            <td>
-                                <div class="font-weight-medium"><?= $wt['nm_pml'] ?></div>
-                                <div class="small text-muted"><?= $wt['em_pml']  ?></div>
-                            </td>
-                            <td>
-                                <button type="button"
-                                    class="btn btn-sm btn-ghost-primary btn-edit-wilayah"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalEditPetugas"
-                                    data-id="<?= $wt['id_wt']; ?>"
-                                    data-kab="<?= $wt['kd_kab'] ?> - <?= $wt['nm_kab'] ?>"
-                                    data-kec="<?= $wt['kd_kec'] ?> - <?= $wt['nm_kec'] ?>"
-                                    data-desa="<?= $wt['kd_des'] ?> - <?= $wt['nm_des'] ?>"
-                                    data-sls="<?= $wt['kd_sls'] . $wt['kd_subsls'] ?> - <?= $wt['nm_sls'] ?>"
-                                    data-ppl="<?= $wt['id_ppl'] ?>"
-                                    data-pml="<?= $wt['id_pml'] ?>">
-                                    Edit Petugas
-                                </button>
-                            </td>
+                            <th>Kab / Kec</th>
+                            <th>Desa / Kel</th>
+                            <th>Kode & Nama SLS</th>
+                            <th>Petugas PPL</th>
+                            <th>Petugas PML</th>
+                            <th class="w-1">Aksi</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($wilayah_tugas as $wt) : ?>
+                            <tr>
+                                <td>
+                                    <div class="small text-muted">
+                                        <?php if (!empty($wt['kd_kab'])) : ?>
+                                            <?= $wt['kd_kab'] ?> - <?= $wt['nm_kab'] ?>
+                                        <?php else: ?>
+                                            tidak ada
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="font-weight-medium">
+                                        <?php if (!empty($wt['kd_kec'])) : ?>
+                                            <?= $wt['kd_kec'] ?> - <?= $wt['nm_kec'] ?>
+                                        <?php else: ?>
+                                            tidak ada
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <?php if (!empty($wt['kd_des'])) : ?>
+                                            <?= $wt['kd_des'] ?> - <?= $wt['nm_des'] ?>
+                                        <?php else: ?>
+                                            tidak ada
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-blue-lt mb-1">
+                                        <?php if (!empty($wt['kd_sls'])) : ?>
+                                            <?= $wt['kd_sls'] . $wt['kd_subsls'] ?>
+                                        <?php else: ?>
+                                            tidak ada
+                                        <?php endif; ?>
+                                    </span>
+                                    <div class="small"><?= $wt['nm_sls']  ?></div>
+                                </td>
+                                <td>
+                                    <div class="font-weight-medium"><?= $wt['nm_ppl'] ?></div>
+                                    <div class="small text-muted"><?= $wt['em_ppl']  ?></div>
+                                </td>
+                                <td>
+                                    <div class="font-weight-medium"><?= $wt['nm_pml'] ?></div>
+                                    <div class="small text-muted"><?= $wt['em_pml']  ?></div>
+                                </td>
+                                <td>
+                                    <button type="button"
+                                        class="btn btn-sm btn-ghost-primary btn-edit-wilayah"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalEditPetugas"
+                                        data-id="<?= $wt['id_wt']; ?>"
+                                        data-kab="<?= $wt['kd_kab'] ?> - <?= $wt['nm_kab'] ?>"
+                                        data-kec="<?= $wt['kd_kec'] ?> - <?= $wt['nm_kec'] ?>"
+                                        data-desa="<?= $wt['kd_des'] ?> - <?= $wt['nm_des'] ?>"
+                                        data-sls="<?= $wt['kd_sls'] . $wt['kd_subsls'] ?> - <?= $wt['nm_sls'] ?>"
+                                        data-ppl="<?= $wt['id_ppl'] ?>"
+                                        data-pml="<?= $wt['id_pml'] ?>">
+                                        Edit Petugas
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

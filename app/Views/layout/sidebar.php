@@ -71,6 +71,9 @@
                             <div class="dropdown-menu">
                                 <div class="dropdown-menu-columns">
                                     <a class="dropdown-item" href="<?= base_url('/se/monitoring') ?>">Moniroing Keseluruhan</a>
+                                    <a class="dropdown-item" href="<?= base_url('/se/monitoring-ngibar') ?>">Moniroing Ngibar</a>
+                                    <a class="dropdown-item" href="<?= base_url('/se/duplikat') ?>">Duplikat Ngibar</a>
+                                    <a class="dropdown-item" href="<?= base_url('/se/ngibar') ?>">Daftar Assigment Ngibar</a>
                                     <?php if (session('aktif_role') === 'superadmin'): ?>
                                         <a class="dropdown-item" href="<?= base_url('/se/upload') ?>">Upload Monitoring SE2026</a>
                                     <?php endif; ?>

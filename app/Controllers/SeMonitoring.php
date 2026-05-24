@@ -6,6 +6,10 @@ use \App\Models\AnomaliModel;
 use App\Models\KatAnomaliModel;
 use App\Models\SeMonitoringModel;
 use App\Models\SeLogModel;
+use App\Models\SeDuplikatModel;
+use App\Models\SeNgibarModel;
+use App\Models\SeListNgibarModel;
+use CodeIgniter\Shield\Database\Migrations\CreateAuthTables;
 use Config\Services;
 use Faker\Provider\Lorem;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -16,6 +20,10 @@ class SeMonitoring extends BaseController
     protected $katAnomaliModel;
     protected $seMonitoringModel;
     protected $seLogModel;
+    protected $duplikatModel;
+    protected $seNgibarModel;
+    protected $db;
+    protected $listNgibarModel;
 
     public function __construct()
     {
@@ -23,6 +31,10 @@ class SeMonitoring extends BaseController
         $this->katAnomaliModel = new KatAnomaliModel();
         $this->seMonitoringModel = new SeMonitoringModel();
         $this->seLogModel = new SeLogModel();
+        $this->duplikatModel = new SeDuplikatModel();
+        $this->seNgibarModel = new SeNgibarModel();
+        $this->db = \Config\Database::connect();
+        $this->listNgibarModel = new SeListNgibarModel();
     }
 
     public function index()
@@ -112,6 +124,8 @@ class SeMonitoring extends BaseController
             ],
         ];
 
+        $data['list_jenis'] = ['keseluruhan', 'ngibar', 'ngibar duplikat', 'daftar ngibar'];
+
         $datalog = $this->seLogModel->select('se_upload_log.*,idn.secret AS email')
             ->join('auth_identities idn', 'id_user = idn.user_id')
             ->where('id_kegiatan', session()->get('aktif_kegiatan'))->orderBy('created_at', 'DESC');
@@ -121,7 +135,21 @@ class SeMonitoring extends BaseController
         }
 
         $data['logs'] = $datalog->findAll();
-        // dd($data['logs']);
+
+        return view('seMonitoring/logUpload', $data);
+    }
+    public function logsNgibar()
+    {
+        $data['title'] = 'Log Upload Monitoring Ngibar';
+
+        $datalog = $this->seLogModel->select('se_upload_log.*')
+            ->where('id_kegiatan', session()->get('aktif_kegiatan'))->orderBy('created_at', 'DESC');
+
+        if (! auth()->user()->inGroup('superadmin')) {
+            $datalog->where('id_user', auth()->user()->id);
+        }
+
+        $data['logs'] = $datalog->findAll();
 
         return view('seMonitoring/logUpload', $data);
     }
@@ -134,77 +162,185 @@ class SeMonitoring extends BaseController
     public function store()
     {
         $file = $this->request->getFile('file_monitoring');
-
-        // cek validitas
-        if (!$file->isValid()) return redirect()->back()->with('message_errors', 'File tidak valid');
+        $jenis = $this->request->getVar('sel-jenis');
 
         // membaca file
         $spreadsheet = IOFactory::load($file->getTempName());
         $sheetData = $spreadsheet->getActiveSheet()->toArray();
 
+        // simpan di log
         $logData['id_kegiatan'] = session()->get('aktif_kegiatan');
         $logData['nama_file'] = $file->getName();
         $logData['total_baris'] = count($sheetData) - 1;
         $logData['id_user'] = auth()->user()->id;
+        $logData['jenis'] = $jenis;
         $idLog = $this->seLogModel->insert($logData);
 
+        // cek validitas
+        if (!$file->isValid() && $file->hasMoved()) return redirect()->back()->with('message_errors', 'File tidak valid');
 
-        // Validasi
-        $validation = \Config\Services::validation();
-        $rules = [
-            'kd_wilayah' => 'required|in_list[1301,1302,1303,1304,1305,1306,1307,1308,1309,1310,1311,1312,1371,1372,1373,1374,1375,1376,1377]'
-        ];
-        $messages = [
-            'kd_wilayah' => ['in_list' => 'Wilayah tidak match dengan wilayah Sumatera Barat']
-        ];
-
-        $errors = []; // Tempat menampung error per baris
-        $totalSuccess = 0;
-
-        foreach ($sheetData as $index => $row) {
-            if ($index === 0) continue;
-            $rowNum = $index + 1; // Untuk penanda baris di pesan error
-
-            $data['kd_wilayah'] = $row[0];
-            $data['id_log'] = $idLog;
-            $data['jml_open'] = $row[1];
-            $data['jml_submit'] = $row[2];
-            $data['tbh_open'] = $row[3];
-            $data['tbh_submit'] = $row[4];
-            $data['jml_ed'] = $row[5];
-            // dd($validation->setRules($rules, $messages)->run($data));
-
-            if (!$validation->setRules($rules, $messages)->run($data)) {
-                // 2. Jika gagal, simpan pesan error berdasarkan nomor baris
-                $errors[] = [
-                    'baris' => $rowNum,
-                    'kd_wilayah' => $data['kd_wilayah'],
-                    'messages' => $validation->getErrors()
+        switch ($jenis) {
+            case 'keseluruhan': //monitoring keseluruhan
+                // Validasi
+                $validation = \Config\Services::validation();
+                $rules = [
+                    'kd_wilayah' => 'required|in_list[1301,1302,1303,1304,1305,1306,1307,1308,1309,1310,1311,1312,1371,1372,1373,1374,1375,1376,1377]'
                 ];
-            } else {
-                $idMonitoring = $this->seMonitoringModel->insert($data);
-                $totalSuccess++;
-            }
+                $messages = [
+                    'kd_wilayah' => ['in_list' => 'Wilayah tidak match dengan wilayah Sumatera Barat']
+                ];
+
+                $errors = []; // Tempat menampung error per baris
+                $totalSuccess = 0;
+
+                foreach ($sheetData as $index => $row) {
+                    if ($index === 0) continue;
+                    $rowNum = $index + 1; // Untuk penanda baris di pesan error
+
+                    $data['kd_wilayah'] = $row[0];
+                    $data['id_log'] = $idLog;
+                    $data['jml_open'] = $row[1];
+                    $data['jml_submit'] = $row[2];
+                    $data['tbh_open'] = $row[3];
+                    $data['tbh_submit'] = $row[4];
+                    $data['jml_ed'] = $row[5];
+                    // dd($validation->setRules($rules, $messages)->run($data));
+
+                    if (!$validation->setRules($rules, $messages)->run($data)) {
+                        // 2. Jika gagal, simpan pesan error berdasarkan nomor baris
+                        $errors[] = [
+                            'baris' => $rowNum,
+                            'kd_wilayah' => $data['kd_wilayah'],
+                            'messages' => $validation->getErrors()
+                        ];
+                    } else {
+                        $idMonitoring = $this->seMonitoringModel->insert($data);
+                        $totalSuccess++;
+                    }
+                }
+
+                // --- LOGIKA UPDATE AKHIR (DI LUAR LOOP) ---
+                $finalStatus = (count($errors) > 0) ? 'gagal' : 'selesai';
+                if ($finalStatus === 'gagal') {
+                    // Hapus data monitoring yang sempat masuk jika ada satu saja yang gagal
+                    $this->seMonitoringModel->where('id_log', $idLog)->delete();
+                }
+
+                $logData['error_details'] = json_encode($errors);
+                $logData['berhasil'] = $totalSuccess;
+                $logData['gagal'] = count($errors);
+                $logData['status'] = $finalStatus;
+
+                $this->seLogModel->update($idLog, $logData);
+
+                $msgType = ($finalStatus === 'selesai') ? 'message' : 'message_error';
+                $msgBody = ($finalStatus === 'selesai') ? 'Berhasil Menambahkan Data Monitoring' : 'Gagal upload, cek detailnya di log';
+
+                return  redirect()->back()->with($msgType, $msgBody);
+                break;
+            case 'ngibar': //monitoring ngibar
+                return $this->prosesUploadNgibar($idLog);
+                break;
+            case 'ngibar duplikat': //daftar assgiement ngibar duplikat
+                if (isset($sheetData[1][4])) {
+                    $idWilayahTarget = $sheetData[1][4];
+
+                    // KUNCI UTAMA: Hapus semua data lama khusus untuk wilayah ini saja!
+                    $this->db->table('se_cekduplikat')->where('id_wilayah', $idWilayahTarget)->delete();
+                } else {
+                    // Jika file kosong atau salah format, gagalkan transaksi
+                    $this->db->transRollback();
+                    return redirect()->back()->with('error', 'Format file Excel tidak sesuai atau data kosong.');
+                }
+                //Baca file Excel/CSV (Menggunakan PhpSpreadsheet)
+                $totalBaris = 0;
+
+                // Sesuaikan indeks kolom berdasarkan output file Python kamu
+                // Asumsi Baris 0 = Header. Struktur: id_mirip, id_assignment, kode_identitas, nama_usaha, id_wilayah, alamat_usaha, email, status, date_updated
+                for ($i = 1; $i < count($sheetData); $i++) {
+                    if (empty($sheetData[$i][2])) continue; // Skip jika kode_identitas kosong
+
+                    $totalBaris++;
+
+                    $this->db->table('se_cekduplikat')->insert([
+                        'id_mirip'       => $sheetData[$i][0], // Hasil mapping dari python
+                        'id_assignment'  => $sheetData[$i][1], // Hasil mapping dari python
+                        'kode_identitas' => $sheetData[$i][2],
+                        'nama_usaha'     => $sheetData[$i][3],
+                        'id_wilayah'     => $sheetData[$i][4], // Bernilai sama dengan $idWilayahTarget
+                        'alamat_usaha'   => $sheetData[$i][5],
+                        'email'          => $sheetData[$i][6],
+                        'status'         => $sheetData[$i][7],
+                        'date_updated'   => date('Y-m-d H:i:s', strtotime($sheetData[$i][8])),
+                        'flag_status'    => 'Pending' // Kembali ke status awal untuk di-flag ulang oleh operator
+                    ]);
+                }
+
+                // Update status log menjadi selesai
+                $this->db->table('se_upload_log')->where('id', $idLog)->update([
+                    'status'      => 'selesai',
+                    'total_baris' => $totalBaris,
+                    'berhasil' => $totalBaris,
+                ]);
+
+                $this->db->transComplete();
+
+                return redirect()->to(base_url('se/upload'))->with('message', "Berhasil mengunggah {$totalBaris} data duplikat hasil analisis Python.");
+                break;
+            case 'daftar ngibar':
+                // Ambil id_wilayah dari baris pertama data (Baris indeks 1, Kolom indeks 1)
+                // Sesuaikan indeks kolom [1] ini dengan letak kolom 'id_wilayah' di file Excel kamu
+                if (isset($sheetData[1][1])) {
+                    $idWilayahTarget = $sheetData[1][1];
+
+                    // KUNCI UTAMA: Hapus semua data lama di se_list_ngibar yang memiliki kode wilayah yang sama
+                    $this->db->table('se_list_ngibar')->where('id_wilayah', $idWilayahTarget)->delete();
+                } else {
+                    $this->db->transRollback();
+                    return redirect()->back()->with('message_error', 'Format file Excel salah atau kolom Wilayah kosong.');
+                }
+
+                $totalBaris = 0;
+
+                // 3. Looping untuk memasukkan data baru dari Excel
+                // Asumsi Struktur Kolom Excel: 
+                // [0] jenis_kegiatan, [1] id_wilayah, [2] nama_usaha, [3] kode_identitas, [4] alamat_usaha, [5] email, [6] status, [7] date_updated
+                for ($i = 1; $i < count($sheetData); $i++) {
+                    if (empty($sheetData[$i][3])) continue; // Skip jika kode_identitas kosong
+
+                    $totalBaris++;
+
+                    $this->db->table('se_list_ngibar')->insert([
+                        'id_log'         => $idLog,
+                        'jenis_kegiatan' => $sheetData[$i][0],
+                        'id_wilayah'     => $sheetData[$i][1], // Nilainya pasti sama dengan $idWilayahTarget
+                        'nama_usaha'     => $sheetData[$i][2],
+                        'kode_identitas' => $sheetData[$i][3],
+                        'alamat_usaha'   => $sheetData[$i][4],
+                        'email'          => $sheetData[$i][5],
+                        'status'         => $sheetData[$i][6],
+                        // Simpan date_updated dari lapangan, jika kosong gunakan waktu sekarang
+                        'date_updated'   => !empty($sheetData[$i][7]) ? date('Y-m-d H:i:s', strtotime($sheetData[$i][7])) : date('Y-m-d H:i:s')
+                    ]);
+                }
+
+                // 4. Update status log upload menjadi selesai
+                $this->db->table('se_upload_log')->where('id', $idLog)->update([
+                    'status'      => 'selesai',
+                    'total_baris' => $totalBaris,
+                    'berhasil' => $totalBaris,
+                ]);
+
+                $this->db->transComplete();
+
+
+                return redirect()->back()->with('message', "Data lama se_list_ngibar wilayah {$idWilayahTarget} berhasil dibersihkan dan diganti dengan {$totalBaris} data baru.");
+                break;
+
+            default:
+                return redirect()->back()->with('message_errors', 'Jenis Monitoting tidak terdefinisi');
+                break;
         }
-
-        // --- LOGIKA UPDATE AKHIR (DI LUAR LOOP) ---
-        $finalStatus = (count($errors) > 0) ? 'gagal' : 'selesai';
-        if ($finalStatus === 'gagal') {
-            // Hapus data monitoring yang sempat masuk jika ada satu saja yang gagal
-            $this->seMonitoringModel->where('id_log', $idLog)->delete();
-        }
-
-        $logData['error_details'] = json_encode($errors);
-        $logData['berhasil'] = $totalSuccess;
-        $logData['gagal'] = count($errors);
-        $logData['status'] = $finalStatus;
-
-        $this->seLogModel->update($idLog, $logData);
-
-        $msgType = ($finalStatus === 'selesai') ? 'message' : 'message_error';
-        $msgBody = ($finalStatus === 'selesai') ? 'Berhasil Menambahkan Data Monitoring' : 'Gagal upload, cek detailnya di log';
-
-        return  redirect()->back()->with($msgType, $msgBody);
     }
 
     public function hapus()
@@ -468,5 +604,253 @@ class SeMonitoring extends BaseController
         $data = $this->anomaliModel->wordCloudKonfirmasi($id_kat);
         // dd($data);
         return ($data);
+    }
+
+    public function listDuplikat()
+    {
+        $db = \Config\Database::connect();
+        $idWilayah = '1311';
+
+        // 1. Mengambil Tanggal dan Waktu Upload Terakhir dari Log (Jenis: ngibar duplikat)
+        $lastUploadLog = $db->table('se_upload_log')
+            ->where('jenis', 'ngibar duplikat')
+            ->where('status', 'selesai')
+            ->orderBy('created_at', 'DESC')
+            ->get()->getRowArray();
+
+        $waktuUploadTerakhir = $lastUploadLog ? $lastUploadLog['created_at'] : null;
+
+        // 2. Konfigurasi Pagination Kelompok Kasus
+        $pager = \Config\Services::pager();
+        $page  = $this->request->getVar('page') ? (int)$this->request->getVar('page') : 1;
+        $perPage = 5;
+
+        $totalGroups = $db->table('se_cekduplikat')
+            ->select('id_mirip')
+            ->where('id_wilayah', $idWilayah)
+            ->groupBy('id_mirip')
+            ->get()->getNumRows();
+
+        $offset = ($page - 1) * $perPage;
+        $activeGroupsRaw = $db->table('se_cekduplikat')
+            ->select('id_mirip')
+            ->where('id_wilayah', $idWilayah)
+            ->groupBy('id_mirip')
+            ->orderBy('id_mirip', 'ASC')
+            ->limit($perPage, $offset)
+            ->get()->getResultArray();
+
+        $groupedAssignments = [];
+
+        if (!empty($activeGroupsRaw)) {
+            $activeGroupIds = array_column($activeGroupsRaw, 'id_mirip');
+
+            $rawAssignments = $db->table('se_cekduplikat')
+                ->whereIn('id_mirip', $activeGroupIds)
+                ->orderBy('id_mirip', 'ASC')
+                ->get()->getResultArray();
+
+            foreach ($rawAssignments as $row) {
+                $groupedAssignments[$row['id_mirip']][] = $row;
+            }
+        }
+
+        $pagerLinks = $pager->makeLinks($page, $perPage, $totalGroups, 'default_full');
+
+        return view('seMonitoring/duplikat_view', [
+            'title'              => 'Validasi & Flag Duplikasi Wilayah ' . $idWilayah,
+            'idWilayah'          => $idWilayah,
+            'groupedAssignments' => $groupedAssignments,
+            'pagerLinks'         => $pagerLinks, // Link navigasi halaman
+            'waktuUploadTerakhir' => $waktuUploadTerakhir // Dikirim ke view
+        ]);
+    }
+
+    // FUNGSI UNTUK MEM-FLAG PILIHAN OPERATOR
+    public function flagDuplikat($idCek, $idMirip)
+    {
+        $userName = auth()->user()->name;
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        // 1. Set entri yang dipilih menjadi 'Dipilih', dan pasangannya di grup yang sama menjadi 'Dieliminasi'
+        $db->table('se_cekduplikat')
+            ->where('id_mirip', $idMirip)
+            ->update(['flag_status' => 'Dieliminasi', 'updated_by' => $userName]); // Asumsi user login
+
+        $db->table('se_cekduplikat')
+            ->where('id', $idCek)
+            ->update(['flag_status' => 'Dipilih', 'updated_by' => $userName]);
+
+        // NB: Di sini kamu juga bisa menyelipkan query untuk menghapus/menonaktifkan 
+        // data yang tidak terpilih di tabel utama `se_list_ngibar` jika diperlukan.
+
+        $db->transComplete();
+
+        return redirect()->back()->with('message', 'Keputusan flag berhasil disimpan dan diperbarui.');
+    }
+
+    // Proses Upload dan Timpa Data Wilayah
+    public function uploadDuplikat()
+    {
+        $file = $this->request->getFile('file_excel');
+        $idWilayah = $this->request->getPost('id_wilayah');
+
+        if (!$idWilayah) {
+            return redirect()->back()->with('error', 'Wilayah kerja harus ditentukan!');
+        }
+
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+
+            // Baca Excel dengan PhpSpreadsheet
+            $spreadsheet = IOFactory::load($file->getTempName());
+            $sheetData = $spreadsheet->getActiveSheet()->toArray();
+
+            // Mulai Transaksi Database agar aman
+            $db = \Config\Database::connect();
+            $db->transStart();
+
+            // 1. HAPUS DATA LAMA DI WILAYAH INI SEBELUMNYA
+            $this->duplikatModel->where('id_wilayah', $idWilayah)->delete();
+
+            // 2. INSERT DATA BARU (Mulai baris ke-2 jika baris 1 adalah header)
+            $dataInsert = [];
+            for ($i = 1; $i < count($sheetData); $i++) {
+                if (empty($sheetData[$i][0])) continue; // Skip jika id_mirip kosong
+
+                $dataInsert[] = [
+                    'id_mirip'       => $sheetData[$i][0], // Kolom A
+                    'kode_identitas' => $sheetData[$i][1], // Kolom B
+                    'nama_usaha'     => $sheetData[$i][2], // Kolom C
+                    'id_wilayah'     => $idWilayah,
+                ];
+            }
+
+            if (!empty($dataInsert)) {
+                $this->duplikatModel->insertBatch($dataInsert);
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === FALSE) {
+                return redirect()->back()->with('error', 'Gagal memperbarui data duplikat.');
+            }
+
+            return redirect()->to(base_url('se/duplikat?wilayah=' . $idWilayah))->with('message', 'Data duplikat wilayah berhasil diperbarui!');
+        }
+
+        return redirect()->back()->with('error', 'File tidak valid atau gagal diunggah.');
+    }
+
+    public function monitorNgibar()
+    {
+        $latestLogId = $this->seNgibarModel->getLatestLogId();
+
+        // Ambil data datetime terupdate dari log
+        $logRow = $this->db->table('se_upload_log')->where('id', $latestLogId)->get()->getRow();
+        $dateUpdated = $logRow ? date('d M Y H:i', strtotime($logRow->created_at)) . ' WIB' : 'Belum ada data';
+
+        // Penyusunan Data Line Chart Timeline harian
+        $timelineRaw = $this->seNgibarModel->getTimelineData();
+        $dataTimeline = ['labels' => [], 'submitted' => [], 'rejected' => [], 'draft' => [], 'open' => []];
+        foreach ($timelineRaw as $t) {
+            $dataTimeline['labels'][]    = $t['label'];
+            $dataTimeline['submitted'][] = (int)$t['submitted'];
+            $dataTimeline['rejected'][]  = (int)$t['rejected'];
+            $dataTimeline['draft'][]     = (int)$t['draft'];
+            $dataTimeline['open'][]      = (int)$t['open'];
+        }
+        // dd(implode(',', $this->seNgibarModel->getPieData($latestLogId)));
+
+        return view('seMonitoring/monitoringNgibar', [
+            'title'        => 'Monitoring Pengisian Mandiri (Ngibar) SE2026',
+            'dateUpdated'  => $dateUpdated,
+            'dataHead'     => $this->seNgibarModel->getLatestSummary($latestLogId),
+            'dataPie'      => [
+                'keseluruhan' => $this->seNgibarModel->getPieData($latestLogId),
+                'se2026_l'    => $this->seNgibarModel->getPieData($latestLogId, 'SE2026-L'),
+                'se2026_ub'   => $this->seNgibarModel->getPieData($latestLogId, 'SE2026-UB'),
+            ],
+            'dataBar'      => [
+                'keseluruhan' => $this->seNgibarModel->getBarData($latestLogId),
+                'se2026_l'    => $this->seNgibarModel->getBarData($latestLogId, 'SE2026-L'),
+                'se2026_ub'   => $this->seNgibarModel->getBarData($latestLogId, 'SE2026-UB'),
+            ],
+            'dataTimeline' => $dataTimeline
+        ]);
+    }
+
+    // FUNGSI UNTUK MENYIMPAN IMPORT EXCEL KE DATABASE
+    public function prosesUploadNgibar($logId)
+    {
+        $file = $this->request->getFile('file_monitoring');
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+
+            $this->db->transStart(); // Amankan dengan database transaction
+
+            // 2. Baca file Excel menggunakan IOFactory::load
+            $spreadsheet = IOFactory::load($file->getTempName());
+            $sheetData   = $spreadsheet->getActiveSheet()->toArray();
+
+            $insertBuffer = [];
+            // Looping baris data (Lewati baris 1 karena merupakan header kolom)
+            for ($i = 1; $i < count($sheetData); $i++) {
+                if (empty($sheetData[$i][0])) continue; // Lewati jika baris kosong
+
+                $insertBuffer[] = [
+                    'id_log'             => $logId,
+                    'jenis_kegiatan'     => $sheetData[$i][0], // Kolom A
+                    'kode_wilayah'       => $sheetData[$i][1], // Kolom B
+                    'status'             => $sheetData[$i][2], // Kolom C
+                    'jumlah_assignment'  => (int)$sheetData[$i][3], // Kolom D
+                ];
+            }
+
+            if (!empty($insertBuffer)) {
+                $this->seNgibarModel->insertBatch($insertBuffer);
+            }
+
+            $this->db->transComplete();
+
+            if ($this->db->transStatus() === FALSE) {
+                return redirect()->to(base_url('se/upload'))->with('message_error', 'Gagal memproses berkas Excel.');
+            }
+            return redirect()->to(base_url('se/upload'))->with('message', 'Data pemantauan Ngibar berhasil diperbarui.');
+        }
+
+        return redirect()->to(base_url('se/upload'))->with('message_error', 'Berkas unggahan tidak valid.');
+    }
+
+    public function listNgibar()
+    {
+        $userWilayah = auth()->user()->wilayah_kerja;
+        // Tangkap parameter filter status dari URL (jika ada)
+        $sel_status = $this->request->getGet('sel_status') ?? '';
+        $sel_wilayah = $this->request->getGet('sel_wilayah') ?? $userWilayah;
+        $listWilayah = [];
+
+        // Ambil data dari model
+        $assignments = $this->listNgibarModel->getListByWilayah($sel_wilayah, $sel_status);
+
+        $listStatus = [
+            '' => 'Keseluruhan',
+            'Draft' => 'Draft',
+            'Submited by Responden' => 'Submited',
+            'Rejected by Admin' => 'Rejected',
+        ];
+        if ($sel_wilayah === '1300') {
+            $listWilayah = $this->listNgibarModel->getAvailabelWilayah();
+        } else {
+            $listWilayah = [['id_wilayah' => $sel_wilayah]];
+        }
+
+        return view('SeMonitoring/detail_ngibar_view', [
+            'title'         => 'Daftar Kendali Mandiri Wilayah ' . $sel_wilayah,
+            'idWilayah'     => $sel_wilayah,
+            'sel_status' => $sel_status,
+            'assignments'   => $assignments,
+            'list_status' => $listStatus,
+            'list_wilayah' => $listWilayah,
+        ]);
     }
 }

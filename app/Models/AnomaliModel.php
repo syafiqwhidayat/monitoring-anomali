@@ -72,17 +72,17 @@ class AnomaliModel extends Model
                     break;
                 case '7':
                     $data
-                        ->select("SUBSTRING(art.kd_assigment, 1, 10) AS id, w.kd_des AS kd, w.nm_des AS nm,COUNT(*) AS jmlAnom")
+                        ->select("SUBSTRING(art.kd_assigment, 1, 10) AS id, wilayah.kd_des AS kd, wilayah.nm_des AS nm,COUNT(*) AS jmlAnom")
                         // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
                         // ->join('wilayah w', 'LEFT(w.id,LENGTH(art.id_wilayah)) = art.id_wilayah', 'left')
                         // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                         ->where('SUBSTRING(anomali.id_wilayah, 1, 7)', $wilayah)
                         ->where('k.is_show', true)
-                        ->groupBy('w.kd_des');
+                        ->groupBy('wilayah.kd_des');
                     break;
                 case '10':
                     $data
-                        // ->select("SUBSTRING(art.kd_assigment, 1, 16) AS id,wilayah.nm_sls AS nm, CONCAT(wilayah.kd_sls,wilayah.kd_subsls) AS kd ,COUNT(*) AS jmlAnom")
+                        ->select("SUBSTRING(art.kd_assigment, 1, 16) AS id,wilayah.nm_sls AS nm, CONCAT(wilayah.kd_sls,wilayah.kd_subsls) AS kd ,COUNT(*) AS jmlAnom")
                         // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
                         // ->join('wilayah', 'LEFT(wilayah.id,LENGTH(art.id_wilayah)) = art.id_wilayah', 'left')
                         // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
@@ -165,20 +165,18 @@ class AnomaliModel extends Model
 
         $data = $data->findAll();
 
-
         return $data;
     }
 
     public function getListAnomali($idArt = false, $isEdit = false)
     {
-
+        $query = $this->builder();
         $len = strlen($idArt);
         $data = null;
 
         $idKegiatan = session()->get('aktif_kegiatan') ?? null;
 
-        $query = $this
-            ->select('anomali.id AS id, art.kd_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi,anomali.is_lap as is_lap')
+        $query->select('anomali.id AS id, art.kd_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi,anomali.is_lap as is_lap')
             ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left')
@@ -195,7 +193,7 @@ class AnomaliModel extends Model
             $query = $query->where('k.id_kegiatan', $idKegiatan);
         };
 
-        $data  = $query->findAll();
+        $data  = $query->get()->getResultArray();
 
         return $data;
     }

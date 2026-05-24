@@ -20,7 +20,8 @@ class SeLogModel extends Model
         'gagal',
         'error_details',
         'id_user',
-        'id_kegiatan'
+        'id_kegiatan',
+        'jenis',
     ];
 
     protected bool $allowEmptyInserts = false;

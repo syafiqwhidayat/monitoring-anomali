@@ -57,16 +57,33 @@ Events::on('pre_system', static function (): void {
 Events::on('login', function ($user) {
     $kegiatanModel = new \App\Models\KegiatanModel();
     $daftarKegiatan = $kegiatanModel->getKegiatanDesc();
-    $terbaru = $daftarKegiatan[0];
-    $isOrganik = str_ends_with(auth()->user()->getIdentities()[0]->secret, "@bps.go.id");
-    session()->set('aktif_role', auth()->user()->getGroups()[0]);
-    session()->set('isOrganik', $isOrganik);
 
-    if ($daftarKegiatan) {
-        // Simpan ke session otomatis setelah login
+    // 1. Set default session agar BaseController tidak error
+    session()->set('is_rt', 0);
+    session()->set('isOrganik', false);
+
+    // 2. Cek Identitas (BPS atau bukan) dengan lebih aman
+    $identities = auth()->user()->getIdentities();
+    if (!empty($identities)) {
+        $isOrganik = str_ends_with($identities[0]->secret, "@bps.go.id");
+        session()->set('isOrganik', $isOrganik);
+    }
+
+    // 3. Set Role
+    $groups = auth()->user()->getGroups();
+    if (!empty($groups)) {
+        session()->set('aktif_role', $groups[0]);
+    }
+
+
+    // 4. Set Data Kegiatan jika ada
+    if (!empty($daftarKegiatan)) {
+        $terbaru = $daftarKegiatan[0];
         session()->set('aktif_kegiatan', $terbaru['id']);
         session()->set('nama_kegiatan', $terbaru['nama']);
-        session()->set('is_rt', $terbaru['is_rt']);
-        session()->set('level_wilayah', $terbaru['level_wilayah']);
+
+        // Gunakan Null Coalescing di sini juga untuk berjaga-jaga
+        session()->set('is_rt', $terbaru['is_rt'] ?? 0);
+        session()->set('level_wilayah', $terbaru['level_wilayah'] ?? null);
     }
 });
