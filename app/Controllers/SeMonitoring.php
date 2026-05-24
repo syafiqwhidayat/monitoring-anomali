@@ -844,7 +844,7 @@ class SeMonitoring extends BaseController
             $listWilayah = [['id_wilayah' => $sel_wilayah]];
         }
 
-        return view('SeMonitoring/detail_ngibar_view', [
+        return view('seMonitoring/detail_ngibar_view', [
             'title'         => 'Daftar Kendali Mandiri Wilayah ' . $sel_wilayah,
             'idWilayah'     => $sel_wilayah,
             'sel_status' => $sel_status,

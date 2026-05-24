@@ -114,12 +114,20 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <?php if ($row['status'] === 'Submited by Responden'): ?>
+                                    <?php
+                                    // Mengubah string status menjadi huruf kecil semua agar pengecekan tidak sensitif huruf besar/kecil (case-insensitive)
+                                    $currentStatus = strtolower($row['status'] ?? '');
+                                    ?>
+
+                                    <?php if (str_contains($currentStatus, 'submited')): ?>
                                         <span class="badge bg-success-lt fw-bold py-1 px-2">Submitted</span>
-                                    <?php elseif ($row['status'] === 'Draft'): ?>
-                                        <span class="badge bg-warning-lt fw-bold py-1 px-2">Draft</span>
-                                    <?php else: ?>
+
+                                    <?php elseif (str_contains($currentStatus, 'rejected')): ?>
                                         <span class="badge bg-danger-lt fw-bold py-1 px-2">Rejected</span>
+
+                                    <?php else: ?>
+                                        <span class="badge bg-warning-lt fw-bold py-1 px-2">Draft</span>
+
                                     <?php endif; ?>
                                 </td>
                                 <td>
