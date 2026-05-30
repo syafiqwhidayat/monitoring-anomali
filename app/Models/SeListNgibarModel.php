@@ -22,7 +22,7 @@ class SeListNgibarModel extends Model
             $builder->where('status', $statusFilter);
         } else {
             // Default: Membatasi hanya 3 status ini (Open diabaikan)
-            $builder->whereIn('status', ['Submited by Responden', 'Draft', 'Rejected by Admin']);
+            $builder->whereIn('status', ['Submitted Respondent', 'Draft', 'Rejected Admin']);
         }
 
         // Urutkan berdasarkan tanggal update aplikasi lain yang paling baru

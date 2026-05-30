@@ -119,7 +119,7 @@
                                     $currentStatus = strtolower($row['status'] ?? '');
                                     ?>
 
-                                    <?php if (str_contains($currentStatus, 'submited')): ?>
+                                    <?php if (str_contains($currentStatus, 'submitted')): ?>
                                         <span class="badge bg-success-lt fw-bold py-1 px-2">Submitted</span>
 
                                     <?php elseif (str_contains($currentStatus, 'rejected')): ?>

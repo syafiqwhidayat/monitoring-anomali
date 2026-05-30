@@ -50,6 +50,7 @@ $routes->group('se', ['filter' => 'activeRole:superadmin,admin,operator'], stati
     $routes->get('duplikat', 'SeMonitoring::listDuplikat');
     $routes->get('ngibar', 'SeMonitoring::listNgibar');
     $routes->get('flag-duplikat/(:num)/(:num)', 'SeMonitoring::flagDuplikat/$1/$2');
+    $routes->get('monitoring-ub', 'SeMonitoring::monitoringUB');
 });
 $routes->group('se', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
     $routes->get('upload', 'SeMonitoring::logs');
@@ -58,6 +59,8 @@ $routes->group('se', ['filter' => 'activeRole:superadmin,admin'], static functio
     $routes->get('downloadTemplate', 'SeMonitoring::downloadTemplate');
     $routes->post('store', 'SeMonitoring::store');
     $routes->post('hapus', 'SeMonitoring::hapus');
+    $routes->post('monitoring-ub/upload', 'SeMonitoring::uploadSEUB');
+    $routes->post('monitoring-ub/updateTimPj', 'SeMonitoring::updatePJSEUB');
 });
 
 // $routes->get('/upload', 'Upload::index');

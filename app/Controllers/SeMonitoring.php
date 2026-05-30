@@ -35,6 +35,8 @@ class SeMonitoring extends BaseController
         $this->seNgibarModel = new SeNgibarModel();
         $this->db = \Config\Database::connect();
         $this->listNgibarModel = new SeListNgibarModel();
+        // Set zona waktu agar sinkron dengan ekspor data
+        date_default_timezone_set('Asia/Jakarta');
     }
 
     public function index()
@@ -835,8 +837,8 @@ class SeMonitoring extends BaseController
         $listStatus = [
             '' => 'Keseluruhan',
             'Draft' => 'Draft',
-            'Submited by Responden' => 'Submited',
-            'Rejected by Admin' => 'Rejected',
+            'Submitted Respondent' => 'Submitted',
+            'Rejected Admin' => 'Rejected',
         ];
         if ($sel_wilayah === '1300') {
             $listWilayah = $this->listNgibarModel->getAvailabelWilayah();
@@ -852,5 +854,268 @@ class SeMonitoring extends BaseController
             'list_status' => $listStatus,
             'list_wilayah' => $listWilayah,
         ]);
+    }
+
+    public function monitoringUB()
+    {
+        $selectedWilayah = $this->request->getGet('wilayah') ?? '1300'; // 1300 = Seluruh Prov Sumbar
+        $filterTanggal    = $this->request->getGet('tanggal') ?? '';
+
+        $data['title'] = "Monitoring UB";
+
+        // Master daftar Kabupaten/Kota di Sumatera Barat
+        $data['kab_kota'] = [
+            '1301' => 'Kep. Mentawai',
+            '1302' => 'Pesisir Selatan',
+            '1303' => 'Solok',
+            '1304' => 'Sijunjung',
+            '1305' => 'Tanah Datar',
+            '1306' => 'Padang Pariaman',
+            '1307' => 'Agam',
+            '1308' => 'Lima Puluh Kota',
+            '1309' => 'Pasaman',
+            '1310' => 'Pasaman Barat',
+            '1311' => 'Dharmasraya',
+            '1312' => 'Solok Selatan',
+            '1371' => 'Padang',
+            '1372' => 'Solok Kota',
+            '1373' => 'Sawahlunto',
+            '1374' => 'Padang Panjang',
+            '1375' => 'Bukittinggi',
+            '1376' => 'Payakumbuh',
+            '1377' => 'Pariaman'
+        ];
+
+        $data['selected_wilayah'] = $selectedWilayah;
+        $data['filter_tanggal']    = $filterTanggal;
+
+        // --- 1. DATA PIE CHART (STATUS TERBARU) ---
+        $builderPie = $this->db->table('se_list_se26_ub');
+        if ($selectedWilayah !== '1300') {
+            $builderPie->where('id_wilayah', $selectedWilayah);
+        }
+        $pieQuery = $builderPie->select('status, COUNT(*) as jml')->groupBy('status')->get()->getResultArray();
+
+        $pieData = ['DRAFT' => 0, 'SUBMITED' => 0, 'REJECTED' => 0, 'OPEN' => 0];
+        foreach ($pieQuery as $p) {
+            $pieData[strtoupper($p['status'])] = (int)$p['jml'];
+        }
+        $data['pie_json'] = json_encode(array_values($pieData));
+
+        // --- 2. DATA BAR CHART (WILAYAH ATAU TIM PJ) ---
+        $barLabels = [];
+        $barSeries = ['DRAFT' => [], 'SUBMITED' => [], 'REJECTED' => [], 'OPEN' => []];
+
+        if ($selectedWilayah === '1300') {
+            // Tampilkan Bar Chart per Kabupaten
+            foreach ($data['kab_kota'] as $kode => $nama) {
+                $barLabels[] = $nama;
+                foreach (['DRAFT', 'SUBMITED', 'REJECTED', 'OPEN'] as $st) {
+                    $barSeries[$st][] = $this->db->table('se_list_se26_ub')
+                        ->where('id_wilayah', $kode)->where('status', $st)->countAllResults();
+                }
+            }
+        } else {
+            // Tampilkan Bar Chart per Tim Penanggung Jawab di Kab Terpilih
+            $pjQuery = $this->db->table('se_list_se26_ub')
+                ->select('IFNULL(tim_pj, "Belum Ada PJ") as pj')
+                ->where('id_wilayah', $selectedWilayah)
+                ->groupBy('tim_pj')
+                ->get()->getResultArray();
+
+            foreach ($pjQuery as $pjRow) {
+                $barLabels[] = $pjRow['pj'];
+                foreach (['DRAFT', 'SUBMITED', 'REJECTED', 'OPEN'] as $st) {
+                    $qCount = $this->db->table('se_list_se26_ub')
+                        ->where('id_wilayah', $selectedWilayah)
+                        ->where('status', $st);
+                    if ($pjRow['pj'] === "Belum Ada PJ") {
+                        $qCount->where('tim_pj IS NULL');
+                    } else {
+                        $qCount->where('tim_pj', $pjRow['pj']);
+                    }
+                    $barSeries[$st][] = $qCount->countAllResults();
+                }
+            }
+        }
+        $data['bar_json'] = json_encode([
+            'labels' => $barLabels,
+            'datasets' => [
+                ['label' => 'REJECTED', 'data' => $barSeries['REJECTED'], 'backgroundColor' => '#EE8911'],
+                ['label' => 'SUBMITED', 'data' => $barSeries['SUBMITED'], 'backgroundColor' => '#94C11F'],
+                ['label' => 'DRAFT', 'data' => $barSeries['DRAFT'], 'backgroundColor' => '#0369A1'],
+                ['label' => 'OPEN', 'data' => $barSeries['OPEN'], 'backgroundColor' => '#B3B3B3'],
+            ]
+        ]);
+
+        // --- 3. DATA LINE CHART HISTORIS (se_mon_ub) ---
+        $builderLine = $this->db->table('se_mon_ub')->select('tanggal')->groupBy('tanggal')->orderBy('tanggal', 'ASC');
+        if ($selectedWilayah !== '1300') {
+            $builderLine->where('id_wilayah', $selectedWilayah);
+        }
+        $tglQuery = $builderLine->get()->getResultArray();
+
+        $lineLabels = [];
+        $lineSeries = ['DRAFT' => [], 'SUBMITED' => [], 'REJECTED' => [], 'OPEN' => []];
+
+        foreach ($tglQuery as $tRow) {
+            $lineLabels[] = date('d M Y', strtotime($tRow['tanggal']));
+            foreach (['DRAFT', 'SUBMITED', 'REJECTED', 'OPEN'] as $st) {
+                $sumQuery = $this->db->table('se_mon_ub')
+                    ->selectSum('jumlah')
+                    ->where('tanggal', $tRow['tanggal'])
+                    ->where('status', $st);
+                if ($selectedWilayah !== '1300') {
+                    $sumQuery->where('id_wilayah', $selectedWilayah);
+                }
+                $res = $sumQuery->get()->getRowArray();
+                $lineSeries[$st][] = (int)($res['jumlah'] ?? 0);
+            }
+        }
+        $data['line_json'] = json_encode([
+            'labels' => $lineLabels,
+            'draft' => $lineSeries['DRAFT'],
+            'submited' => $lineSeries['SUBMITED'],
+            'rejected' => $lineSeries['REJECTED'],
+            'open' => $lineSeries['OPEN']
+        ]);
+
+        // --- 4. LIST TABEL DATA DENGAN FILTER ---
+        $builderList = $this->db->table('se_list_se26_ub');
+        if ($selectedWilayah !== '1300') {
+            $builderList->where('id_wilayah', $selectedWilayah);
+        }
+        if (!empty($filterTanggal)) {
+            $builderList->where('DATE(fasih_modified_at)', $filterTanggal);
+        }
+        $data['assignments'] = $builderList->orderBy('fasih_modified_at', 'DESC')->get()->getResultArray();
+        return view('SeMonitoring/se26_ub_view', $data);
+    }
+
+    public function uploadSEUB()
+    {
+        $file = $this->request->getFile('file_fasih');
+        if (!$file || !$file->isValid()) {
+            return redirect()->back()->with('error', 'File tidak valid atau gagal diunggah.');
+        }
+
+        // Ubah pembacaan file: gunakan koma (,) sebagai delimiter standar CSV
+        $handle = fopen($file->getTempName(), "r");
+        $insertedOrUpdated = 0;
+
+        $this->db->transStart();
+
+        while (($row = fgetcsv($handle, 10000, ",")) !== FALSE) {
+            // 1. Skip jika baris kosong
+            if (empty($row) || !isset($row[0])) {
+                continue;
+            }
+
+            // 2. Skip jika baris merupakan komentar Fasih (diawali tanda #)
+            if (strpos(trim($row[0]), '#') === 0) {
+                continue;
+            }
+
+            // 3. Skip baris header kolom secara aman (pastikan indeks 1 eksis dulu)
+            if ($row[0] === 'no' || (isset($row[1]) && $row[1] === 'id_sls')) {
+                continue;
+            }
+
+            // Antisipasi jika baris data tidak lengkap/rusak di tengah file
+            if (!isset($row[7]) || !isset($row[34])) {
+                continue;
+            }
+
+            // Pemetaan Kolom Berdasarkan File CSV Real Fasih
+            $sampleId     = trim($row[7]);  // sample_id
+            $idSls        = trim($row[1]);  // id_sls
+            $statusDok    = strtoupper(trim($row[2])); // status_dok
+            $pencacah     = trim($row[3]);  // nama pencacah
+            $namaUsaha    = !empty($row[13]) ? trim($row[13]) : trim($row[14]); // data1 / data2
+            $alamatUsaha  = trim($row[15]); // data3 (Jorong/Jalan)
+            $emailUsaha   = !empty($row[18]) ? trim($row[18]) : null; // data6 (Email)
+            $idWilayah    = substr(trim($row[34]), 0, 4); // regionCode2 (4 digit Kabupaten/Kota)
+            $modifiedStr  = trim($row[6]);  // modified timestamp
+
+            if (empty($sampleId)) continue;
+
+            // Standarisasi Status Dokumen agar Match dengan ENUM DB
+            if (strpos($statusDok, 'SUBMIT') !== false) {
+                $statusDok = 'SUBMITED';
+            } elseif (strpos($statusDok, 'REJECT') !== false) {
+                $statusDok = 'REJECTED';
+            } elseif ($statusDok !== 'DRAFT') {
+                $statusDok = 'OPEN';
+            }
+
+            // Parsing Waktu Modifikasi Fasih ke format MySQL Y-m-d H:i:s
+            $cleanedDate = str_replace(['at ', 'WITA', 'WIB', 'WIT'], ['', '', '', ''], $modifiedStr);
+            $fasihModifiedAt = date('Y-m-d H:i:s', strtotime(trim($cleanedDate)));
+
+            // Cek Eksistensi Data (Upsert Strategy)
+            $existing = $this->db->table('se_list_se26_ub')->where('sample_id', $sampleId)->get()->getRow();
+
+            $saveData = [
+                'id_sls'            => $idSls,
+                'id_wilayah'        => $idWilayah,
+                'nama_usaha'        => $namaUsaha,
+                'alamat_usaha'      => $alamatUsaha,
+                'email_usaha'       => $emailUsaha,
+                'pencacah'          => $pencacah,
+                'status'            => $statusDok,
+                'fasih_modified_at' => $fasihModifiedAt,
+                'uploaded_at'       => date('Y-m-d H:i:s')
+            ];
+
+            if ($existing) {
+                // Update tanpa mengubah field tim_pj yang sudah diisi manual oleh admin
+                $this->db->table('se_list_se26_ub')->where('sample_id', $sampleId)->update($saveData);
+            } else {
+                $saveData['sample_id'] = $sampleId;
+                $saveData['tim_pj']    = null;
+                $this->db->table('se_list_se26_ub')->insert($saveData);
+            }
+            $insertedOrUpdated++;
+        }
+        fclose($handle);
+
+        // --- HITUNG DAN SIMPAN SNAPSHOT HISTORIS KE TABEL se_mon_ub ---
+        $today = date('Y-m-d');
+        $snapshot = $this->db->table('se_list_se26_ub')
+            ->select('id_wilayah, status, COUNT(*) as jml')
+            ->groupBy('id_wilayah, status')
+            ->get()->getResultArray();
+
+        foreach ($snapshot as $snap) {
+            $this->db->table('se_mon_ub')->replace([
+                'id_wilayah' => $snap['id_wilayah'],
+                'tanggal'    => $today,
+                'status'     => $snap['status'],
+                'jumlah'     => $snap['jml']
+            ]);
+        }
+
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === FALSE) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem saat memproses transaksi database.');
+        }
+
+        return redirect()->to(base_url('se/monitoring-ub'))->with('success', "Berhasil memproses file. {$insertedOrUpdated} baris data Usaha Besar diperbarui.");
+    }
+
+    public function updatePJSEUB()
+    {
+        $sampleId = $this->request->getPost('sample_id');
+        $namaPj   = $this->request->getPost('tim_pj');
+
+        if (!empty($sampleId)) {
+            $this->db->table('se_list_se26_ub')
+                ->where('sample_id', $sampleId)
+                ->update(['tim_pj' => empty(trim($namaPj)) ? null : trim($namaPj)]);
+
+            return $this->response->setJSON(['status' => 'success', 'message' => 'Tim Penanggung Jawab berhasil diperbarui.']);
+        }
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Gagal mengubah data.'], 400);
     }
 }
