@@ -158,7 +158,7 @@ class SeMonitoring extends BaseController
 
     public function downloadTemplate()
     {
-        return $this->response->download(FCPATH . 'assets/templates/template_monitoring.xlsx', null);
+        return $this->response->download(FCPATH . 'assets\templates\template_monitoring.xlsx', null);
     }
 
     public function store()
@@ -861,6 +861,10 @@ class SeMonitoring extends BaseController
         $selectedWilayah = $this->request->getGet('wilayah') ?? '1300'; // 1300 = Seluruh Prov Sumbar
         $filterTanggal    = $this->request->getGet('tanggal') ?? '';
 
+        // Ambil halaman saat ini untuk keperluan nomor urut tabel (default halaman 1)
+        $currentPage      = $this->request->getGet('page') ?? 1;
+        $perPage          = 25;
+
         $data['title'] = "Monitoring UB";
 
         // Master daftar Kabupaten/Kota di Sumatera Barat
@@ -980,7 +984,7 @@ class SeMonitoring extends BaseController
             'open' => $lineSeries['OPEN']
         ]);
 
-        // --- 4. LIST TABEL DATA DENGAN FILTER ---
+        // --- 4. LIST TABEL DENGAN PAGINATION MANUAL (TANPA MODEL) ---
         $builderList = $this->db->table('se_list_se26_ub');
         if ($selectedWilayah !== '1300') {
             $builderList->where('id_wilayah', $selectedWilayah);
@@ -988,8 +992,22 @@ class SeMonitoring extends BaseController
         if (!empty($filterTanggal)) {
             $builderList->where('DATE(fasih_modified_at)', $filterTanggal);
         }
-        $data['assignments'] = $builderList->orderBy('fasih_modified_at', 'DESC')->get()->getResultArray();
-        return view('SeMonitoring/se26_ub_view', $data);
+
+        // Hitung total baris sebelum di-limit untuk dasar perhitungan pagination
+        $totalRows = $builderList->countAllResults(false);
+
+        // Ambil data sesuai offset halaman saat ini
+        $offset = ($currentPage - 1) * $perPage;
+        $data['assignments'] = $builderList->orderBy('fasih_modified_at', 'DESC')->limit($perPage, $offset)->get()->getResultArray();
+
+        // Kirim metadata pagination ke View
+        $data['pager_info'] = [
+            'current_page' => (int)$currentPage,
+            'per_page'     => $perPage,
+            'total_rows'   => $totalRows,
+            'total_pages'  => ceil($totalRows / $perPage)
+        ];
+        return view('seMonitoring/se26_ub_view', $data);
     }
 
     public function uploadSEUB()

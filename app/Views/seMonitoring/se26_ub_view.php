@@ -4,26 +4,19 @@
 
 <div class="container-xl">
 
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success alert-dismissible" role="alert">
-            <div><?= session()->getFlashdata('success') ?></div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
-
     <div class="row g-3 align-items-center mb-4">
-        <div class="col-md-8">
-            <form action="<?= base_url('se/monitoring-ub') ?>" method="get" class="d-flex gap-2">
-                <select name="wilayah" class="form-select w-50" onchange="this.form.submit()">
+        <div class="col-md-6">
+            <form action="<?= base_url('se/monitoring-ub') ?>" method="get" id="filterForm" class="d-flex gap-2">
+                <select name="wilayah" class="form-select w-50" onchange="document.getElementById('filterForm').submit()">
                     <option value="1300" <?= $selected_wilayah == '1300' ? 'selected' : '' ?>>-- Seluruh Sumatera Barat --</option>
                     <?php foreach ($kab_kota as $kode => $nama): ?>
                         <option value="<?= $kode ?>" <?= $selected_wilayah == $kode ? 'selected' : '' ?>><?= $kode ?> - <?= $nama ?></option>
                     <?php endforeach; ?>
                 </select>
-                <input type="date" name="tanggal" value="<?= esc($filter_tanggal) ?>" class="form-control w-40" onchange="this.form.submit()">
+                <input type="date" name="tanggal" value="<?= esc($filter_tanggal) ?>" class="form-control w-40" onchange="document.getElementById('filterForm').submit()">
             </form>
         </div>
-        <div class="col-md-4 text-md-end">
+        <div class="col-md-6 text-md-end">
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal-upload">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-upload" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -31,7 +24,7 @@
                     <path d="M7 9l5 -5l5 5" />
                     <path d="M12 4l0 12" />
                 </svg>
-                Upload Progres Fasih rutin
+                Upload Progres Fasih
             </button>
         </div>
     </div>
@@ -39,9 +32,9 @@
     <div class="row row-cards mb-4">
         <div class="col-lg-4">
             <div class="card h-100">
-                <div class="card-body">
-                    <h3 class="card-title text-center text-secondary">Komposisi Realisasi Status UB</h3>
-                    <div style="max-height: 250px;" class="d-flex justify-content-center">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    <h3 class="card-title text-center text-secondary mb-3">Realisasi Global Status</h3>
+                    <div style="max-height: 220px;" class="d-flex justify-content-center">
                         <canvas id="pieStatus"></canvas>
                     </div>
                 </div>
@@ -50,10 +43,23 @@
         <div class="col-lg-8">
             <div class="card h-100">
                 <div class="card-body">
+                    <h3 class="card-title text-secondary">Tren Progres Lapangan Kumulatif (Historis Harian)</h3>
+                    <div style="height: 220px;">
+                        <canvas id="lineHistoris"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
                     <h3 class="card-title text-secondary">
-                        <?= $selected_wilayah === '1300' ? 'Beban Tugas Progres menurut Wilayah Kabupaten/Kota' : 'Progres menurut Tim Penanggung Jawab Lapangan' ?>
+                        <?= $selected_wilayah === '1300' ? 'Beban Tugas Progres Kontribusi Wilayah Kabupaten/Kota' : 'Rincian Beban Kerja Menurut Tim Penanggung Jawab Lapangan' ?>
                     </h3>
-                    <div style="height: 250px;">
+                    <div style="height: 550px; min-height: 500px;">
                         <canvas id="barWilayah"></canvas>
                     </div>
                 </div>
@@ -61,18 +67,10 @@
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-body">
-            <h3 class="card-title text-secondary">Tren Progres Lapangan Kumulatif (Historis Snapshot Harian)</h3>
-            <div style="height: 260px;">
-                <canvas id="lineHistoris"></canvas>
-            </div>
-        </div>
-    </div>
-
     <div class="card">
-        <div class="card-header bg-white py-3">
-            <h3 class="card-title mb-0">Rincian Data Lapangan Usaha Besar Sensus Ekonomi 2026</h3>
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h3 class="card-title mb-0">Rincian Progress Kerja Usaha Besar</h3>
+            <span class="badge bg-blue-lt">Total: <?= $pager_info['total_rows'] ?> Usaha</span>
         </div>
         <div class="table-responsive">
             <table class="table table-vcenter table-striped card-table mb-0">
@@ -90,10 +88,13 @@
                 <tbody>
                     <?php if (empty($assignments)): ?>
                         <tr>
-                            <td colspan="7" class="text-center py-4 text-muted">Tidak ditemukan records data lapangan pada filter terpilih.</td>
+                            <td colspan="7" class="text-center py-4 text-muted">Tidak ditemukan records data lapangan.</td>
                         </tr>
-                        <?php else: $no = 1;
-                        foreach ($assignments as $row): ?>
+                        <?php else:
+                        // Hitung Nomor Urut Berdasarkan Halaman Saat Ini
+                        $no = (($pager_info['current_page'] - 1) * $pager_info['per_page']) + 1;
+                        foreach ($assignments as $row):
+                        ?>
                             <tr>
                                 <td class="text-muted small"><?= $no++ ?></td>
                                 <td class="font-monospace text-secondary small"><?= esc($row['id_sls']) ?></td>
@@ -105,18 +106,17 @@
                                 <td>
                                     <?php
                                     $badge = 'bg-secondary-lt';
-                                    if ($row['status'] == 'DRAFT') $badge = 'bg-green-lt';
-                                    if ($row['status'] == 'SUBMITED') $badge = 'bg-warning-lt';
-                                    if ($row['status'] == 'REJECTED') $badge = 'bg-danger-lt';
+                                    if ($row['status'] == 'DRAFT') $badge = 'bg-blue-lt';
+                                    if ($row['status'] == 'SUBMITED') $badge = 'bg-success-lt';
+                                    if ($row['status'] == 'REJECTED') $badge = 'bg-warning-lt';
                                     ?>
                                     <span class="badge <?= $badge ?> fw-bold w-100 py-1"><?= esc($row['status']) ?></span>
                                 </td>
                                 <td>
                                     <input type="text" class="form-control form-control-sm"
                                         value="<?= esc($row['tim_pj']) ?>"
-                                        placeholder="Ketik Tim PJ & klik luar..."
-                                        onblur="updatePj('<?= $row['sample_id'] ?>', this.value)"
-                                        <?= session('aktif_role') === 'operator' ? 'disabled' : ''; ?>>
+                                        placeholder="Ketik nama PJ..."
+                                        onblur="updatePj('<?= $row['sample_id'] ?>', this.value)">
                                 </td>
                                 <td class="small text-muted">
                                     <?= !empty($row['fasih_modified_at']) ? date('d-M-Y H:i', strtotime($row['fasih_modified_at'])) . ' WIB' : '-' ?>
@@ -127,6 +127,43 @@
                 </tbody>
             </table>
         </div>
+
+        <?php if ($pager_info['total_pages'] > 1): ?>
+            <div class="card-footer d-flex align-items-center justify-content-between bg-white py-3">
+                <p class="m-0 text-muted">
+                    Menampilkan <span><?= (($pager_info['current_page'] - 1) * $pager_info['per_page']) + 1 ?></span>
+                    hingga <span><?= min($pager_info['current_page'] * $pager_info['per_page'], $pager_info['total_rows']) ?></span>
+                    dari <span><?= $pager_info['total_rows'] ?></span> entri data
+                </p>
+                <ul class="pagination m-0 ms-auto">
+                    <li class="page-item <?= $pager_info['current_page'] <= 1 ? 'disabled' : '' ?>">
+                        <a class="page-line page-link" href="<?= base_url('se/monitoring-ub?wilayah=' . $selected_wilayah . '&tanggal=' . $filter_tanggal . '&page=' . ($pager_info['current_page'] - 1)) ?>">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M15 6l-6 6l6 6" />
+                            </svg> prev
+                        </a>
+                    </li>
+
+                    <?php
+                    $startPage = max(1, $pager_info['current_page'] - 2);
+                    $endPage   = min($pager_info['total_pages'], $pager_info['current_page'] + 2);
+                    for ($i = $startPage; $i <= $endPage; $i++):
+                    ?>
+                        <li class="page-item <?= $i === $pager_info['current_page'] ? 'active' : '' ?>">
+                            <a class="page-link" href="<?= base_url('se/monitoring-ub?wilayah=' . $selected_wilayah . '&tanggal=' . $filter_tanggal . '&page=' . $i) ?>"><?= $i ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <li class="page-item <?= $pager_info['current_page'] >= $pager_info['total_pages'] ? 'disabled' : '' ?>">
+                        <a class="page-line page-link" href="<?= base_url('se/monitoring-ub?wilayah=' . $selected_wilayah . '&tanggal=' . $filter_tanggal . '&page=' . ($pager_info['current_page'] + 1)) ?>">
+                            next <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M9 6l6 6l-6 6" />
+                            </svg>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -139,9 +176,8 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label class="form-label">Pilih File Hasil Ekspor (*.csv / *.txt format tab-separated)</label>
-                    <input type="file" name="file_fasih" class="form-control" accept=".csv,.txt" required>
-                    <small class="form-hint text-danger mt-1">Sistem otomatis menyaring data duplikat berdasarkan ID Sample & mengonversi penunjuk waktu.</small>
+                    <label class="form-label">Pilih File Hasil Ekspor (*.csv)</label>
+                    <input type="file" name="file_fasih" class="form-control" accept=".csv" required>
                 </div>
             </div>
             <div class="modal-footer">
