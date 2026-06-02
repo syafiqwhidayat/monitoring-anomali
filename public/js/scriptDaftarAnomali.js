@@ -1,171 +1,188 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // untuk halaman daftar anomali
   const parentAccordionKec = document.getElementById("accordionAnomaliKec");
   const isEdit = document.getElementById("isEdit");
   const filterLevel = document.getElementById("filter-level");
-  // const filterWilayah = document.getElementsById("filter-wilayah");
   const filterKode = document.getElementById("filter-kategori");
   const filterFlag = document.getElementById("filter-flag");
 
   const loadingContent =
-    '<div class="d-flex justify-content-center"><h1>Loading<span class="animated-dots"></span></h1></div></div>';
-  const savedContent =
-    '<i class="text-success bi bi-check-circle-fill"></i> Saved!';
+    '<div class="d-flex justify-content-center py-2 text-muted small"><div class="spinner-border spinner-border-sm me-2"></div><span>Memuat data...</span></div>';
 
-  //untuk halaman manajemen anomali
-  // cont;
+  // Template Variasi Status Feedback (Menggunakan elemen badge biar estetik)
+  const statusSending =
+    '<span class="text-warning small d-flex align-items-center gap-1"><span class="spinner-border spinner-border-sm" role="status"></span> Mengirim...</span>';
+  const statusSaved =
+    '<span class="text-success small fw-bold d-flex align-items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-circle-check-filled mb-0" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" fill="currentColor"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.414 0l-3.293 3.293l-1.293 -1.293l-.094 -.083a1 1 0 0 0 -1.32 1.497l2 2l.094 .083a1 1 0 0 0 1.32 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" fill="currentColor" /></svg> Tersimpan!</span>';
+  const statusFailed = (msg) =>
+    `<span class="text-danger small fw-bold">❌ Gagal: ${msg}</span>`;
+  const statusError =
+    '<span class="text-danger small fw-bold">⚠️ Gangguan Koneksi!</span>';
 
-  // untuk hamanan daftar anomali
   if (parentAccordionKec) {
-    // --- A. Logic saat Accordion DIBUKA (Uncollapse) ---
-    // Gunakan event delegation atau listen langsung ke event Bootstrap
+    // --- A. Logic Ambil Data Sub-Level (AJAX Bawaan) ---
     parentAccordionKec.addEventListener("show.bs.collapse", function (event) {
       event.stopPropagation();
-      // target elemen adalah, elemen yg di klik
-      // target elemen adalah accordion-collaps yg dibuka.
       const targetElement = event.target;
-      if (!targetElement.classList.contains("accordion-collapse")) {
-        return;
-      }
-      // mendapatkan id elemen yg di klik
-      // const anomaliId = targetElement.getAttribute("id");
-      // console.log(anomaliId);
-      // Ambil elemen pembungkus (accordion-item) untuk mendapatkan data-id
+      if (!targetElement.classList.contains("accordion-collapse")) return;
+
       const item = targetElement.closest(".accordion-item");
       if (!item) return;
+
       const id = item.getAttribute("data-id");
       const isCompleted = item.getAttribute("data-is-completed");
-
-      // const anomaliId = targetElement.getAttribute("id");
-      // console.log(anomaliId);
-
-      // mendapatkan container untuk mengisi isian
       const loadContainer = targetElement.querySelector(".data-load-container");
-      const anomContainer = "";
-      console.log(id);
 
-      // 1. Periksa apakah data sudah dimuat sebelumnya
-      if (targetElement.getAttribute("data-loaded") === "true") {
-        return; // Jika sudah dimuat, jangan panggil AJAX lagi
-      }
+      if (
+        !loadContainer ||
+        targetElement.getAttribute("data-loaded") === "true"
+      )
+        return;
 
-      // 2. Tampilkan pesan loading
       loadContainer.innerHTML = loadingContent;
 
-      // 3. Panggil Endpoint CI4 via AJAX
-      param = new URLSearchParams({
-        "fil-level": filterLevel.value,
+      const param = new URLSearchParams({
+        "fil-level": filterLevel ? filterLevel.value : "",
         "id-anomali": id,
-        "fil-kategori": filterKode.value,
-        "fil-flag": filterFlag.value,
-        "is-edit": isEdit.value,
-        "is-completed": isCompleted,
+        "fil-kategori": filterKode ? filterKode.value : "",
+        "fil-flag": filterFlag ? filterFlag.value : "",
+        "is-edit": isEdit ? isEdit.value : "",
+        "is-completed": isCompleted || "",
       });
-      fetch(`${BASE_URL}anomali/listDetil?${param}`)
-        // fetch(`/anomali/getListKec`)
+
+      fetch(`${BASE_URL}/anomali/listDetil?${param}`)
         .then((response) => response.text())
         .then((htmlContent) => {
-          // 4. Render konten accordion bersarang
           loadContainer.innerHTML = htmlContent;
           targetElement.setAttribute("data-loaded", "true");
         })
-        .then(() => {
-          const anomContainer = targetElement.querySelector(".container-Anom");
-          if (anomContainer) {
-            setupFormListeners(anomContainer);
-          }
-        })
         .catch((error) => {
-          loadContainer.innerHTML = loadingContent;
+          console.error("Gagal memuat data:", error);
+          loadContainer.innerHTML =
+            '<div class="text-danger small p-2">Gagal memuat sub-level data.</div>';
         });
     });
 
-    // --- B. Logic saat Accordion DITUTUP (Collapse) ---
+    // --- B. Logic Bersih Konten Saat Ditutup ---
     parentAccordionKec.addEventListener("hide.bs.collapse", function (event) {
       event.stopPropagation();
       const targetElement = event.target;
       const loadContainer = targetElement.querySelector(".data-load-container");
 
-      // 1. Hapus isi (Clear Content)
-      loadContainer.innerHTML = loadingContent;
       if (loadContainer) {
         loadContainer.innerHTML = loadingContent;
         targetElement.setAttribute("data-loaded", "false");
       }
-
-      // 2. Reset status loaded
-      targetElement.setAttribute("data-loaded", "false");
     });
   }
 
-  function setupFormListeners(container) {
-    // 1. Cari form HANYA di dalam container yang diberikan
-    // console.log(container);
-    const forms = container.querySelectorAll(".anomali-form-submit");
+  // --- C. EVENT DELEGATION GLOBAL UNTUK SIMPAN FORM & KONTROL COUNTER ---
+  document.addEventListener("submit", function (event) {
+    const form = event.target.closest(".anomali-form-submit");
+    if (!form) return;
 
-    console.log(`Menemukan ${forms.length} form untuk dipasangi listener.`);
+    event.preventDefault();
 
-    forms.forEach((form) => {
-      form.addEventListener("submit", function (event) {
-        event.preventDefault(); // Mencegah submit form tradisional (refresh halaman)
+    const formData = new FormData(form);
+    const anomaliId = formData.get("id");
+    const saveButton = form.querySelector('button[type="submit"]');
+    const feedbackElement = document.getElementById(`feedback-${anomaliId}`);
 
-        const formData = new FormData(form);
-        const anomaliId = formData.get("id");
-        const anomaliKonfirmasi = formData.get("konfirmasi");
-        const kondisiLapangan = formData.get("kondisi_lapangan");
+    if (!saveButton || !feedbackElement) return;
 
-        // Perhatikan: Anda mungkin perlu ID unik lain jika ada beberapa tombol save
-        // Jika ID tombol sama untuk semua form, gunakan form.querySelector
-        const saveButton = form.querySelector("#submit-button");
+    // Simpan tampilan tombol asli
+    const originalButtonHTML = saveButton.innerHTML;
 
-        // Pastikan feedbackElement juga dicari secara dinamis,
-        // karena ID-nya bergantung pada anomaliId
-        const feedbackElement = document.getElementById(
-          `feedback-${anomaliId}`,
-        );
+    // 1. Set State Awal: Sedang Dikirim
+    saveButton.disabled = true;
+    saveButton.innerHTML = "<span>Menyimpan...</span>";
+    feedbackElement.innerHTML = statusSending;
 
-        // Periksa apakah saveButton dan feedbackElement ditemukan sebelum melanjutkan
-        if (!saveButton || !feedbackElement) {
-          console.error("Elemen tombol atau feedback tidak ditemukan!");
-          return; // Hentikan fungsi jika elemen vital tidak ditemukan
-        }
+    // 2. Kirim ke Server via Fetch POST
+    fetch(`${BASE_URL}/anomali/updateKonfirmasi`, {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => {
+        if (!response.ok) throw new Error("Server bermasalah (HTTP Error)");
+        return response.json();
+      })
+      .then((data) => {
+        // 3. Pengecekan Response Sukses
+        if (data.status === "success" || data.status === true) {
+          feedbackElement.innerHTML = statusSaved;
 
-        // Tampilkan status loading
-        saveButton.disabled = true;
-        saveButton.textContent = "Saving...";
-        feedbackElement.innerHTML = ""; // Kosongkan feedback sebelumnya
-        feedbackElement.innerHTML = "Mencoba Mengirim"; // Kosongkan feedback sebelumnya
+          // Efek visual sukses pada kartu detail (opsional)
+          const detailCard = form.closest(".card");
+          if (detailCard) {
+            detailCard.style.borderColor = "#2fb344"; // Beri border hijau tipis sementara
+            detailCard.style.backgroundColor = "#f2faf4";
+          }
 
-        // 2. Kirim data menggunakan Fetch API
-        fetch(`${BASE_URL}/anomali/updateKonfirmasi`, {
-          method: "POST",
-          body: formData,
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            // 3. Handle Feedback Berhasil/Gagal
-            if (data.status === "success") {
-              feedbackElement.innerHTML = savedContent;
-              // form.classList.add("bg-success", "bg-opacity-10");
-              // setTimeout(
-              //   () => form.classList.remove("bg-success", "bg-opacity-10"),
-              //   2000,
-              // );
-            } else {
-              feedbackElement.innerHTML = `<span class="text-danger">Error: ${data.message}</span>`;
+          // ========================================================
+          // LOGIC BARU: PENGURANGAN OTOMATIS COUNTER 4 LEVEL PARENT
+          // ========================================================
+          let currentElement = form;
+
+          while (currentElement && currentElement !== document.body) {
+            // Cari elemen bapak terdekat tempat form/sub-accordion ini bernaung
+            const parentItem = currentElement.closest(".accordion-item");
+            if (!parentItem) break;
+
+            // TARGET AMAN: Mengincar spesifik ke class .badge-counter, bukan teks kode terdepan
+            const badgeCounter = parentItem.querySelector(
+              ".accordion-header .badge-counter",
+            );
+            if (badgeCounter) {
+              // Ambil isi teks angka saja, hilangkan karakter non-angka seperti titik, huruf 'A' atau 'Kasus'
+              let rawText = badgeCounter.textContent.trim();
+              let currentCount =
+                parseInt(rawText.replace(/[^0-9]/g, ""), 10) || 0;
+
+              if (currentCount > 0) {
+                let newCount = currentCount - 1;
+
+                // Cek format akhiran teks bawaan aslinya (apakah pakai 'A' atau 'Kasus')
+                if (rawText.includes("Kasus")) {
+                  badgeCounter.textContent =
+                    newCount.toLocaleString("id-ID") + " Kasus";
+                } else if (rawText.includes("A")) {
+                  badgeCounter.textContent =
+                    newCount.toLocaleString("id-ID") + " A";
+                } else {
+                  badgeCounter.textContent =
+                    newCount.toLocaleString("id-ID") + " Entri";
+                }
+
+                // Jika angka akumulasi di level ini habis (0), ubah tampilan jadi selesai
+                if (newCount === 0) {
+                  badgeCounter.className =
+                    "badge bg-secondary-lt text-secondary border rounded-pill fw-normal px-2 py-0-5 badge-counter";
+                  badgeCounter.textContent = "Selesai";
+                }
+              }
             }
-          })
-          .catch((error) => {
-            feedbackElement.innerHTML =
-              '<span class="text-danger">Koneksi Error.</span>';
-            console.error("Error:", error);
-          })
-          .finally(() => {
-            // 4. Kembalikan tombol ke keadaan normal
-            saveButton.disabled = false;
-            saveButton.textContent = "Saved";
-          });
+            // Naik ke satu tingkat bapak di atasnya untuk memotong rantai level berikutnya
+            currentElement = parentItem.parentElement;
+          }
+        } else {
+          // 4. Handle Gagal Validasi atau Pesan dari Controller
+          feedbackElement.innerHTML = statusFailed(
+            data.message || "Validasi gagal",
+          );
+          saveButton.disabled = false;
+          saveButton.innerHTML = originalButtonHTML;
+        }
+      })
+      .catch((error) => {
+        // 5. Handle Error Jaringan / Server Down
+        feedbackElement.innerHTML = statusError;
+        console.error("Kesalahan Sistem Ajax:", error);
+        saveButton.disabled = false;
+        saveButton.innerHTML = originalButtonHTML;
+      })
+      .finally(() => {
+        // Tombol dibuka kembali
+        saveButton.disabled = false;
       });
-    });
-  }
+  });
 });

@@ -83,61 +83,63 @@
 
     <!-- ini tabel -->
     <div class="card card-body">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Kode Anomali</th>
-                    <th scope="col">Flag</th>
-                    <th scope="col">Level</th>
-                    <th scope="col">Deskripsi Anmali</th>
-                    <th scope="col">Detil Anomali</th>
-                    <th scope="col">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($listAnom as $l): ?>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
                     <tr>
-                        <th scope="row"><i class="bi <?= ($l['is_show']) ? 'bi-eye-fill text-success' : 'bi-eye-slash-fill text-warning'; ?>"></i></th>
-                        <td>
-                            <div class="d-flex justify-content-center">
-                                <button type=" button" class="btn btn-primary rounded-pill"><?= $l['kode_anomali']; ?></button>
-                            </div>
-                        </td>
-                        <td><button type=" button" class="btn btn-warning p-1 "><i class="fas fa-flag"> <?= $l['flag']; ?> </i></button></td>
-                        <td>
-                            <span class="badge bg-blue-lt">
-                                <?= $l['level_anomali']; ?>
-                            </span>
-                        </td>
-                        <td><?= $l['definisi_anomali'] ?? '<span class="fst-italic text-muted">Belum didefinisikan</span>'; ?></td>
-                        <td><?= $l['detil_anomali'] ?? '<span class="fst-italic text-muted">Belum didetilkan</span>'; ?></td>
-                        <td>
-                            <form action="<?= base_url('/manajemen-anomali/action'); ?>" method="POST">
-                                <input type="hidden" name="id" value="<?= $l['id']; ?>">
-                                <input type="hidden"
-                                    name="is_show"
-                                    value="<?= $l['is_show']; ?>">
-                                <button type="submit"
-                                    name="action" value="toggle"
-                                    class="btn btn-primary p-1 d-flex align-items-center"
-                                    <?= ($l['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
-                                    <img src="<?= ($l['is_show']) ? base_url('/img/icons/eye-slash.svg') : base_url('/img/icons/eye.svg'); ?>"
-                                        alt="Ikon Simpan" width="16" height="16">
-                                </button>
-                                <a aria-current="page" class="btn btn-warning p-1 d-flex justify-content-center a-butt" href="<?= base_url('/manajemen-anomali/edit/' . $l['id']); ?>"><img src="<?= base_url("/img/icons/edit.svg"); ?>" alt="Ikon Simpan" width="16" height="16"></a>
-                                <button type="button"
-                                    name="action" value="delete"
-                                    data-bs-toggle="modal" data-bs-target="#konfirHapus"
-                                    data-id="<?= $l['id']; ?>"
-                                    data-kode="<?= $l['kode_anomali']; ?>"
-                                    class="btn btn-danger p-1 d-flex align-items-center"><img src='<?= base_url("/img/icons/trash.svg"); ?>' alt="Ikon Simpan" width="16" height="16"></button>
-                            </form>
-                        </td>
+                        <th scope="col">#</th>
+                        <th scope="col">Kode Anomali</th>
+                        <th scope="col">Flag</th>
+                        <th scope="col">Level</th>
+                        <th scope="col">Deskripsi Anmali</th>
+                        <th scope="col">Detil Anomali</th>
+                        <th scope="col">Aksi</th>
                     </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php foreach ($listAnom as $l): ?>
+                        <tr>
+                            <th scope="row"><i class="bi <?= ($l['is_show']) ? 'bi-eye-fill text-success' : 'bi-eye-slash-fill text-warning'; ?>"></i></th>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <button type=" button" class="btn btn-primary rounded-pill"><?= $l['kode_anomali']; ?></button>
+                                </div>
+                            </td>
+                            <td><button type=" button" class="btn btn-warning p-1 "><i class="fas fa-flag"> <?= $l['flag']; ?> </i></button></td>
+                            <td>
+                                <span class="badge bg-blue-lt">
+                                    <?= $l['level_anomali']; ?>
+                                </span>
+                            </td>
+                            <td><?= $l['definisi_anomali'] ?? '<span class="fst-italic text-muted">Belum didefinisikan</span>'; ?></td>
+                            <td><?= $l['detil_anomali'] ?? '<span class="fst-italic text-muted">Belum didetilkan</span>'; ?></td>
+                            <td>
+                                <form action="<?= base_url('/manajemen-anomali/action'); ?>" method="POST">
+                                    <input type="hidden" name="id" value="<?= $l['id']; ?>">
+                                    <input type="hidden"
+                                        name="is_show"
+                                        value="<?= $l['is_show']; ?>">
+                                    <button type="submit"
+                                        name="action" value="toggle"
+                                        class="btn btn-primary p-1 d-flex align-items-center"
+                                        <?= ($l['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
+                                        <img src="<?= ($l['is_show']) ? base_url('/img/icons/eye-slash.svg') : base_url('/img/icons/eye.svg'); ?>"
+                                            alt="Ikon Simpan" width="16" height="16">
+                                    </button>
+                                    <a aria-current="page" class="btn btn-warning p-1 d-flex justify-content-center a-butt" href="<?= base_url('/manajemen-anomali/edit/' . $l['id']); ?>"><img src="<?= base_url("/img/icons/edit.svg"); ?>" alt="Ikon Simpan" width="16" height="16"></a>
+                                    <button type="button"
+                                        name="action" value="delete"
+                                        data-bs-toggle="modal" data-bs-target="#konfirHapus"
+                                        data-id="<?= $l['id']; ?>"
+                                        data-kode="<?= $l['kode_anomali']; ?>"
+                                        class="btn btn-danger p-1 d-flex align-items-center"><img src='<?= base_url("/img/icons/trash.svg"); ?>' alt="Ikon Simpan" width="16" height="16"></button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
         <!-- <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
