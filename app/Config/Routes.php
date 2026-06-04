@@ -96,6 +96,21 @@ $routes->group('admin', ['filter' => 'activeRole:admin'], static function ($rout
     // Tambahkan route edit/delete di sini
 });
 
+$routes->group('fasihhelpdesk', ['filter' => 'activeRole:superadmin,admin,operator,mitra'], function ($routes) {
+    $routes->get('/', 'FasihHelpdesk::index');                          // Menu Daftar FAQ + Form Manajemen
+    $routes->get('listLaporan', 'FasihHelpdesk::listLaporan');          // Menu Daftar Tiket Masuk
+    $routes->get('detailLaporan/(:num)', 'FasihHelpdesk::detailLaporan/$1'); // Ruang Diskusi Chat
+    $routes->post('storeKnowledge', 'FasihHelpdesk::storeKnowledge');    // Tambah FAQ Manual
+    $routes->post('updateKnowledge/(:num)', 'FasihHelpdesk::updateKnowledge/$1'); // Edit FAQ
+    $routes->post('storeLaporan', 'FasihHelpdesk::storeLaporan');        // Kirim Tiket Baru (PPL)
+    $routes->post('balasDiskusi/(:num)', 'FasihHelpdesk::balasDiskusi/$1');   // Kirim Balasan Chat
+    $routes->get('closeDanJadikanKnowledge/(:num)', 'FasihHelpdesk::closeDanJadikanKnowledge/$1'); // Flag Selesai + Kloning Berkas
+    $routes->get('closeLaporanBiasa/(:num)', 'FasihHelpdesk::closeLaporanBiasa/$1'); //hanya close laporan tertentu
+});
+
+$routes->get('faq', 'FasihHelpdesk::publikIndex');              // Portal FAQ Publik + Search Tanpa Login
+$routes->get('faq/baca/(:num)', 'FasihHelpdesk::publikDetail/$1'); // Direct link halaman tunggal FAQ untuk di-share
+
 $routes->get('set_kegiatan/(:any)', 'Kegiatan::set/$1', ['filter' => 'activeRole:superadmin,admin,operator,mitra']); // untuk ubah kegiatan di header
 $routes->get('set_role', 'Admin\UserController::gantiRole', ['filter' => 'activeRole:superadmin,admin,operator,mitra']); // untuk ubah kegiatan di header
 $routes->get('profile', 'Admin\UserController::profile');

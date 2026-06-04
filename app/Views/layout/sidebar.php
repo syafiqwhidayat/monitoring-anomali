@@ -247,6 +247,28 @@
                             </div>
                         </li>
                     <?php endif; ?>
+                    <?php if (session('aktif_role') !== 'mitra'): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" data-bs-auto-close="false" href="#" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+                                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-zoom-question">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                        <path d="M3 10a7 7 0 1 0 14 0a7 7 0 1 0 -14 0" />
+                                        <path d="M21 21l-6 -6" />
+                                        <path d="M10 13l0 .01" />
+                                        <path d="M10 10a1.5 1.5 0 1 0 -1.14 -2.474" />
+                                    </svg>
+                                </span>
+                                <span class="nav-link-title">Helpdesk Fasih</span>
+                            </a>
+                            <div class="dropdown-menu">
+                                <div class="dropdown-menu-column">
+                                    <a class="dropdown-item" href="<?= base_url('fasihhelpdesk') ?>">Knowledge Base</a>
+                                    <a class="dropdown-item" href="<?= base_url('fasihhelpdesk/listLaporan') ?>">Lapor Fasih</a>
+                                </div>
+                            </div>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>
