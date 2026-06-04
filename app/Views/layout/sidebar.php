@@ -126,9 +126,9 @@
                                 <?php if (session('aktif_role') !== 'mitra'): ?>
                                     <a class="dropdown-item" href="<?= base_url('/anomali/konfirmasiBulk') ?>">Konfirmasi Bulk Anomali</a>
                                 <?php endif; ?>
-                                <a class="dropdown-item" href="<?= base_url('') ?>">Konfirmasi Fasih <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                                <a class="dropdown-item" href="<?= base_url('/anomali/konfir-fasih') ?>">Konfirmasi Fasih</a>
                                 <?php if (session('aktif_role') !== 'mitra'): ?>
-                                    <a class="dropdown-item" href="<?= base_url('') ?>">Rekap By Assigment <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                                    <a class="dropdown-item" href="<?= base_url('/anomali/rekap-anomali') ?>">Rekap By Assigment</a>
                                 <?php endif; ?>
                             </div>
                         </div>

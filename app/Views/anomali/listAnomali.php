@@ -134,7 +134,7 @@
                             <h2 class="accordion-header">
                                 <button class="accordion-button collapsed py-3" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<?= $d['id']; ?>" aria-expanded="false" aria-controls="collapse<?= $d['id']; ?>">
                                     <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center w-100 pe-3 gap-1 gap-md-3">
-                                        <span class="badge bg-muted text-muted-inverse font-monospace px-2 py-1" style="font-size: 0.75rem;">
+                                        <span class="badge text-muted-inverse font-monospace px-2 py-1" style="font-size: 0.75rem;">
                                             <?= esc($d['kd']); ?>
                                         </span>
                                         <span class="text-dark fw-semibold fs-3"><?= esc($d['nm']); ?></span>

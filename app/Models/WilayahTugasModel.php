@@ -14,7 +14,7 @@ class WilayahTugasModel extends Model
     protected $returnType       = 'array';
     protected $useSoftDeletes   = false;
     protected $protectFields    = true;
-    protected $allowedFields    = ['id_wilayah', 'id_kegiatan', 'id_ppl', 'id_pml'];
+    protected $allowedFields    = ['id_wilayah', 'id_kegiatan', 'id_ppl', 'id_pml', 'id_koseka'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
@@ -52,6 +52,7 @@ class WilayahTugasModel extends Model
             ->join('kegiatan k', 'k.id = id_kegiatan')
             ->where('id_ppl', $userId)
             ->orWhere('id_pml', $userId)
+            ->orWhere('id_koseka', $userId)
             ->orderBy('id_kegiatan', 'DESC') // Tetap ambil yang terbaru dari yang dia punya
             ->distinct();
 
@@ -63,12 +64,14 @@ class WilayahTugasModel extends Model
         $this->builder()->resetQuery();
 
         $builder = $this->builder();
-        $builder->select('wilayah_tugas.id AS id_wt,w.*,ppl.name AS nm_ppl, id_ppl.secret AS em_ppl,pml.name AS nm_pml, id_pml.secret AS em_pml,wilayah_tugas.id_ppl AS id_ppl, wilayah_tugas.id_pml AS id_pml')
+        $builder->select('wilayah_tugas.id AS id_wt,w.*,ppl.name AS nm_ppl, id_ppl.secret AS em_ppl,pml.name AS nm_pml, id_pml.secret AS em_pml,kos.name AS nm_kos, id_kos.secret AS em_kos,wilayah_tugas.id_ppl AS id_ppl, wilayah_tugas.id_pml AS id_pml, wilayah_tugas.id_koseka AS id_kos')
             ->join('wilayah w', 'w.id = id_wilayah', 'left')
             ->join('users ppl', 'ppl.id = id_ppl', 'left')
             ->join('auth_identities id_ppl', 'id_ppl.user_id = ppl.id', 'left')
             ->join('users pml', 'pml.id = id_pml', 'left')
             ->join('auth_identities id_pml', 'id_pml.user_id = pml.id', 'left')
+            ->join('users kos', 'kos.id = id_koseka', 'left')
+            ->join('auth_identities id_kos', 'id_kos.user_id = kos.id', 'left')
             ->groupBy('id_wilayah')
             ->where('id_kegiatan', $idKegiatan);
 
@@ -93,24 +96,29 @@ class WilayahTugasModel extends Model
         $db = \Config\Database::connect();
         $wilayahKerja = auth()->user()->wilayah_kerja; //wilayah kerja user yang request
 
-        $subquery = $db->table('wilayah_tugas')
-            ->select('id_pml AS id_user, 1 as prioritas')
-            // ->where('id_kegiatan', $idKegiatan) // Filter untuk PML
-            ->union(
-                $db->table('wilayah_tugas')->select('id_ppl AS id_user,2 as prioritas')
-                // ->where('id_kegiatan', $idKegiatan) // Filter untuk PML
-            )
+        $subquery =
+            $db->table('users')->select('id AS id_user,1 as prioritas')
+            // $db->table('wilayah_tugas')
+            // ->select('id_pml AS id_user, 1 as prioritas')
+            // // ->where('id_kegiatan', $idKegiatan) // Filter untuk PML
+            // ->union(
+            //     $db->table('wilayah_tugas')->select('id_ppl AS id_user,2 as prioritas')
+            //     // ->where('id_kegiatan', $idKegiatan) // Filter untuk PML
+            // )
+
             ->getCompiledSelect();
 
         $data = $userModel->select('users.id AS id,users.name AS nama,ide.secret AS email')
             ->join('auth_identities ide', 'ide.user_id = users.id', 'left')
             ->join("($subquery) AS tabel_gabung", 'tabel_gabung.id_user = users.id', 'inner')
-            ->orderBy('tabel_gabung.prioritas', 'ASC');
+            ->orderBy('tabel_gabung.prioritas', 'ASC')
+            ->distinct();
 
         if ($wilayahKerja != '1300') {
             $data->where('users.wilayah_kerja', $wilayahKerja);
         }
 
+        // dd($data->asArray()->findAll());
         return ($data->asArray()->findAll());
     }
 

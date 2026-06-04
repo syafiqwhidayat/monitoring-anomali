@@ -129,8 +129,8 @@ class ProsesAnomali extends BaseCommand
                 'kode_kec'  => 'required|exact_length[3]',
                 'kode_desa' => 'required|exact_length[3]',
                 'kode_sls'  => 'required|exact_length[6]',
-                'nurt'      => 'required|exact_length[3]',
-                'nuart'     => 'required|exact_length[2]',
+                'nurt'      => 'required|max_length[244]',
+                'nuart'     => 'required|max_length[244]',
                 'anomali'   => 'required',
                 'id_wilayah' => 'required|exact_length[' . $levelWilayah . ']|is_not_unique[wilayah.id]',
             ];
@@ -140,7 +140,7 @@ class ProsesAnomali extends BaseCommand
                 'kode_kec'  => 'permit_empty|exact_length[3]',
                 'kode_desa' => 'permit_empty|exact_length[3]',
                 'kode_sls'  => 'permit_empty|exact_length[6]',
-                'kode_nrt'      => 'required|max_length[11]',
+                'kode_nrt'      => 'required|max_length[255]',
                 'nama_nrt'     => 'required',
                 'anomali'   => 'required',
                 'id_wilayah' => 'required|exact_length[' . $levelWilayah . ']|is_not_unique[wilayah.id]',
@@ -229,7 +229,7 @@ class ProsesAnomali extends BaseCommand
                                 'nama_krt'  => ucwords($row[7]),
                                 'nama_art'  => ucwords($row[8]),
                                 'anomali'   => strtoupper($row[9]),
-                                'id_assigment' => trim($row[0] . $row[1] . $row[2] . $row[3] . $row[4] . $row[5] . $row[6]),
+                                'id_assigment' => trim($row[0] . $row[1] . $row[2] . $row[3] . $row[4]) . '_' . trim($row[5]) . '_' . trim($row[6]),
                                 'id_wilayah' => trim($row[0] . $row[1] . $row[2] . $row[3] . $row[4]),
                             ];
                         } else {
@@ -239,10 +239,10 @@ class ProsesAnomali extends BaseCommand
                                 'kode_kec'  => $row[2],
                                 'kode_desa' => $row[3],
                                 'kode_sls'  => $row[4],
-                                'kode_nrt'      => $row[5],
-                                'nama_nrt'     => ucwords($row[6]),
+                                'nurt'      => $row[5],
+                                'nama_krt'     => ucwords($row[6]),
                                 'anomali'   => strtoupper($row[7]),
-                                'id_assigment' => trim($row[0] . $row[1] . $row[2] . $row[3] . $row[4] . $row[5]),
+                                'id_assigment' => trim($row[0] . $row[1] . $row[2] . $row[3] . $row[4]) . '_' . trim($row[5]),
                                 'id_wilayah' => trim($row[0] . $row[1] . $row[2] . $row[3] . $row[4]),
                             ];
                         }
@@ -321,7 +321,7 @@ class ProsesAnomali extends BaseCommand
                             $listAnomali = $this->anomaliModel->getAnomaliByAssigment($id_assigment);
 
                             // pecah string berdasarkan koma
-                            $anomaliTambahan = explode(',', $data['anomali']);
+                            $anomaliTambahan = explode(',', rtrim($data['anomali'], ','));
                             $anomaliTambahan = array_map('trim', $anomaliTambahan);
 
                             $id_wilayah = $data['id_wilayah'];

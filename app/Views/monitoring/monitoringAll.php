@@ -23,9 +23,9 @@
             <div class="col-12 col-md-6">
                 <div class="row">
                     <div class="col d-flex flex-column align-items-center gap-1">
-                        <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Anomali: <?= $dataHead['total seluruh']; ?></button>
-                        <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Public: <?= $dataHead['total public']; ?></button>
-                        <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Non Public: <?= $dataHead['total non public']; ?></button>
+                        <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Anomali: <?= number_format($dataHead['total seluruh'], 0, ',', '.'); ?></button>
+                        <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Public: <?= number_format($dataHead['total public'], 0, ',', '.'); ?></button>
+                        <button type="button" class="btn btn-primary-bps label-bps" disabled>Total Non Public: <?= number_format($dataHead['total non public'], 0, ',', '.'); ?></button>
                     </div>
                 </div>
                 <div class="row">

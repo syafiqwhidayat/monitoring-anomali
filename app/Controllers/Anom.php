@@ -107,52 +107,26 @@ class Anom extends BaseController
         $data['jenis'] = null;
 
         // apakah base rumahtangga
-        $isRT = (session()->get('is_rt') == 1);
+        $isRT = ((int)session()->get('is_rt') === 1);
+        $level_wilayah = (int)session()->get('level_wilayah');
 
-        // mendapatkan nilai filter
-        $filterLevel = $this->request->getGet('fil-level') ?? '';
-        $id = $this->request->getGet('id-anomali') ?? '';
+        // Mendapatkan nilai filter dari request GET
+        $filterLevel    = $this->request->getGet('fil-level') ?? '';
+        $id             = $this->request->getGet('id-anomali') ?? '';
         $filterKategori = $this->request->getGet('fil-kategori') ?? '';
-        $filterFlag = $this->request->getGet('fil-flag') ?? '';
-        $isEdit = $this->request->getGet('is-edit') ?? '';
+        $filterFlag     = $this->request->getGet('fil-flag') ?? '';
+        $isEdit         = $this->request->getGet('is-edit') ?? '';
+
+        // Deteksi keberadaan separator '_' untuk mengenali entitas jeroan ruta/art
+        $parts = explode('_', $id);
+        $countParts = count($parts);
 
         if ($isRT) {
-            // jika level nya menggunakan RT.
-            switch (strlen($id)) {
-                case 4:
-                    $data['jenis'] = 'Kec';
-                    break;
-                case 7:
-                    $data['jenis'] = 'Des';
-                    break;
-                case 10:
-                    $data['jenis'] = 'SLS';
-                    break;
-                case 16:
-                    $data['jenis'] = 'Ruta';
-                    break;
-                case 19:
-                    $data['jenis'] = 'Art';
-                    break;
-                case 21:
-                    $data['jenis'] = 'Anom';
-                    return $this->listAnom($id, $isEdit);
-                    break;
-            }
-        } else {
-            // ketika struktur tidak menggunakan RT
-            if (strlen($id) == session('level_wilayah')) {
-                // jika id accordion sudah sama dengan kegiatan
-                $data['jenis'] = 'Nrt';
-            } elseif (strlen($id) > session('level_wilayah')) {
-                // jika id accordion lebih besar dari kegiatan
-                $data['jenis'] = 'Anom';
-                return $this->listAnom($id, $isEdit);
-            } else {
-                // jika id accordion masih lebih kecil dari kegiatan
-                switch (session('level_wilayah')) {
+            // --- JALUR BASE RUMAH TANGGA / SOSIAL ---
+            if ($countParts === 1) {
+                // Jika belum ada underscore, berarti masih proses drill-down wilayah murni
+                switch (strlen($id)) {
                     case 4:
-                        // $data['listAnom'] = $dataDesa;q
                         $data['jenis'] = 'Kec';
                         break;
                     case 7:
@@ -163,13 +137,52 @@ class Anom extends BaseController
                         break;
                     case 16:
                         $data['jenis'] = 'Ruta';
+                        break; // Batas wilayah maksimal (SLS)
+                    default:
+                        $data['jenis'] = 'Kec';
                         break;
-                    case 19:
-                        $data['jenis'] = 'Art';
-                        break;
-                };
-            };
-        };
+                }
+            } else {
+                // Jika sudah ada underscore (Proses masuk ke jeroan Ruta/ART)
+                if ($countParts === 2) {
+                    // Format: [kdwilayah]_[kdAssigment] -> Menampilkan daftar Anggota Rumah Tangga (Roster)
+                    $data['jenis'] = 'Art';
+                } elseif ($countParts === 3) {
+                    // Format: [kdwilayah]_[kdAssigment]_[kdRoster] -> MENAMPILKAN DETAIL DAFTAR ANOMALI INDIVIDU
+                    $data['jenis'] = 'Anom';
+                    return $this->listAnom($id, $isEdit);
+                }
+            }
+        } else {
+            // dd($countParts);
+            // --- JALUR NON Roster RUMAH TANGGA / EKONOMI ---
+            if ($countParts === 1) {
+                $len = strlen($id);
+                if ($len === $level_wilayah) {
+                    $data['jenis'] = 'Anom'; // Menampilkan daftar perusahaan/entitas usaha
+                } else {
+                    switch ($len) {
+                        case 4:
+                            $data['jenis'] = 'Kec';
+                            break;
+                        case 7:
+                            $data['jenis'] = 'Des';
+                            break;
+                        case 10:
+                            $data['jenis'] = 'SLS';
+                            break;
+                        default:
+                            $data['jenis'] = 'Kec';
+                            break;
+                    }
+                }
+            } else {
+                // Jika non-RT memiliki underscore (Format: [kdwilayah]_[kdAssigment])
+                // Berarti sudah klik pada entitas usaha tersebut, langsung tampilkan rincian kesalahan/anomali
+                $data['jenis'] = 'Anom';
+                return $this->listAnom($id, $isEdit);
+            }
+        }
 
         try {
             // mengambail anomali menurut wilayah
@@ -405,5 +418,221 @@ class Anom extends BaseController
         } elseif ($currentUser->inGroup('operator', 'mitra')) {
             return false;
         }
+    }
+
+    public function konfirFasih()
+    {
+        $userWilayah = auth()->user()->wilayah_kerja;
+
+        // Aturan Hak Akses Wilayah (Jika 1300 bebas pilih, jika kab/kota kunci ke wilayahnya)
+        if ($userWilayah !== '1300') {
+            $data['filterWilayah'] = $userWilayah;
+            $data['isKunciWilayah'] = true;
+        } else {
+            $data['filterWilayah'] = $this->request->getGet('fil-wilayah') ?? '';
+            $data['isKunciWilayah'] = false;
+        }
+
+        $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
+        $data['message'] = null;
+        $data['title'] = 'Konfirmasi Anomali Fasih';
+
+        // Setup Dropdown Filter sesuai standar fungsi list() Anda
+        $data['listLevel'] = [
+            ['id' => '', 'nama' => "Semua Level Anomali"]
+        ];
+        $data['listWilayah'] = [];
+
+        $listSelLevel = $this->anomaliModel->getLevelAnomByUser() ?? [];
+        $listSelWilayah = $this->anomaliModel->getWilayahAnomByUser() ?? [];
+
+        $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel);
+        $data['listWilayah'] = $listSelWilayah;
+
+        // Cek apakah request untuk download Excel
+        $isExport = $this->request->getGet('export') === 'excel';
+
+        try {
+            // Menggunakan cara aman: Panggil builder langsung dari instance model
+            $builder = $this->anomaliModel->builder();
+
+            $builder->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.date_updated, 
+                                  art.kd_assigment, art.nm_krt, art.nm_art, art.nm_nrt,
+                                  k.kode_anomali, k.detil_anomali, k.level_anomali')
+                ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
+                ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left');
+
+            // LOGIKA UTAMA EVALUASI:
+            // Konfirmasi terisi, is_lap = 0, tetapi masih muncul di update terbaru (is_insert = 1)
+            $builder->where('anomali.konfirmasi IS NOT NULL')
+                ->where('anomali.konfirmasi !=', '')
+                ->where('anomali.is_lap', 0)
+                ->where('anomali.is_insert', 1);
+
+            // Filter Level Anomali jika dipilih
+            if (!empty($data['filterLevel'])) {
+                $builder->where('k.level_anomali', $data['filterLevel']);
+            }
+
+            // Filter Wilayah Kerja tingkat Kab/Kota (dari filter harian atau lock akun organik)
+            if (!empty($data['filterWilayah'])) {
+                $builder->like('anomali.id_wilayah', $data['filterWilayah'], 'after');
+            }
+
+            // Menyesuaikan dengan standar pengecekan role/group di aplikasi Anda
+            $currentUser = auth()->user();
+            if ($currentUser->inGroup('mitra') || session('aktif_role') === 'mitra') {
+                $idUser = $currentUser->id;
+
+                $builder->groupStart()
+                    ->where('wt.id_ppl', $idUser)
+                    ->orWhere('wt.id_pml', $idUser)
+                    ->groupEnd();
+            }
+
+            $builder->orderBy('anomali.id_wilayah', 'ASC')
+                ->orderBy('k.kode_anomali', 'ASC');
+
+            if ($isExport) {
+                // Ambil semua data tanpa limit halaman untuk dilempar ke Excel
+                $data['listAnom'] = $builder->get()->getResultArray();
+                return view('anomali/excelKonfirFasih', $data);
+            } else {
+                // Cara native CI4 mendistribusikan custom query ke pagination bawaan model
+                $data['listAnom'] = $this->anomaliModel->paginate(15, 'group_catatan');
+                $data['pager'] = $this->anomaliModel->pager;
+            }
+        } catch (\Throwable $th) {
+            $data['listAnom'] = [];
+            $data['message'] = "Gagal memuat data catatan evaluasi: " . $th->getMessage();
+        }
+
+        return view('anomali/konfirFasih', $data);
+    }
+
+    public function rekapAnomali()
+    {
+        $userWilayah = auth()->user()->wilayah_kerja;
+
+        // Filter Wilayah Kerja (1300 bisa pilih, Kab/Kota dikunci)
+        if ($userWilayah !== '1300') {
+            $data['filterWilayah'] = $userWilayah;
+            $data['isKunciWilayah'] = true;
+        } else {
+            $data['filterWilayah'] = $this->request->getGet('fil-wilayah') ?? '';
+            $data['isKunciWilayah'] = false;
+        }
+
+        // Ambil filter lainnya sesuai standar list() Anda
+        $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
+        $data['filterKategori'] = $this->request->getGet('fil-kategori') ?? '';
+        $data['filterFlag'] = $this->request->getGet('fil-flag') ?? '';
+        $data['filterKonfirmasi'] = $this->request->getGet('fil-konfirmasi') ?? ''; // Filter Baru
+        $data['filterStatus'] = $this->request->getGet('fil-status') ?? ''; // Filter Baru
+
+        $data['message'] = null;
+        $data['title'] = 'Rekap Jawaban Anomali per Assignment';
+
+        // Persiapan data dropdown filter dari model
+        $data['listLevel'] = [['id' => '', 'nama' => "Semua Level"]];
+        $data['listWilayah'] = [];
+        $data['listSelKdAnom'] = [['id' => '', 'nama' => 'Semua Kode Anomali']];
+        $data['listSelFlag'] = [];
+
+        $data['listLevel'] = array_merge($data['listLevel'], $this->anomaliModel->getLevelAnomByUser() ?? []);
+        $data['listWilayah'] = $this->anomaliModel->getWilayahAnomByUser() ?? [];
+        $data['listSelKdAnom'] = array_merge($data['listSelKdAnom'], $this->anomaliModel->getKdAnomaliByUser() ?? []);
+        $data['listSelFlag'] = array_merge($data['listSelFlag'], $this->anomaliModel->getFlagByUser() ?? []);
+
+        $isExport = $this->request->getGet('export') === 'excel';
+
+        try {
+            $builder = $this->anomaliModel->builder();
+
+            // SELECT dengan tambahan nama PPL dan PML dari tabel master user/petugas Anda
+            $builder->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.is_lap, anomali.is_insert, anomali.date_updated,
+                              art.id AS id_assignment_obj, art.kd_assigment, art.nm_krt, art.nm_art, art.nm_nrt,
+                              k.kode_anomali, k.detil_anomali, k.level_anomali, k.flag,
+                              u_ppl.username as nama_ppl, u_pml.username as nama_pml') // Sesuaikan field nama di tabel user Anda (misal: 'nama' atau 'username')
+                ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
+                ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left')
+                // Join mencari nama PPL dan PML
+                ->join('users u_ppl', 'u_ppl.id = wt.id_ppl', 'left')
+                ->join('users u_pml', 'u_pml.id = wt.id_pml', 'left');
+
+            // === FILTER WAJIB: HANYA MENGAMBIL KEGIATAN YANG SEDANG AKTIF ===
+            $builder->where('k.id_kegiatan', session()->get('aktif_kegiatan'));
+            // ===============================================================
+
+            // --- Logika Filter Baru: Isi Konfirmasi ---
+            if ($data['filterKonfirmasi'] === 'terisi') {
+                $builder->where('anomali.konfirmasi IS NOT NULL')
+                    ->where('anomali.konfirmasi !=', '');
+            } elseif ($data['filterKonfirmasi'] === 'kosong') {
+                $builder->groupStart()
+                    ->where('anomali.konfirmasi', null)
+                    ->orWhere('anomali.konfirmasi', '')
+                    ->groupEnd();
+            }
+
+            // --- Logika Filter Baru: Status Anomali (is_insert) ---
+            if ($data['filterStatus'] === 'aktif') {
+                $builder->where('anomali.is_insert', 1);
+            } elseif ($data['filterStatus'] === 'clean') {
+                $builder->where('anomali.is_insert', 0);
+            }
+
+            // Kondisi Filter Dinamis
+            if (!empty($data['filterLevel'])) {
+                $builder->where('k.level_anomali', $data['filterLevel']);
+            }
+            if (!empty($data['filterKategori'])) {
+                $builder->where('k.id', $data['filterKategori']);
+            }
+            if (!empty($data['filterFlag'])) {
+                $builder->where('k.flag', $data['filterFlag']);
+            }
+            if (!empty($data['filterWilayah'])) {
+                $builder->like('anomali.id_wilayah', $data['filterWilayah'], 'after');
+            }
+
+            // Proteksi Jika Akun adalah Mitra Lapangan
+            if (session()->get('aktif_role') === 'mitra') {
+                $idUser = auth()->user()->id;
+                $builder->groupStart()
+                    ->where('wt.id_ppl', $idUser)
+                    ->orWhere('wt.id_pml', $idUser)
+                    ->groupEnd();
+            }
+
+            // Diurutkan berdasarkan objek tugas (assignment) agar rowspan bekerja sempurna di view
+            $builder->orderBy('art.id', 'ASC')
+                ->orderBy('k.kode_anomali', 'ASC');
+
+            if ($isExport) {
+                $data['listAnom'] = $builder->get()->getResultArray();
+                return view('anomali/excelRekapAnom', $data);
+            } else {
+                // Menghitung total data asli yang lolos filter
+                $totalRows = $builder->countAllResults(false);
+
+                $page = $this->request->getVar('page_group_assignment') ?? 1;
+                $perPage = 25;
+                $offset = ($page - 1) * $perPage;
+
+                $data['listAnom'] = $builder->get($perPage, $offset)->getResultArray();
+
+                // makeLinks() ini menghasilkan STRING HTML dari template 'my_pager'
+                $pager = \Config\Services::pager();
+                $data['pager'] = $pager->makeLinks($page, $perPage, $totalRows, 'my_pager', 0, 'group_assignment');
+            }
+        } catch (\Throwable $th) {
+            $data['listAnom'] = [];
+            $data['message'] = "Gagal memuat rekap assignment: " . $th->getMessage();
+        }
+        // dd($data['listAnom']);
+        return view('anomali/rekapAnom', $data);
     }
 }

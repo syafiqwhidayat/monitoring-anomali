@@ -88,7 +88,7 @@ class Wilayah extends BaseController
             // Kita kirimkan Nama File dan ID Log sebagai parameter
             // Tanda '&' di akhir perintah adalah kunci agar berjalan di background
             // $command = "php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId . " > /dev/null 2>&1 &"; //command linux
-            $command = "start /B php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId . " " . $idKegiatan . " " . $wilayahTugas; //command windows
+            $command = "'cmd /C start /B php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId . " " . $idKegiatan . " " . $wilayahTugas . ' > NUL 2>&1"'; //command windows
             try {
                 if (function_exists('popen')) {
                     \pclose(\popen($command, "r"));
@@ -246,6 +246,7 @@ class Wilayah extends BaseController
         $data['id'] = $this->request->getPost('id') ?? null;
         $data['id_ppl'] = $this->request->getPost('sel-ppl') ?? null;
         $data['id_pml'] = $this->request->getPost('sel-pml') ?? null;
+        $data['id_kos'] = $this->request->getPost('sel-kos') ?? null;
 
         $updateData = [];
 
@@ -255,6 +256,9 @@ class Wilayah extends BaseController
 
         if (!empty($data['id_pml'])) {
             $updateData['id_pml'] = $data['id_pml'];
+        }
+        if (!empty($data['id_kos'])) {
+            $updateData['id_koseka'] = $data['id_kos'];
         }
 
         $wiltug = null;

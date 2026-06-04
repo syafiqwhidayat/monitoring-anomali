@@ -31,130 +31,103 @@ class AnomaliModel extends Model
         $idUser = auth()->user()->id;
         $isRoleMitra = session('aktif_role') == 'mitra';
 
+        // Jika id_kegiatan tidak ada, langsung hentikan proses di awal (Early Return)
+        if (!$id_kegiatan) {
+            return null;
+        }
+
         $data = $this
             ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
             ->join('wilayah', 'wilayah.id = art.id_wilayah', 'left')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left');
 
-        // mengambil panjang id wilayah
-        $len = strlen($wilayah);
-        // $data = null;
-        if ($len == $level_wilayah && !$isRT) {
-            $data = $this
-                ->select("art.kd_assigment AS id , art.kd_nrt AS kd, art.nm_nrt AS nm, COUNT(*) AS jmlAnom")
-                // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                ->where('art.id_wilayah', $wilayah)
-                ->where('k.is_show', true)
-                ->groupBy('art.kd_assigment');
+        // Hitung panjang wilayah (hanya jika tidak mengandung '_')
+        $hasUnderscore = (strpos($wilayah, '_') !== false);
+        $len = $hasUnderscore ? $level_wilayah : strlen($wilayah);
+
+        // 1. Template konfigurasi query dinamis BPS
+        $levelConfig = [
+            '0' => [
+                'select'  => "LEFT(art.kd_assigment, 4) AS id, wilayah.kd_kab AS kd, wilayah.nm_kab AS nm, COUNT(DISTINCT anomali.id) AS jmlAnom",
+                'where'   => ['SUBSTRING(anomali.id_wilayah, 1, 2)', '13'],
+                'groupBy' => 'id'
+            ],
+            '4' => [
+                'select'  => "SUBSTRING(art.kd_assigment, 1, 7) AS id, wilayah.kd_kec AS kd, wilayah.nm_kec AS nm, COUNT(DISTINCT anomali.id) AS jmlAnom",
+                'where'   => ['SUBSTRING(anomali.id_wilayah, 1, 4)', $wilayah],
+                'groupBy' => 'id'
+            ],
+            '7' => [
+                'select'  => "SUBSTRING(art.kd_assigment, 1, 10) AS id, wilayah.kd_des AS kd, wilayah.nm_des AS nm, COUNT(DISTINCT anomali.id) AS jmlAnom",
+                'where'   => ['SUBSTRING(anomali.id_wilayah, 1, 7)', $wilayah],
+                'groupBy' => 'id'
+            ],
+            '10' => [
+                'select'  => "SUBSTRING(art.kd_assigment, 1, 16) AS id, CONCAT(wilayah.kd_sls, wilayah.kd_subsls) AS kd, wilayah.nm_sls AS nm, COUNT(DISTINCT anomali.id) AS jmlAnom",
+                'where'   => ['SUBSTRING(art.id_wilayah, 1, 10)', $wilayah],
+                'groupBy' => 'id'
+            ],
+            '16' => [
+                // isRT = 0 -> Format: [kdWilayah]_[kdAssigment]
+                'select'  => "SUBSTRING_INDEX(art.kd_assigment, '_', 2) AS id, art.kd_krt AS kd, art.nm_krt AS nm, COUNT(DISTINCT anomali.id) AS jmlAnom",
+                'where'   => ["SUBSTRING(anomali.id_wilayah, 1, $level_wilayah)", $wilayah],
+                'groupBy' => 'id'
+            ],
+            'RT' => [
+                // isRT = 1 -> Format: [kdwilayah]_[kdAssigment]_[kdRoster]
+                'select'  => "SUBSTRING_INDEX(art.kd_assigment, '_', 3) AS id, art.kd_art AS kd, art.nm_art AS nm, COUNT(DISTINCT anomali.id) AS jmlAnom",
+                'where'   => ["SUBSTRING_INDEX(art.kd_assigment, '_', 2)", $wilayah],
+                'groupBy' => 'id'
+            ]
+        ];
+
+        // 2. LOGIKA BARU PENENTUAN LEVEL (Sangat Terarah)
+        if ($hasUnderscore || $len > $level_wilayah) {
+            // Jika parameter $wilayah sudah membawa '_', berarti kita mutlak berada di level rincian jeroan Ruta
+            $currentLevel = ($isRT == 1) ? 'RT' : (string)$level_wilayah;
+        } elseif ($len == $level_wilayah) {
+            // Jika baru mencapai batas maksimal wilayah, tentukan tujuannya berdasarkan tipe kegiatan (isRT)
+            $currentLevel = '16';
         } else {
-            // memasukkan filter by wilayah
-            switch ($len) {
-                case '0':
-                    $data->select("LEFT(art.kd_assigment,4) AS id, wilayah.kd_kab AS kd,wilayah.nm_kab AS nm,COUNT(DISTINCT anomali.id) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('wilayah', 'wilayah.id = art.id_wilayah', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(anomali.id_wilayah, 1, 2)', '13')
-                        ->where('k.is_show', true)
-                        ->groupBy('wilayah.kd_kab');
-                    break;
-                case '4':
-                    $data
-                        ->select("SUBSTRING(art.kd_assigment, 1, 7) AS id, wilayah.kd_kec AS kd,wilayah.nm_kec AS nm,COUNT(DISTINCT anomali.id) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('wilayah', 'wilayah.id = art.id_wilayah', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(anomali.id_wilayah, 1, 4)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('wilayah.kd_kec');
-                    break;
-                case '7':
-                    $data
-                        ->select("SUBSTRING(art.kd_assigment, 1, 10) AS id, wilayah.kd_des AS kd, wilayah.nm_des AS nm,COUNT(*) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('wilayah w', 'LEFT(w.id,LENGTH(art.id_wilayah)) = art.id_wilayah', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(anomali.id_wilayah, 1, 7)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('wilayah.kd_des');
-                    break;
-                case '10':
-                    $data
-                        ->select("SUBSTRING(art.kd_assigment, 1, 16) AS id,wilayah.nm_sls AS nm, CONCAT(wilayah.kd_sls,wilayah.kd_subsls) AS kd ,COUNT(*) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('wilayah', 'LEFT(wilayah.id,LENGTH(art.id_wilayah)) = art.id_wilayah', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(art.id_wilayah, 1, 10)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('CONCAT(wilayah.kd_sls,wilayah.kd_subsls)');
-                    break;
-                case '16':
-                    $data
-                        ->select("SUBSTRING(art.kd_assigment, 1, 19) AS id , art.kd_krt AS kd, art.nm_krt AS nm, COUNT(*) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(anomali.id_wilayah, 1, 16)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('art.kd_krt');
-                    break;
-                case '19':
-                    $data
-                        ->select("SUBSTRING(art.kd_assigment, 1, 21) AS id , art.kd_art AS kd, art.nm_art AS nm, COUNT(*) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(art.kd_assigment, 1, 19)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('art.kd_krt');
-                    break;
-                case '21':
-                    $data
-                        ->select("art.kd_assigment AS id , art.kd_art AS kd, art.nm_art AS nm, COUNT(*) AS jmlAnom")
-                        // ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                        // ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                        ->where('SUBSTRING(art.kd_assigment, 1, 21)', $wilayah)
-                        ->where('k.is_show', true)
-                        ->groupBy('art.kd_krt');
-                    break;
-                default:
-                    # code...
-                    break;
-            }
+            // Jika belum mencapai batas level_wilayah, teruskan drill-down standard (0, 4, 7, 10)
+            $currentLevel = (string)$len;
         }
 
-        // filter is Edit
+        // 3. Eksekusi Blok Query Utama
+        if (isset($levelConfig[$currentLevel])) {
+            $config = $levelConfig[$currentLevel];
+
+            $data->select($config['select'])
+                ->where($config['where'][0], $config['where'][1])
+                ->where('k.is_show', true)
+                ->groupBy($config['groupBy']);
+        } else {
+            return null;
+        }
+        // dd($data->findAll());
+
+        // --- Sisa Filter Modul Tetap Dipertahankan ---
         if ($isEdit) {
             $data = $data->where('LENGTH(konfirmasi) > 0');
         } else {
             $data = $data->where('LENGTH(konfirmasi) = 0');
-        };
+        }
 
-
-        // filter berdasarkan kode anomali
         if ($kode_anomali) {
             $data = $data->where('id_kategori_anomali', $kode_anomali);
-        };
+        }
 
-        // filter berdasarkan flag
         if ($flag) {
             $data = $data->where('k.flag', $flag);
-        };
+        }
 
-        // filter berdasarkan level anomali
         if ($levelAnomali) {
             $data = $data->where('k.level_anomali', $levelAnomali);
-        };
+        }
 
+        $data = $data->where('k.id_kegiatan', $id_kegiatan);
 
-        // filter id kegiatan
-        if ($id_kegiatan) {
-            $data = $data->where('k.id_kegiatan', $id_kegiatan);
-        } else {
-            return null;
-        };
-
-        // filter untuk wilayah tugas mitra
         if ($isRoleMitra) {
             $data->groupStart()
                 ->where('wt.id_ppl', $idUser)
@@ -162,33 +135,31 @@ class AnomaliModel extends Model
                 ->groupEnd();
         }
 
-
-        $data = $data->findAll();
-
-        return $data;
+        return $data->findAll();
     }
 
+    // mendapatkan daftar anomali.
     public function getListAnomali($idArt = false, $isEdit = false)
     {
         $query = $this->builder();
-        $len = strlen($idArt);
-        $data = null;
-
         $idKegiatan = session()->get('aktif_kegiatan') ?? null;
 
-        $query->select('anomali.id AS id, art.kd_assigment AS id_assigment , k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom,anomali.konfirmasi,anomali.is_lap as is_lap')
+
+        $query->select('anomali.id AS id, art.kd_assigment AS id_assigment, k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom, anomali.konfirmasi, anomali.is_lap AS is_lap')
             ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left')
             ->where('k.is_show', true)
-            ->where('art.kd_assigment', $idArt);
-        // ->findAll();
+            ->where('art.kd_assigment', $idArt); // Mencocokkan string gabungan dengan underscore secara presisi
+
+        // Filter status konfirmasi (Sudah diedit / Belum)
         if ($isEdit) {
             $query->where('LENGTH(konfirmasi) > 0');
         } else {
             $query->where('LENGTH(konfirmasi) = 0');
         };
 
+        // Filter berdasarkan sub-kegiatan sensus ekonomi yang aktif
         if ($idKegiatan) {
             $query = $query->where('k.id_kegiatan', $idKegiatan);
         };
@@ -251,7 +222,7 @@ class AnomaliModel extends Model
     }
     public function jumlahKonfirmasiByPublik($idKat = null)
     {
-        $idKegiatan = session()->get('aktif_kegiatan');
+        $idKegiatan = session()->get('aktif_kegiatan') ?? null;
 
         $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
 
@@ -262,13 +233,14 @@ class AnomaliModel extends Model
             $joinKatAnomali->where('anomali.id_kategori_anomali', $idKat);
         }
 
-        $joinKatAnomali->where('id_kegiatan', $idKegiatan);
+        $joinKatAnomali->where('kategori_anomali.id_kegiatan', $idKegiatan);
         $hasil = $joinKatAnomali->findAll();
         return ($hasil);
     }
     public function jumlahProses($jenis = "all", $idKat = null, $idWilayah = null)
     {
         $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
+        $idKegiatan = session('aktif_kegiatan');
 
         $joinKatAnomali->select('COUNT(*) as jumlah_total')
             ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi");
@@ -299,6 +271,10 @@ class AnomaliModel extends Model
         if ($idWilayah) {
             $joinKatAnomali->whereIn('kategori_anomali.level_anomali', ['1300', $idWilayah]);
         }
+        if ($idKegiatan) {
+            $joinKatAnomali->where('kategori_anomali.id_kegiatan', $idKegiatan);
+        }
+
         $hasil = $joinKatAnomali->findAll();
 
         return ($hasil);
@@ -394,6 +370,7 @@ class AnomaliModel extends Model
         return $result;
     }
 
+    // mendapatkan anomlai berdasarkan assigment
     public function getAnomaliByAssigment($kd_assigment)
     {
         $query = $this

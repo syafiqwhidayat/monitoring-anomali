@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const sls = this.getAttribute("data-sls");
       const em_ppl = this.getAttribute("data-ppl");
       const em_pml = this.getAttribute("data-pml");
+      const em_kos = this.getAttribute("data-kos");
       const id = this.getAttribute("data-id");
 
       // Masukkan ke dalam modal rincian wilayah
@@ -22,6 +23,7 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("select-id").value = id;
       const selectPPL = document.getElementById("select-ppl");
       const selectPML = document.getElementById("select-pml");
+      const selectKOS = document.getElementById("select-kos");
 
       if (selectPPL && selectPPL.tomselect) {
         if (em_ppl) {
@@ -35,6 +37,13 @@ document.addEventListener("DOMContentLoaded", function () {
           selectPML.tomselect.setValue(em_pml);
         } else {
           selectPML.tomselect.clear();
+        }
+      }
+      if (selectKOS && selectKOS.tomselect) {
+        if (em_kos) {
+          selectKOS.tomselect.setValue(em_kos);
+        } else {
+          selectKOS.tomselect.clear();
         }
       }
     });

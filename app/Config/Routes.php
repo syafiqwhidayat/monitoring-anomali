@@ -27,8 +27,13 @@ $routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator,mit
     $routes->get('listDetil', 'Anom::listDetil'); //untuk memunculkan part accordion
     $routes->post('updateKonfirmasi', 'Anom::updateKonfirmasi'); //untuk update anomali
     $routes->get('listEdit', 'Anom::list/1'); //memunculkan anomali yg mau di edit
+    $routes->get('konfir-fasih', 'Anom::konfirFasih'); //memunculkan anomali yg mau di edit
 });
-$routes->get('/anomali/konfirmasiBulk', 'Anom::konfirmasiBulk', ['filter' => 'activeRole:superadmin,admin,operator']); //konfirmasi bulk anomali
+$routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
+    $routes->get('konfirmasiBulk', 'Anom::konfirFasih'); //untuk konfirmasi secara bulk
+    $routes->get('rekap-anomali', 'Anom::rekapAnomali'); //untuk konfirmasi secara bulk
+
+});
 
 $routes->group('manajemen-anomali', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
     $routes->get('list', 'ManajAnom::manajemenList');  //daftar kategori anomali

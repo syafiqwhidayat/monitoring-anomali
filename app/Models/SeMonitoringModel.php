@@ -109,7 +109,7 @@ class SeMonitoringModel extends Model
             ->select("SUM(jml_ed) as jumlah_ed")
             ->select("SUM(jml_submit + tbh_submit) as jumlah_submit")
             ->select("SUM(jml_open + tbh_open + jml_submit + tbh_submit) as jumlah_total")
-            ->groupBy("created_at");
+            ->groupBy("tanggal");
         $hasil = $hasil->findAll();
         return ($hasil);
     }

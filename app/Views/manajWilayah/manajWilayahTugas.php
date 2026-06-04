@@ -101,6 +101,7 @@
                             <th>Kode & Nama SLS</th>
                             <th>Petugas PPL</th>
                             <th>Petugas PML</th>
+                            <th>Petugas Koseka</th>
                             <th class="w-1">Aksi</th>
                         </tr>
                     </thead>
@@ -143,12 +144,16 @@
                                     <div class="small"><?= $wt['nm_sls']  ?></div>
                                 </td>
                                 <td>
-                                    <div class="font-weight-medium"><?= $wt['nm_ppl'] ?></div>
-                                    <div class="small text-muted"><?= $wt['em_ppl']  ?></div>
+                                    <div class="font-weight-medium"><?= $wt['nm_ppl'] ?? '-' ?></div>
+                                    <div class="small text-muted"><?= $wt['em_ppl'] ?? '-'  ?></div>
                                 </td>
                                 <td>
-                                    <div class="font-weight-medium"><?= $wt['nm_pml'] ?></div>
-                                    <div class="small text-muted"><?= $wt['em_pml']  ?></div>
+                                    <div class="font-weight-medium"><?= $wt['nm_pml'] ?? '-' ?></div>
+                                    <div class="small text-muted"><?= $wt['em_pml'] ?? '-'  ?></div>
+                                </td>
+                                <td>
+                                    <div class="font-weight-medium"><?= $wt['nm_kos'] ?? '-' ?></div>
+                                    <div class="small text-muted"><?= $wt['em_kos'] ?? '-'  ?></div>
                                 </td>
                                 <td>
                                     <button type="button"
@@ -161,7 +166,8 @@
                                         data-desa="<?= $wt['kd_des'] ?> - <?= $wt['nm_des'] ?>"
                                         data-sls="<?= $wt['kd_sls'] . $wt['kd_subsls'] ?> - <?= $wt['nm_sls'] ?>"
                                         data-ppl="<?= $wt['id_ppl'] ?>"
-                                        data-pml="<?= $wt['id_pml'] ?>">
+                                        data-pml="<?= $wt['id_pml'] ?>"
+                                        data-kos="<?= $wt['id_kos'] ?>">
                                         Edit Petugas
                                     </button>
                                 </td>
@@ -221,6 +227,15 @@
                     <div class="mb-3">
                         <label class="form-label">Petugas PML</label>
                         <select name="sel-pml" id="select-pml" class="form-select">
+                            <option value=""></option>
+                            <?php foreach ($list_user as $m): ?>
+                                <option value="<?= $m['id'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Petugas Koseka</label>
+                        <select name="sel-kos" id="select-kos" class="form-select">
                             <option value=""></option>
                             <?php foreach ($list_user as $m): ?>
                                 <option value="<?= $m['id'] ?>"><?= $m['nama'] ?> (<?= $m['email'] ?>)</option>

@@ -25,36 +25,36 @@ class Monitoring extends BaseController
             "title" => "Monitoring Semua Anomali",
             "dataCharJmlAnom" => $this->dataChartJmlAnom(),
             "dataHead" => [
-                'total seluruh' => $dataHead[0]['jumlah_total'],
-                'total public' => $dataHead[0]['jumlah_public'],
-                'total non public' => $dataHead[0]['jumlah_non_public']
+                'total seluruh' => $dataHead[0]['jumlah_total'] ?? 0,
+                'total public' => $dataHead[0]['jumlah_public'] ?? 0,
+                'total non public' => $dataHead[0]['jumlah_non_public'] ?? 0
             ],
             "dataProses" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode($this->dataChartProses()),
+                'nilai' => json_encode($this->dataChartProses('proses') ?? [0, 0]),
             ],
             "dataProsesPublic" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode($this->dataChartProses('public')),
+                'nilai' => json_encode($this->dataChartProses('public') ?? [0, 0]),
             ],
             "dataProsesNonPublic" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode($this->dataChartProses('non_public')),
+                'nilai' => json_encode($this->dataChartProses('non_public') ?? [0, 0]),
             ],
             "dataProsesFlag1" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode($this->dataChartProses('flag1')),
+                'nilai' => json_encode($this->dataChartProses('flag1') ?? [0, 0]),
             ],
             "dataProsesFlag2" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode($this->dataChartProses('flag2')),
+                'nilai' => json_encode($this->dataChartProses('flag2') ?? [0, 0]),
             ],
             "dataProsesFlag3" => [
                 'label' => json_encode(['Selesai', 'Belum']),
-                'nilai' => json_encode($this->dataChartProses('flag3')),
+                'nilai' => json_encode($this->dataChartProses('flag3') ?? [0, 0]),
             ],
             "dataTimeline" => $this->dataTimeline(),
-            "dataTop5" => $this->anomaliModel->getTop5()
+            "dataTop5" => $this->anomaliModel->getTop5() ?? null
         ];
         return view('monitoring/monitoringAll', $data);
     }
@@ -316,15 +316,15 @@ class Monitoring extends BaseController
 
 
         $data = [
-            'labels' => json_encode($tanggalGabung),
+            'labels' => json_encode($tanggalGabung ?? null),
             'datasets' => [
                 [
                     'label' => json_encode(['Total Anomali']),
-                    'nilai' => json_encode($dataChartCreated)
+                    'nilai' => json_encode($dataChartCreated ?? 0)
                 ],
                 [
                     'label' => json_encode(['Progres Anomali']),
-                    'nilai' => json_encode($dataChartUpdated)
+                    'nilai' => json_encode($dataChartUpdated ?? 0)
                 ],
             ]
         ];

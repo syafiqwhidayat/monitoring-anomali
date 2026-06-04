@@ -169,6 +169,16 @@ class ProsesWilayah extends BaseCommand
                     'wilayah_kerja' => $wilayahKerja, // Kolom C
                     'username'      => $this->generateUniqueUsername($row[6] ?? ''), // Jalankan fungsi untuk generate username
                 ];
+                $dataUserKos = [];
+
+                if ($row[8]) {
+                    $dataUserKos = [
+                        'email'         => strtolower($row[8] ?? ''), // Kolom H
+                        'name'         =>  ucwords($row[8] ?? ''), // Kolom H
+                        'wilayah_kerja' => $wilayahKerja, // Kolom C
+                        'username'      => $this->generateUniqueUsername($row[8] ?? ''), // Jalankan fungsi untuk generate username
+                    ];
+                }
 
                 $ruleEmail = [
                     'email' => "required|valid_email",
@@ -196,6 +206,17 @@ class ProsesWilayah extends BaseCommand
                         'pesan' => $validation->getErrors()
                     ];
                     continue;
+                }
+                if (!$dataUserKos) {
+                    if (!$validation->run($dataUserKos)) {
+                        $gagal++;
+                        $errorDetails[] = [
+                            'baris' => $i + 1,
+                            'data'  => $dataUserKos['name'] ?? 'Baris ' . ($i + 1),
+                            'pesan' => $validation->getErrors()
+                        ];
+                        continue;
+                    }
                 }
 
                 // mengkalkulasi id wilayah
@@ -308,17 +329,60 @@ class ProsesWilayah extends BaseCommand
                     }
                 }
 
+                if (isset($dataUserKos)) {
+                    if (!isset($this->mapUsers[$dataUserKos['email']])) {
+                        $userPML = new \App\Entities\User($dataUserKos);
+                        $userPML->password = 'password123'; // Password default
+                        if ($userModel->save($userPML)) {
+                            CLI::write('berhasil dijalankan');
+                            $userPML->id = $userModel->getInsertID();
+                            if (str_contains($dataUserKos['email'], '@bps.go.id')) {
+                                $userPML->addGroup('operator');
+                            }
+                            // setiap organik punya role mitra
+                            $userPML->addGroup('mitra');
+                            $this->mapUsers[$dataUserKos['email']]['id'] = $userPML->id;
+                            $this->mapUsers[$dataUserKos['email']]['wilayah_kerja'] = $dataUserKos['wilayah_kerja'];
+                            $this->mapUserName[$dataUserKos['username']] = $userPML->id;
+                        } else {
+                            CLI::write('gagal ini dijalankan');
+                            $gagal++;
+                            $errorDetails[] = [
+                                'baris' => $i + 1,
+                                'data'  => $dataUserKos['email'],
+                                'pesan' => $userModel->errors()
+                            ];
+                            continue;
+                        }
+                    } else {
+                        // jika user ditemukan
+                        // cek apakah user berada pada wilayah_kerja yang sesuai?
+                        if ($this->mapUsers[$dataUserKos['email']]['wilayah_kerja'] !== $wilayahKerja) {
+                            $gagal++;
+                            $errorDetails[] = [
+                                'baris' => $i + 1,
+                                'data'  => $dataUserKos['email'],
+                                'pesan' => "User tidak berada di wilayah kerja $wilayahKerja"
+                            ];
+                            continue;
+                        }
+                    }
+                }
+
                 $dataWilayahTugas = [
                     // 'id_wilayah' => $idWilayah,
                     // 'id_kegiatan' => $idKegiatan,
                     'id_ppl' => $this->mapUsers[$dataUserPPL['email']]['id'],
                     'id_pml' => $this->mapUsers[$dataUserPML['email']]['id'],
                 ];
+                if (isset($dataUserKos)) {
+                    $dataWilayahTugas['id_koseka'] = $this->mapUsers[$dataUserKos['email']]['id'];
+                } else {
+                    $dataWilayahTugas['id_koseka'] = null;
+                }
 
                 if (isset($mapWilayahTugas[$idWilayah])) {
                     // Jika wilayah tugas sudah ada, lakukan Update berdasarkan ID primer yang ditemukan
-                    $dad = $mapWilayahTugas[$idWilayah];
-                    CLI::write($dad);
                     if (!$wilayaTugasModel->update($mapWilayahTugas[$idWilayah], $dataWilayahTugas)) {
                         $gagal++;
                         $errorDetails[] = [

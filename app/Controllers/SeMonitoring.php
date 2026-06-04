@@ -56,7 +56,7 @@ class SeMonitoring extends BaseController
                 'total_NED' => $sumbitNED
             ],
             "dataProgresNgibar" => [
-                'label' => json_encode(['Ngibar/Mandiri', 'Submit Petugas', 'Open']),
+                'label' => json_encode(['Submit Tambahan', 'Submit Prelist', 'Open']),
                 'nilai' => json_encode([$ngibar, ($totalSubmit - $ngibar), $open]),
             ],
             "dataProgresFasih" => [
@@ -576,7 +576,7 @@ class SeMonitoring extends BaseController
 
     public function dataTimeline($id_kat = '')
     {
-        $hasil = $this->anomaliModel->jumlahByTanggal($id_kat);
+        // $hasil = $this->anomaliModel->jumlahByTanggal($id_kat);
         $hasil = $this->seMonitoringModel->jumlahByTanggal();
 
 
