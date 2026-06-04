@@ -11,40 +11,47 @@
 
     <!-- Pastikan style.css utama tetap ter-load -->
     <link href="<?= base_url('css/style.css'); ?>" rel="stylesheet">
-
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #f4f6fa;
             color: #1c2434;
+            -webkit-text-size-adjust: 100%;
         }
 
-        /* PEMETAAN WARNA UTAMA BERBASIS HIJAU TABLER */
         :root {
             --anomali-teal: var(--tblr-primary);
-            /* #1e7960 (Hijau Utama) */
+            /* #1e7960 */
             --anomali-teal-dark: #0f4e3e;
-            /* Hijau Gelap untuk Gradasi */
             --anomali-navy: var(--sidik-prm);
             /* #182433 */
             --anomali-orange: var(--oren-bps);
             /* #ee8911 */
-            --anomali-orange-hover: var(--oren-bps-hover);
         }
 
-        /* Navbar Menggunakan Warna Hijau Utama */
         .navbar-anomali {
             background-color: var(--anomali-teal);
             border-bottom: 3px solid var(--anomali-navy);
         }
 
-        /* Hero Section Berubah Menjadi Dominan Hijau Primary */
+        /* HERO SECTION RESPONSIVE */
         .hero-section {
             background: linear-gradient(135deg, var(--anomali-teal) 0%, var(--anomali-teal-dark) 100%);
             color: #ffffff;
-            padding: 5rem 0 6rem 0;
+            padding: 3.5rem 0 4.5rem 0;
+            /* Diperkecil sedikit untuk mobile */
             position: relative;
             overflow: hidden;
+            text-align: center;
+            /* Rata tengah di HP agar manis */
+        }
+
+        @media (min-width: 768px) {
+            .hero-section {
+                padding: 5rem 0 6rem 0;
+                text-align: left;
+                /* Kembali rata kiri di komputer */
+            }
         }
 
         .hero-section::after {
@@ -53,18 +60,32 @@
             bottom: 0;
             left: 0;
             right: 0;
-            height: 40px;
+            height: 30px;
             background: #f4f6fa;
             clip-path: polygon(0 100%, 100% 100%, 100% 0);
         }
 
-        .search-box-container {
-            margin-top: -3.5rem;
-            position: relative;
-            z-index: 10;
+        /* Ukuran font dinamis untuk judul utama */
+        .hero-title {
+            font-size: 1.75rem;
+            font-weight: 800;
         }
 
-        /* Card Radius Mengikuti Aturan 12px */
+        @media (min-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* SEARCH BOX RESPONSIVE: Di HP menumpuk vertikal, di PC berjejer kesamping */
+        .search-box-container {
+            margin-top: -2.5rem;
+            position: relative;
+            z-index: 10;
+            padding: 0 15px;
+            /* Margin aman kanan kiri di HP */
+        }
+
         .search-card {
             border: none;
             border-radius: 12px !important;
@@ -73,38 +94,41 @@
 
         .form-control-anomali {
             border: 2px solid #ced4da;
-            border-radius: 8px 0 0 8px;
-            padding: 1rem 1.5rem;
-            font-size: 1.05rem;
+            border-radius: 8px !important;
+            /* Membulat di semua sudut untuk mobile */
+            padding: 0.75rem 1.2rem;
+            font-size: 1rem;
         }
 
-        .form-control-anomali:focus {
-            border-color: var(--anomali-teal);
-            box-shadow: none;
-        }
-
-        /* Tombol Cari Menggunakan Warna Navy Sidik Prm */
         .btn-anomali-search {
             background-color: var(--anomali-navy);
             color: #ffffff;
             font-weight: 700;
             border: none;
-            border-radius: 0 8px 8px 0;
-            padding: 0 2rem;
+            border-radius: 8px !important;
+            /* Membulat di semua sudut untuk mobile */
+            padding: 0.75rem 2rem;
             transition: all 0.2s ease;
         }
 
-        .btn-anomali-search:hover {
-            background-color: #2c3e50;
-            color: #ffffff;
+        @media (min-width: 576px) {
+
+            /* Kembalikan struktur gandeng (input group) jika layar lebar */
+            .form-control-anomali {
+                border-radius: 8px 0 0 8px !important;
+            }
+
+            .btn-anomali-search {
+                border-radius: 0 8px 8px 0 !important;
+            }
         }
 
-        /* Card FAQ */
+        /* CARD FAQ RESPONSIVE */
         .faq-card {
             border: none;
             border-radius: 12px !important;
             background: #ffffff;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             border-left: 5px solid #ced4da;
             overflow: hidden;
         }
@@ -115,69 +139,117 @@
             border-left-color: var(--anomali-teal);
         }
 
-        /* Badge Kategori Menggunakan Aksen Oranye BPS Agar Kontras */
         .badge-kategori {
             background-color: #fff9f2;
             color: var(--anomali-orange);
             font-weight: 700;
-            font-size: 0.75rem;
-            padding: 0.4rem 0.8rem;
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
             border-radius: 6px;
+        }
+
+        /* Flex wrap untuk tombol di bawah card biar tidak tabrakan di layar super kecil */
+        .card-footer-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        @media (min-width: 375px) {
+            .card-footer-actions {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                gap: 0;
+            }
         }
 
         .btn-action-view {
             color: var(--anomali-teal);
             font-weight: 700;
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
-        .btn-action-view:hover {
-            color: var(--anomali-teal-dark);
+        .btn-action-share {
+            background: none;
+            border: none;
+            color: #6c757d;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 0;
         }
 
-        /* Style Toast Notifikasi Kiri Bawah Sesuai Variabel Sidik Anomali */
+        /* Toast Notifikasi Kiri Bawah Mobile Friendly */
         .toast-anomali {
             position: fixed;
-            bottom: 20px;
-            left: -350px;
-            /* Sembunyi di luar layar kiri secara default */
+            bottom: 15px;
+            left: -100%;
+            right: 15px;
+            /* Tambahan limit kanan agar text otomatis wrap di layar HP */
+            max-width: 320px;
             background-color: var(--anomali-navy);
             color: #ffffff;
-            padding: 12px 20px;
+            padding: 12px 15px;
             border-radius: 8px;
             border-left: 4px solid var(--anomali-teal);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 0.85rem;
             z-index: 9999;
             transition: left 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .toast-anomali.show {
-            left: 20px;
-            /* Muncul bergeser ke kanan masuk ke dalam layar */
+            left: 15px;
+        }
+
+        /* Responsivitas komponen kapsul navbar */
+        @media (min-width: 768px) {
+            #capsule-logo {
+                height: 45px !important;
+                min-width: 80px !important;
+            }
+
+            #capsule-logo img {
+                max-height: 35px !important;
+            }
+        }
+
+        /* Mengamankan teks panjang agar tidak merusak layout */
+        .text-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
     </style>
 </head>
 
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-anomali shadow-sm py-3">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center fw-bold text-uppercase tracking-wider" href="<?= base_url('faq'); ?>">
-                <!-- WADAH KAPSUL PUTIH MEMANJANG AGAR LOGO LEBIH STANDOUT DAN PROPORSIONAL -->
-                <div class="bg-white d-flex align-items-center justify-content-center rounded-pill shadow-sm px-3 py-1 me-2" style="height: 45px; min-width: 80px;">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-anomali shadow-sm py-2 py-md-3">
+        <div class="container d-flex align-items-center justify-content-between flex-nowrap">
+
+            <!-- SISI KIRI: BRANDING (LOGO + TEKS) -->
+            <a class="navbar-brand d-flex align-items-center fw-bold text-uppercase tracking-wider me-2" href="<?= base_url('faq'); ?>" style="min-width: 0;">
+                <!-- Wadah Kapsul: Mengecil di HP (height 38px), Normal di Laptop (height 45px) -->
+                <div class="bg-white d-flex align-items-center justify-content-center rounded-pill shadow-sm px-2 px-md-3 py-1 me-2"
+                    style="height: 38px; min-width: 65px; transition: all 0.2s;" id="capsule-logo">
                     <img src="<?= base_url('img/logo.png'); ?>"
                         alt="Logo Sidik Anomali"
-                        style="max-height: 35px; width: auto; object-fit: contain;"
+                        style="max-height: 28px; width: auto; object-fit: contain;"
                         onerror="this.src='https://placehold.co/60x30/ffffff/1e7960?text=BPS'">
                 </div>
-                <span class="text-uppercase text-white" style="font-size: 1.5rem;">FASIH FAQ</span>
+                <!-- Teks Brand: Responsif (1.1rem di HP, 1.5rem di Laptop) -->
+                <span class="text-uppercase text-white text-truncate fw-bold" style="font-size: calc(1.1rem + 0.5vw); letter-spacing: 0.5px;">FASIH FAQ</span>
             </a>
-            <a href="<?= base_url('login'); ?>" class="btn btn-outline-light btn-sm fw-bold px-3 rounded-pill"><i class="fas fa-sign-in-alt me-1"></i> Login</a>
+
+            <!-- SISI KANAN: TOMBOL LOGIN (DIPAKSA TIDAK BOLEH POTONG BARIS) -->
+            <div class="flex-shrink-0">
+                <a href="<?= base_url('login'); ?>" class="btn btn-outline-light btn-sm fw-bold px-2 px-md-3 rounded-pill text-nowrap" style="font-size: 0.8rem; @media (min-width: 768px) { font-size: 0.875rem; }">
+                    <i class="fas fa-sign-in-alt me-1"></i> Login
+                </a>
+            </div>
+
         </div>
     </nav>
 
@@ -189,18 +261,16 @@
         </div>
     </div>
 
-    <div class="container search-box-container" style="max-width: 750px;">
-        <div class="card search-card p-2 bg-white">
-            <form method="GET" action="<?= base_url('faq'); ?>">
-                <div class="input-group">
-                    <input type="text" name="cari" class="form-control form-control-anomali"
-                        placeholder="Ketik kata kunci kendala... (misal: eror 403, lokasi ganda, gagal kirim)"
-                        value="<?= esc($filterCari); ?>" autocomplete="off" required>
-                    <button class="btn btn-anomali-search shadow-sm" type="submit">
-                        <i class="fas fa-search me-1"></i> Cari Solusi
-                    </button>
-                </div>
-            </form>
+    <div class="search-box-container container">
+        <div class="card search-card shadow-sm">
+            <div class="card-body p-3 p-md-4">
+                <form method="GET" action="<?= base_url('faq'); ?>">
+                    <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-0">
+                        <input type="text" name="cari" class="form-control form-control-anomali" placeholder="Ketik kata kunci kendala..." value="<?= esc($filterCari); ?>">
+                        <button class="btn btn-anomali-search" type="submit"><i class="fas fa-search me-1"></i> Cari</button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         <?php if (!empty($filterCari)): ?>

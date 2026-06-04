@@ -41,54 +41,135 @@
             overflow: hidden;
         }
 
-        /* Card Header Berubah Menjadi Gradasi Hijau Sidik Anomali */
+        /* CARD HEADER RESPONSIVE PADDING */
         .card-header-premium {
             background: linear-gradient(135deg, var(--anomali-teal) 0%, var(--anomali-teal-dark) 100%);
             color: #ffffff;
-            padding: 2.5rem 2rem;
+            padding: 1.5rem 1.25rem;
+            /* Padding tipis di HP */
             border-bottom: none;
-            border-top-left-radius: 12px !important;
-            border-top-right-radius: 12px !important;
         }
 
-        /* Box Temuan Masalah Anomali (Aksen Oranye) */
+        @media (min-width: 768px) {
+            .card-header-premium {
+                padding: 2.5rem 2rem;
+                /* Padding tebal di Laptop */
+            }
+        }
+
+        .detail-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            line-height: 1.4;
+        }
+
+        @media (min-width: 768px) {
+            .detail-title {
+                font-size: 2rem;
+            }
+        }
+
+        /* BOX KONTEN UNTUK MASALAH & SOLUSI */
         .box-container-masalah {
             background-color: #fff9f2;
-            border-left: 5px solid var(--anomali-orange);
+            border-left: 4px solid var(--anomali-orange);
             border-radius: 8px;
-            padding: 1.5rem;
+            padding: 1.25rem 1rem;
         }
 
-        /* Box Solusi Bersih (Aksen Hijau Tipis) */
         .box-container-solusi {
             background-color: rgba(6, 78, 59, 0.04);
-            border-left: 5px solid var(--anomali-teal);
+            border-left: 4px solid var(--anomali-teal);
             border-radius: 8px;
-            padding: 1.5rem;
+            padding: 1.25rem 1rem;
+        }
+
+        @media (min-width: 768px) {
+
+            .box-container-masalah,
+            .box-container-solusi {
+                padding: 1.5rem;
+                /* Ruang lebih longgar di layar besar */
+            }
         }
 
         .box-header-title {
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 0.95rem;
             margin-bottom: 0.75rem;
             display: flex;
             align-items: center;
+        }
+
+        .content-text {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            word-wrap: break-word;
+            /* Menghindari text jebol keluar layar HP */
+        }
+
+        @media (min-width: 768px) {
+            .content-text {
+                font-size: 1.05rem;
+            }
+        }
+
+        /* GAMBAR RESPONSIF DI HP AGAR TIDAK OVERFLOW */
+        .img-panduan-responsive {
+            max-width: 100%;
+            height: auto;
+            max-height: 250px;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+        @media (min-width: 768px) {
+            .img-panduan-responsive {
+                max-height: 450px;
+                /* Di laptop gambar boleh lebih besar */
+            }
+
+            .animate-capsule {
+                height: 45px !important;
+                min-width: 80px !important;
+            }
+
+            .animate-capsule img {
+                max-height: 35px !important;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-anomali shadow-sm py-3">
-        <div class="container">
-            <div class="bg-white d-flex align-items-center justify-content-center rounded-pill shadow-sm px-3 py-1 me-2" style="height: 45px; min-width: 80px;">
-                <img src="<?= base_url('img/logo.png'); ?>"
-                    alt="Logo Sidik Anomali"
-                    style="max-height: 35px; width: auto; object-fit: contain;"
-                    onerror="this.src='https://placehold.co/60x30/ffffff/1e7960?text=BPS'">
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-anomali shadow-sm py-2 py-md-3">
+        <div class="container d-flex align-items-center justify-content-between flex-nowrap">
+
+            <!-- SISI KIRI: BRANDING (SEKARANG BISA DIKLIK UNTUK KEMBALI KE BERANDA FAQ) -->
+            <a class="navbar-brand d-flex align-items-center fw-bold text-uppercase tracking-wider me-2" href="<?= base_url('faq'); ?>" style="min-width: 0;">
+                <!-- Wadah Kapsul: Otomatis mengecil di HP -->
+                <div class="bg-white d-flex align-items-center justify-content-center rounded-pill shadow-sm px-2 px-md-3 py-1 me-2 animate-capsule"
+                    style="height: 38px; min-width: 65px; transition: all 0.2s;">
+                    <img src="<?= base_url('img/logo.png'); ?>"
+                        alt="Logo Sidik Anomali"
+                        style="max-height: 28px; width: auto; object-fit: contain;"
+                        onerror="this.src='https://placehold.co/60x30/ffffff/1e7960?text=BPS'">
+                </div>
+                <!-- Teks Brand: Ukuran adaptif agar tidak makan tempat di mobile -->
+                <span class="text-uppercase text-white text-truncate fw-bold" style="font-size: calc(1.1rem + 0.5vw); letter-spacing: 0.5px;">FASIH FAQ</span>
+            </a>
+
+            <!-- SISI KANAN: TOMBOL CARI LAINNYA (DENGAN UTILITY RESPONSIVE) -->
+            <div class="flex-shrink-0">
+                <a href="<?= base_url('faq'); ?>" class="btn btn-outline-light btn-sm fw-bold px-2 px-md-3 rounded-pill text-nowrap">
+                    <i class="fas fa-search me-1"></i>
+                    <!-- Di HP hanya muncul 'Cari', di Tablet/PC muncul 'Cari Lainnya' -->
+                    <span class="d-none d-sm-inline">Cari Lainnya</span>
+                    <span class="d-inline d-sm-none">Cari</span>
+                </a>
             </div>
-            <span class="text-uppercase text-white" style="font-size: 1.5rem;">FASIH FAQ</span>
-            <a href="<?= base_url('faq'); ?>" class="btn btn-sm btn-outline-light rounded-pill px-3"><i class="fas fa-search me-1"></i> Cari Lainnya</a>
+
         </div>
     </nav>
 

@@ -77,7 +77,15 @@ class Filters extends BaseFilters
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
-            'session' => ['except' => ['login*', 'register*', 'auth/a/*']],
+            'session' => [
+                'except' => [
+                    'login*',
+                    'register*',
+                    'auth/a/*',
+                    // Tambahkan rute publik Anda di bawah ini:
+                    'faq*',         // Contoh link monitoring tanpa login
+                ]
+            ],
         ],
         'after' => [
             // 'honeypot',
