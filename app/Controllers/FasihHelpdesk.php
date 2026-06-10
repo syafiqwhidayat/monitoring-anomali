@@ -11,7 +11,8 @@ class FasihHelpdesk extends BaseController
     public function __construct()
     {
         $this->db = \Config\Database::connect();
-        // Memastikan folder upload otomatis terbentuk dengan aman jika belum ada
+
+        // Memastikan folder upload otomatis terbentuk dengan aman di dalam folder public/
         if (!is_dir(FCPATH . 'uploads/helpdesk/diskusi')) {
             mkdir(FCPATH . 'uploads/helpdesk/diskusi', 0777, true);
         }
@@ -24,7 +25,7 @@ class FasihHelpdesk extends BaseController
     // JALUR BACK-END INTERNAL (MENGGUNAKAN LAYOUT DASHBOARD NORMAL)
     // ====================================================================
 
-    // A. Manajemen & Daftar FAQ Master Internal
+    // A. Manajemen & Daftar FAQ Master Internal (Sudah Menggunakan Fulltext Search Token)
     public function index()
     {
         $cari = $this->request->getGet('cari') ?? '';
@@ -33,11 +34,21 @@ class FasihHelpdesk extends BaseController
             ->join('users u', 'u.id = kb.created_by', 'left');
 
         if (!empty($cari)) {
-            $builder->groupStart()
-                ->like('kb.judul', $cari)
-                ->orLike('kb.masalah', $cari)
-                ->orLike('kb.solusi', $cari)
-                ->groupEnd();
+            // Pecah kata kunci menjadi token untuk FULLTEXT search
+            $tokens = explode(' ', preg_replace('/\s+/', ' ', trim($cari)));
+            $searchTerms = '';
+            foreach ($tokens as $token) {
+                if (strlen($token) >= 2) {
+                    $searchTerms .= '+' . $token . '* ';
+                }
+            }
+            $searchTerms = trim($searchTerms);
+
+            if (!empty($searchTerms)) {
+                $escapedTerms = $this->db->escape($searchTerms);
+                // Menggunakan MATCH AGAINST yang sudah di-escape agar aman di MariaDB/MySQL
+                $builder->where("MATCH(kb.judul, kb.masalah, kb.solusi) AGAINST({$escapedTerms} IN BOOLEAN MODE)");
+            }
         }
 
         $data['knowledges'] = $builder->orderBy('kb.date_updated', 'DESC')->get()->getResultArray();
@@ -50,28 +61,38 @@ class FasihHelpdesk extends BaseController
     // B. Simpan FAQ Baru Secara Manual oleh Admin
     public function storeKnowledge()
     {
+        $fileFoto = $this->request->getFile('foto_knowledge');
+        $namaFotoDb = null;
+
+        if ($fileFoto && $fileFoto->isValid() && !$fileFoto->hasMoved()) {
+            $namaFotoDb = $fileFoto->getRandomName();
+            // FCPATH langsung merujuk ke public/, ditambahkan separator yang aman
+            $fileFoto->move(FCPATH . 'uploads/helpdesk/knowledge', $namaFotoDb);
+        }
+
         $this->db->table('knowledge_base')->insert([
-            'judul'      => $this->request->getPost('judul'),
-            'kategori'   => $this->request->getPost('kategori'),
-            'masalah'    => $this->request->getPost('masalah'),
-            'solusi'     => $this->request->getPost('solusi'),
-            'created_by' => session()->get('id_user') ?? 1 // Sesuaikan sistem login session Anda
+            'judul'        => $this->request->getPost('judul'),
+            'kategori'     => $this->request->getPost('kategori'),
+            'masalah'      => $this->request->getPost('masalah'),
+            'solusi'       => $this->request->getPost('solusi'),
+            'foto'         => $namaFotoDb,
+            'created_by'   => session()->get('id_user') ?? 1,
+            'date_created' => date('Y-m-d H:i:s'),
+            'date_updated' => date('Y-m-d H:i:s'),
         ]);
 
         return redirect()->to('/fasihhelpdesk')->with('success', 'FAQ Master baru berhasil diterbitkan.');
     }
 
-    // C. Edit Data FAQ Master
+    // C. Edit Data FAQ Master (Murni PHP pendukung tanpa JS preview)
     public function updateKnowledge($id = null)
     {
         if (session()->get('role') === 'mitra') return redirect()->back();
 
-        // Jika $id di URL kosong, ambil alternatif dari input post hidden
         if ($id === null) {
             $id = $this->request->getPost('id');
         }
 
-        // Ambil data lama untuk cek foto
         $dataLama = $this->db->table('knowledge_base')->where('id', $id)->get()->getRowArray();
         if (!$dataLama) {
             return redirect()->back()->with('error', 'Data FAQ tidak ditemukan.');
@@ -80,22 +101,19 @@ class FasihHelpdesk extends BaseController
         $fileFoto = $this->request->getFile('foto_knowledge');
         $namaFotoUpdate = $dataLama['foto'];
 
-        // Jika admin upload foto baru
         if ($fileFoto && $fileFoto->isValid() && !$fileFoto->hasMoved()) {
-            // Hapus file fisik foto lama di server
+            // Hapus file fisik foto lama di server jika ada
             if (!empty($dataLama['foto'])) {
-                $pathFotoLama = ROOTPATH . 'public/uploads/helpdesk/knowledge/' . $dataLama['foto'];
+                $pathFotoLama = FCPATH . 'uploads/helpdesk/knowledge/' . $dataLama['foto'];
                 if (file_exists($pathFotoLama)) {
                     unlink($pathFotoLama);
                 }
             }
 
-            // Rename acak gambar baru
             $namaFotoUpdate = $fileFoto->getRandomName();
-            $fileFoto->move(ROOTPATH . 'public/uploads/helpdesk/knowledge', $namaFotoUpdate);
+            $fileFoto->move(FCPATH . 'uploads/helpdesk/knowledge', $namaFotoUpdate);
         }
 
-        // Update DB
         $this->db->table('knowledge_base')->where('id', $id)->update([
             'judul'        => $this->request->getPost('judul'),
             'kategori'     => $this->request->getPost('kategori'),
@@ -115,7 +133,6 @@ class FasihHelpdesk extends BaseController
             ->select('l.*, u.username as nama_pelapor')
             ->join('users u', 'u.id = l.id_user', 'left');
 
-        // Jika akun login bertipe mitra, batasi agar hanya bisa melihat laporannya sendiri
         if (session()->get('role') === 'mitra') {
             $builder->where('l.id_user', session()->get('id_user'));
         }
@@ -133,7 +150,7 @@ class FasihHelpdesk extends BaseController
 
         if ($fileFoto && $fileFoto->isValid() && !$fileFoto->hasMoved()) {
             $namaFoto = $fileFoto->getRandomName();
-            $fileFoto->move(ROOTPATH . 'public/uploads/helpdesk/diskusi', $namaFoto);
+            $fileFoto->move(FCPATH . 'uploads/helpdesk/diskusi', $namaFoto);
         }
 
         $this->db->table('laporan_kendala')->insert([
@@ -142,7 +159,9 @@ class FasihHelpdesk extends BaseController
             'deskripsi'     => $this->request->getPost('deskripsi'),
             'id_wilayah'    => session()->get('id_wilayah') ?? '1311',
             'foto'          => $namaFoto,
-            'status'        => 'open'
+            'status'        => 'open',
+            'date_created'  => date('Y-m-d H:i:s'),
+            'date_updated'  => date('Y-m-d H:i:s')
         ]);
 
         return redirect()->to('/fasihhelpdesk/listLaporan')->with('success', 'Aduan kendala berhasil dikirim ke Admin.');
@@ -167,14 +186,13 @@ class FasihHelpdesk extends BaseController
         return view('helpdesk/v_laporan_detail', $data);
     }
 
-    // G. Kirim Balasan Chat Obrolan (Otomatis Menyalin Konten Teks Jika Tautkan FAQ)
+    // G. Kirim Balasan Chat Obrolan
     public function balasDiskusi($idLaporan)
     {
         $pesan = $this->request->getPost('pesan');
         $idKnowledge = $this->request->getPost('id_knowledge_terkait');
         $fileFoto = $this->request->getFile('foto_balasan');
 
-        // Jika Admin membalas sembari memilih template FAQ rujukan, salin isinya ke dalam chat
         if (!empty($idKnowledge)) {
             $kb = $this->db->table('knowledge_base')->where('id', $idKnowledge)->get()->getRowArray();
             if ($kb) {
@@ -186,16 +204,19 @@ class FasihHelpdesk extends BaseController
         $namaFoto = null;
         if ($fileFoto && $fileFoto->isValid() && !$fileFoto->hasMoved()) {
             $namaFoto = $fileFoto->getRandomName();
-            $fileFoto->move(ROOTPATH . 'public/uploads/helpdesk/diskusi', $namaFoto);
+            $fileFoto->move(FCPATH . 'uploads/helpdesk/diskusi', $namaFoto);
         }
 
         $this->db->transStart();
         $this->db->table('laporan_diskusi')->insert([
-            'id_laporan' => $idLaporan,
-            'id_user'    => session()->get('id_user') ?? 1,
-            'pesan'      => $pesan,
-            'foto'       => $namaFoto
+            'id_laporan'   => $idLaporan,
+            'id_user'      => session()->get('id_user') ?? 1,
+            'pesan'        => $pesan,
+            'foto'         => $namaFoto,
+            'date_created' => date('Y-m-d H:i:s')
         ]);
+
+        $this->db->table('laporan_kendala')->where('id', $idLaporan)->update(['date_updated' => date('Y-m-d H:i:s')]);
 
         if (!empty($idKnowledge)) {
             $this->db->table('laporan_kendala')->where('id', $idLaporan)->update(['id_knowledge_terkait' => $idKnowledge]);
@@ -215,55 +236,63 @@ class FasihHelpdesk extends BaseController
         $fotoSumber = ($diskusiTerakhir && !empty($diskusiTerakhir['foto'])) ? $diskusiTerakhir['foto'] : $laporan['foto'];
         $fotoKnowledgeBaru = null;
 
-        // Proses Duplikasi Berkas ke Ruang Arsip Permanen (Knowledge Folder)
         if ($fotoSumber) {
-            $pathSumber = ROOTPATH . 'public/uploads/helpdesk/diskusi/' . $fotoSumber;
+            // Perbaikan path: pastikan folder diskusi dan knowledge sinkron di public/
+            $pathSumber = FCPATH . 'uploads/helpdesk/diskusi/' . $fotoSumber;
             if (file_exists($pathSumber)) {
                 $fotoKnowledgeBaru = 'KB_DUPLIKAT_' . time() . '_' . $fotoSumber;
-                copy($pathSumber, ROOTPATH . 'public/uploads/helpdesk/knowledge/' . $fotoKnowledgeBaru);
+                copy($pathSumber, FCPATH . 'uploads/helpdesk/knowledge/' . $fotoKnowledgeBaru);
             }
         }
 
         $this->db->transStart();
-        // Daftarkan arsip terstruktur baru
         $this->db->table('knowledge_base')->insert([
-            'judul'      => '[Kasus Lapangan] ' . $laporan['judul_kendala'],
-            'kategori'   => 'Kasus Lapangan',
-            'masalah'    => $laporan['deskripsi'],
-            'solusi'     => $solusiTeks,
-            'foto'       => $fotoKnowledgeBaru,
-            'created_by' => session()->get('id_user') ?? 1
+            'judul'        => '[Kasus Lapangan] ' . $laporan['judul_kendala'],
+            'kategori'     => 'Kasus Lapangan',
+            'masalah'      => $laporan['deskripsi'],
+            'solusi'       => $solusiTeks,
+            'foto'         => $fotoKnowledgeBaru,
+            'created_by'   => session()->get('id_user') ?? 1,
+            'date_created' => date('Y-m-d H:i:s'),
+            'date_updated' => date('Y-m-d H:i:s')
         ]);
 
         $idKBBaru = $this->db->insertID();
 
-        // Kunci status laporan tiket jadi closed
         $this->db->table('laporan_kendala')->where('id', $idLaporan)->update([
-            'status' => 'closed',
-            'id_knowledge_terkait' => $idKBBaru
+            'status'               => 'closed',
+            'id_knowledge_terkait' => $idKBBaru,
+            'date_updated'         => date('Y-m-d H:i:s')
         ]);
         $this->db->transComplete();
 
         return redirect()->to('/fasihhelpdesk/detailLaporan/' . $idLaporan)->with('success', 'Laporan ditutup dan diduplikasi aman ke Master FAQ.');
     }
 
-
     // ====================================================================
     // JALUR LUAR LOGIN (VIEW PUBLIK MINIMALIS CLEAN - COCOK UNTUK SHARE WA)
     // ====================================================================
 
-    // A. Landing Page Utama FAQ Publik (Bisa Search Tanpa Login)
+    // A. Landing Page Utama FAQ Publik (Sudah Menggunakan Fulltext Search Token)
     public function publikIndex()
     {
         $cari = $this->request->getGet('cari') ?? '';
         $builder = $this->db->table('knowledge_base kb');
 
         if (!empty($cari)) {
-            $builder->groupStart()
-                ->like('kb.judul', $cari)
-                ->orLike('kb.masalah', $cari)
-                ->orLike('kb.solusi', $cari)
-                ->groupEnd();
+            $tokens = explode(' ', preg_replace('/\s+/', ' ', trim($cari)));
+            $searchTerms = '';
+            foreach ($tokens as $token) {
+                if (strlen($token) >= 2) {
+                    $searchTerms .= '+' . $token . '* ';
+                }
+            }
+            $searchTerms = trim($searchTerms);
+
+            if (!empty($searchTerms)) {
+                $escapedTerms = $this->db->escape($searchTerms);
+                $builder->where("MATCH(kb.judul, kb.masalah, kb.solusi) AGAINST({$escapedTerms} IN BOOLEAN MODE)");
+            }
         }
 
         $data['knowledges'] = $builder->orderBy('kb.date_updated', 'DESC')->get()->getResultArray();
@@ -273,7 +302,7 @@ class FasihHelpdesk extends BaseController
         return view('helpdesk/v_knowledge_publik', $data);
     }
 
-    // B. Direct Link Tunggal Pembacaan FAQ Publik Tanpa Login (Bahan Share Grup WhatsApp)
+    // B. Direct Link Pembacaan FAQ Publik Tanpa Login
     public function publikDetail($id)
     {
         $data['kb'] = $this->db->table('knowledge_base')->where('id', $id)->get()->getRowArray();
@@ -284,14 +313,14 @@ class FasihHelpdesk extends BaseController
         return view('helpdesk/v_knowledge_publik_detail', $data);
     }
 
-    // OPSI 1: Hanya menutup laporan secara reguler (Kasus biasa/tidak direkomendasikan jadi FAQ)
+    // OPSI 1: Hanya menutup laporan secara reguler
     public function closeLaporanBiasa($idLaporan)
     {
         if (session()->get('role') === 'mitra') return redirect()->back()->with('error', 'Akses ditolak!');
 
-        // Cukup update status menjadi 'closed' saja tanpa utak-atik tabel knowledge_base
         $this->db->table('laporan_kendala')->where('id', $idLaporan)->update([
-            'status' => 'closed'
+            'status'       => 'closed',
+            'date_updated' => date('Y-m-d H:i:s')
         ]);
 
         return redirect()->to('/fasihhelpdesk/detailLaporan/' . $idLaporan)->with('success', 'Tiket kendala berhasil diselesaikan (Arsip Reguler).');
