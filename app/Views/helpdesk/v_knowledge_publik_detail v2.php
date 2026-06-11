@@ -173,19 +173,6 @@
         </div>
     </nav>
 
-    <?php
-    if (!function_exists('autoLinkBiru')) {
-        function autoLinkBiru($text)
-        {
-            // Regex tangguh untuk mendeteksi URL (http, https, atau ftp) beserta parameternya
-            $regex = '/\b(?:https?|ftp):\/\/([a-z0-9+!*(),;?&=\$_.-]+(:[a-z0-9+!*(),;?&=\$_.-]+)?@)?([a-z0-9-.]*)\.([a-z]{2,4})(:\d+)?(\/([a-z0-9+!*(),;?&=\$_.-]*))?(\?[a-z0-9+!*(),;?&=\$_.-]*)?(#[a-z0-9+!*(),;?&=\$_.-]*)?/i';
-
-            // Otomatis bungkus dengan tag <a>, beri class text-primary (biru) dan target _blank agar buka di tab baru
-            return preg_replace($regex, '<a href="$0" target="_blank" class="text-primary fw-bold text-decoration-underline">$0</a>', $text);
-        }
-    }
-    ?>
-
     <div class="container my-5" style="max-width: 780px;">
         <div class="mb-4">
             <a href="<?= base_url('faq'); ?>" class="text-decoration-none fw-bold text-muted small">
@@ -218,7 +205,7 @@
                         <i class="fas fa-check-circle me-2 fs-5 text-success"></i> Langkah-Langkah Solusi Penyelesaian:
                     </div>
                     <div style="white-space: pre-line; font-size: 1.05rem; line-height: 1.7; color: #14532d;">
-                        <?= autoLinkBiru(nl2br(esc($kb['solusi']))); ?>
+                        <?= esc($kb['solusi']); ?>
                     </div>
                 </div>
 

@@ -54,6 +54,12 @@ document.addEventListener("DOMContentLoaded", function () {
         .then((htmlContent) => {
           loadContainer.innerHTML = htmlContent;
           targetElement.setAttribute("data-loaded", "true");
+          // =============== INITIALIZE PAGINASI DAN SEARCH LOKAL PART ===============
+          const newWrapper = loadContainer.querySelector(".part-accordion-wrapper");
+          if (newWrapper) {
+            initPartPagination(newWrapper);
+          }
+          // =========================================================================
         })
         .catch((error) => {
           console.error("Gagal memuat data:", error);
@@ -185,4 +191,99 @@ document.addEventListener("DOMContentLoaded", function () {
         saveButton.disabled = false;
       });
   });
+
+  // =============== FUNGSI BARU UNTUK MANAJEMEN RUTA (500 DATA) ===============
+  function initPartPagination(wrapper) {
+    const searchInput = wrapper.querySelector(".search-part-input");
+    const btnPrev = wrapper.querySelector(".btn-part-prev");
+    const btnNext = wrapper.querySelector(".btn-part-next");
+    // VALIDASI BARU: Jika elemen kontrol search tidak ada (Bukan level Ruta/Anom), jangan jalankan paginasi JS
+    if (!searchInput && !btnPrev && !btnNext) {
+      return; 
+    }
+    const txtRange = wrapper.querySelector(".txt-range");
+    const txtTotal = wrapper.querySelector(".txt-total");
+    const allItems = Array.from(wrapper.querySelectorAll(".main-part-accordion > .search-target-item"));
+    
+    const itemsPerPage = 100;
+    let currentPage = 1;
+    let filteredItems = [];
+
+    function renderPart() {
+      const keyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
+
+      // Filtering multi-match (Kode Anomali atau Nama KRT/ART/Usaha)
+      filteredItems = allItems.filter(item => {
+        const badgeText = item.querySelector(".match-badge") ? item.querySelector(".match-badge").textContent.toLowerCase() : "";
+        const nameText = item.querySelector(".match-name") ? item.querySelector(".match-name").textContent.toLowerCase() : "";
+        return badgeText.includes(keyword) || nameText.includes(keyword);
+      });
+
+      const totalData = filteredItems.length;
+      const totalPages = Math.ceil(totalData / itemsPerPage) || 1;
+
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      // Sembunyikan semua item di level part ini
+      allItems.forEach(item => item.style.display = "none");
+
+      // Tampilkan hanya yang masuk batasan halaman (max 100)
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, totalData);
+
+      for (let i = startIndex; i < endIndex; i++) {
+        if (filteredItems[i]) {
+          filteredItems[i].style.display = "block";
+        }
+      }
+
+      // Perbarui tampilan info teks teks paginasi
+      if (txtRange && txtTotal) {
+        txtRange.textContent = totalData === 0 ? "0" : `${startIndex + 1}-${endIndex}`;
+        txtTotal.textContent = totalData;
+      }
+
+      // Atur status tombol kemudi
+      if (btnPrev && btnNext) {
+        btnPrev.disabled = currentPage === 1;
+        btnNext.disabled = currentPage === totalPages || totalData === 0;
+      }
+    }
+
+    // Listener Ketikan Search Lokal
+    if (searchInput) {
+      searchInput.addEventListener("input", function () {
+        currentPage = 1;
+        renderPart();
+      });
+    }
+
+    // Listener Tombol navigasi internal
+    if (btnPrev) {
+      btnPrev.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (currentPage > 1) {
+          currentPage--;
+          renderPart();
+          wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    }
+
+    if (btnNext) {
+      btnNext.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderPart();
+          wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    }
+
+    // Jalankan render perdana saat komponen ter-load
+    renderPart();
+  }
 });
