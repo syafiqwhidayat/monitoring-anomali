@@ -125,22 +125,26 @@ class Anom extends BaseController
             // --- JALUR BASE RUMAH TANGGA / SOSIAL ---
             if ($countParts === 1) {
                 // Jika belum ada underscore, berarti masih proses drill-down wilayah murni
-                switch (strlen($id)) {
-                    case 4:
-                        $data['jenis'] = 'Kec';
-                        break;
-                    case 7:
-                        $data['jenis'] = 'Des';
-                        break;
-                    case 10:
-                        $data['jenis'] = 'SLS';
-                        break;
-                    case 16:
-                        $data['jenis'] = 'Ruta';
-                        break; // Batas wilayah maksimal (SLS)
-                    default:
-                        $data['jenis'] = 'Kec';
-                        break;
+                if (strlen($id) === $level_wilayah) {
+                    $data['jenis'] = 'Ruta'; // Menampilkan daftar perusahaan/entitas usaha
+                } else {
+                    switch (strlen($id)) {
+                        case 4:
+                            $data['jenis'] = 'Kec';
+                            break;
+                        case 7:
+                            $data['jenis'] = 'Des';
+                            break;
+                        case 10:
+                            $data['jenis'] = 'SLS';
+                            break;
+                        case 16:
+                            $data['jenis'] = 'Ruta';
+                            break; // Batas wilayah maksimal (SLS)
+                        default:
+                            $data['jenis'] = 'Kec';
+                            break;
+                    }
                 }
             } else {
                 // Jika sudah ada underscore (Proses masuk ke jeroan Ruta/ART)
@@ -159,7 +163,7 @@ class Anom extends BaseController
             if ($countParts === 1) {
                 $len = strlen($id);
                 if ($len === $level_wilayah) {
-                    $data['jenis'] = 'Anom'; // Menampilkan daftar perusahaan/entitas usaha
+                    $data['jenis'] = 'Ruta'; // Menampilkan daftar perusahaan/entitas usaha
                 } else {
                     switch ($len) {
                         case 4:

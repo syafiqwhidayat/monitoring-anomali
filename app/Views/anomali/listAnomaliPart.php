@@ -2,7 +2,7 @@
 // Buat ID unik untuk pembungkus part ini agar tidak saling tabrakan di DOM bertingkat
 $uniqueId = $jenis . '_' . rand(1000, 9999);
 // Tentukan apakah level saat ini adalah target pembatasan data (Ruta / Entitas Usaha)
-$isTargetKhusus = ($jenis === 'Ruta' || $jenis === 'Art');
+$isTargetKhusus = ($jenis === 'Ruta' || $jenis === 'Anom');
 ?>
 
 <div class="part-accordion-wrapper w-100" id="wrapper_<?= $uniqueId; ?>">
@@ -22,6 +22,7 @@ $isTargetKhusus = ($jenis === 'Ruta' || $jenis === 'Art');
         <?php endif; ?>
 
         <div class="accordion modern-accordion w-100 main-part-accordion" id="accordionAnomali<?= $uniqueId; ?>">
+            <div><?= $jenis; ?></div>
             <?php foreach ($listAnom as $d): ?>
                 <div class="accordion-item search-target-item" data-id="<?= $d['id']; ?>">
                     <h2 class="accordion-header">

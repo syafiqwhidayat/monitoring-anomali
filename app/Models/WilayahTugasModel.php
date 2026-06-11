@@ -118,7 +118,7 @@ class WilayahTugasModel extends Model
             $data->where('users.wilayah_kerja', $wilayahKerja);
         }
 
-        // dd($data->asArray()->findAll());
+        // dd($data->asArray()->findAll()); 
         return ($data->asArray()->findAll());
     }
 
