@@ -8,7 +8,7 @@ use CodeIgniter\Router\RouteCollection;
 $routes = service('routes');
 
 service('auth')->routes($routes);
-$routes->setAutoRoute(true);
+$routes->setAutoRoute(false);
 
 $routes->get('/', 'Home::index');
 
@@ -50,23 +50,40 @@ $routes->get('monitoring/', 'Monitoring::index', ['filter' => 'activeRole:supera
 $routes->get('monitoring-sel', 'Monitoring::view', ['filter' => 'activeRole:superadmin,admin,operator']); //menampilkan selected
 
 $routes->group('se', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
+    // Rute yang bisa diakses oleh semua (superadmin, admin, operator)
     $routes->get('monitoring', 'SeMonitoring::index');
     $routes->get('monitoring-ngibar', 'SeMonitoring::monitorNgibar');
     $routes->get('duplikat', 'SeMonitoring::listDuplikat');
     $routes->get('ngibar', 'SeMonitoring::listNgibar');
     $routes->get('flag-duplikat/(:num)/(:num)', 'SeMonitoring::flagDuplikat/$1/$2');
     $routes->get('monitoring-ub', 'SeMonitoring::monitoringUB');
+    $routes->get('monitoring-progres', 'SeMonitoring::dashboardProgres');
+    $routes->get('monitoring-progres/getTableData', 'SeMonitoring::getTabelProgres');
+    $routes->get('monitoring-progres/downloadExcel', 'SeMonitoring::downloadExcelProgres');
+    $routes->get('monitoring-progres/getPmlByKoseka', 'SeMonitoring::getPmlByKoseka');
+    $routes->get('monitoring-progres/getPplByPml', 'SeMonitoring::getPplByPml');
+
+    // Rute khusus yang HANYA bisa diakses oleh superadmin & admin
+    // Kita timpa filternya secara spesifik di sini
+    $routes->get('upload', 'SeMonitoring::logs', ['filter' => 'activeRole:superadmin,admin']);
+    $routes->get('upload-ngibar', 'SeMonitoring::logs', ['filter' => 'activeRole:superadmin,admin']);
+    $routes->post('upload-duplikat', 'SeMonitoring::uploadDuplikat', ['filter' => 'activeRole:superadmin,admin']);
+    $routes->get('downloadTemplate', 'SeMonitoring::downloadTemplate', ['filter' => 'activeRole:superadmin,admin']);
+    $routes->post('store', 'SeMonitoring::store', ['filter' => 'activeRole:superadmin,admin']);
+    $routes->post('hapus', 'SeMonitoring::hapus', ['filter' => 'activeRole:superadmin,admin']);
+    $routes->post('monitoring-ub/upload', 'SeMonitoring::uploadSEUB', ['filter' => 'activeRole:superadmin,admin']);
+    $routes->post('monitoring-ub/updateTimPj', 'SeMonitoring::updatePJSEUB', ['filter' => 'activeRole:superadmin,admin']);
 });
-$routes->group('se', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
-    $routes->get('upload', 'SeMonitoring::logs');
-    $routes->get('upload-ngibar', 'SeMonitoring::logs');
-    $routes->post('upload-duplikat', 'SeMonitoring::uploadDuplikat');
-    $routes->get('downloadTemplate', 'SeMonitoring::downloadTemplate');
-    $routes->post('store', 'SeMonitoring::store');
-    $routes->post('hapus', 'SeMonitoring::hapus');
-    $routes->post('monitoring-ub/upload', 'SeMonitoring::uploadSEUB');
-    $routes->post('monitoring-ub/updateTimPj', 'SeMonitoring::updatePJSEUB');
-});
+// $routes->group('se', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
+//     $routes->get('upload', 'SeMonitoring::logs');
+//     $routes->get('upload-ngibar', 'SeMonitoring::logs');
+//     $routes->post('upload-duplikat', 'SeMonitoring::uploadDuplikat');
+//     $routes->get('downloadTemplate', 'SeMonitoring::downloadTemplate');
+//     $routes->post('store', 'SeMonitoring::store');
+//     $routes->post('hapus', 'SeMonitoring::hapus');
+//     $routes->post('monitoring-ub/upload', 'SeMonitoring::uploadSEUB');
+//     $routes->post('monitoring-ub/updateTimPj', 'SeMonitoring::updatePJSEUB');
+// });
 
 // $routes->get('/upload', 'Upload::index');
 // $routes->get('/upload/download-template', 'Upload::downloadTemplate');

@@ -24,6 +24,7 @@ class SeMonitoring extends BaseController
     protected $seNgibarModel;
     protected $db;
     protected $listNgibarModel;
+    protected $idKegiatanPetugas;
 
     public function __construct()
     {
@@ -37,6 +38,7 @@ class SeMonitoring extends BaseController
         $this->listNgibarModel = new SeListNgibarModel();
         // Set zona waktu agar sinkron dengan ekspor data
         date_default_timezone_set('Asia/Jakarta');
+        $this->idKegiatanPetugas = 4;
     }
 
     public function index()
@@ -1135,5 +1137,312 @@ class SeMonitoring extends BaseController
             return $this->response->setJSON(['status' => 'success', 'message' => 'Tim Penanggung Jawab berhasil diperbarui.']);
         }
         return $this->response->setJSON(['status' => 'error', 'message' => 'Gagal mengubah data.'], 400);
+    }
+
+    public function dashboardProgres()
+    {
+        // Parameter Filter Utama
+        $selectedKab = $this->request->getGet('kabupaten') ?? 'SUMBAR';
+        $offsetHari  = (int)($this->request->getGet('offset_hari') ?? 0);
+
+        // Ambil tanggal terbaru
+        $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
+        $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
+
+        // 2. QUERY KARTU RINGKASAN (TOTAL & PERSENTASE)
+        $builderCards = $this->db->table('se_progres_subsls')->where('tanggal', $targetTanggal);
+        if ($selectedKab !== 'SUMBAR') {
+            $builderCards->like('id_subsls', $selectedKab, 'after');
+        }
+        $cardsData = $builderCards->select('
+            SUM(total) as total,
+            SUM(open) as open,
+            SUM(draft) as draft,
+            SUM(approved_by_pengawas) as approved,
+            SUM(submitted_by_pencacah + submitted_respondent) as submitted
+        ')->get()->getRowArray();
+
+        // 3. QUERY PROGRESS BAR (1 Level Wilayah di Bawahnya - Detail Status)
+        $lenGroup = ($selectedKab === 'SUMBAR') ? 4 : 7;
+        $builderProgress = $this->db->table('se_progres_subsls')->where('tanggal', $targetTanggal);
+        if ($selectedKab !== 'SUMBAR') {
+            $builderProgress->like('id_subsls', $selectedKab, 'after');
+        }
+        $progressRows = $builderProgress->select("
+        LEFT(id_subsls, {$lenGroup}) as kode_wilayah,
+        SUM(total) as total,
+        SUM(open) as open,
+        SUM(draft) as draft,
+        SUM(approved_by_pengawas) as approved,
+        SUM(COALESCE(submitted_by_pencacah, 0) + COALESCE(submitted_respondent, 0)) as submitted")
+            ->groupBy("LEFT(id_subsls, {$lenGroup})")
+            ->get()
+            ->getResultArray();
+
+        // 4. QUERY HISTORIS (Maksimal 7 Hari ke Belakang dengan Navigasi Offset)
+        // Menghitung ketersediaan tanggal unik di database untuk kontrol tombol disable
+        $allDates = $this->db->table('se_progres_subsls')->select('tanggal')->distinct()->orderBy('tanggal', 'DESC')->get()->getResultArray();
+        $totalHariTersedia = count($allDates);
+
+        // Ambil potongan 7 hari sesuai offset berjalan
+        $startChunk = $offsetHari * 7;
+        $activeDatesChunk = array_slice(array_column($allDates, 'tanggal'), $startChunk, 7);
+        $activeDatesChunk = array_reverse($activeDatesChunk); // Urutkan dari tanggal terlama ke terbaru untuk grafik
+
+        $historicalData = [];
+        if (!empty($activeDatesChunk)) {
+            $builderHist = $this->db->table('se_progres_subsls')->whereIn('tanggal', $activeDatesChunk);
+            if ($selectedKab !== 'SUMBAR') {
+                $builderHist->like('id_subsls', $selectedKab, 'after');
+            }
+            $histRows = $builderHist->select('
+                tanggal,
+                SUM(open) as open,
+                SUM(draft) as draft,
+                SUM(approved_by_pengawas) as approved,
+                SUM(submitted_by_pencacah + submitted_respondent) as submitted
+            ')->groupBy('tanggal')->orderBy('tanggal', 'ASC')->get()->getResultArray();
+
+            // Format ulang agar siap dikonsumsi Chart JSON
+            foreach ($histRows as $r) {
+                $historicalData['categories'][] = date('d M', strtotime($r['tanggal']));
+                $historicalData['open'][]       = (int)$r['open'];
+                $historicalData['draft'][]      = (int)$r['draft'];
+                $historicalData['submitted'][]  = (int)$r['submitted'];
+                $historicalData['approved'][]   = (int)$r['approved'];
+            }
+        }
+
+        // 5. QUERY PAGINATION UNTUK TABEL SUB-SLS (Hanya ambil 50 data per halaman)
+        $pager = \Config\Services::pager();
+        $page  = (int)($this->request->getGet('page') ?? 1);
+        $perPage = 50;
+
+        $builderTable = $this->db->table('se_progres_subsls')->where('tanggal', $targetTanggal);
+        if ($selectedKab !== 'SUMBAR') {
+            $builderTable->like('id_subsls', $selectedKab, 'after');
+        }
+
+        // Kloning builder untuk menghitung total baris sebelum di-limit
+        $totalRowsForPager = $builderTable->countAllResults(false);
+
+        $tableData = $builderTable->select('
+            id_subsls, total, open, draft, approved_by_pengawas,
+            (submitted_by_pencacah + submitted_respondent) as submitted,
+            rejected_by_pengawas, revoked_by_pengawas
+        ')
+            ->limit($perPage, ($page - 1) * $perPage)
+            ->get()
+            ->getResultArray();
+
+        // Buat HTML pagination khas Tabler/Bootstrap
+        $pagerLinks = $pager->makeLinks($page, $perPage, $totalRowsForPager, 'default_full');
+
+        // ==========================================
+        // ADDON: QUERY TOP & BOTTOM 5 PETUGAS (PPL)
+        // ==========================================
+        $baseChampions = $this->db->table('se_progres_subsls' . ' s')
+            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'inner')
+            ->join('users u', 'w.id_ppl = u.id', 'inner') // Sesuaikan nama tabel user Anda
+            ->where('s.tanggal', $targetTanggal)
+            ->where('w.id_kegiatan', $this->idKegiatanPetugas);
+
+        if ($selectedKab !== 'SUMBAR') {
+            $baseChampions->like('s.id_subsls', $selectedKab, 'after');
+        }
+
+        // Kloning builder untuk Top 5 (Urutan Terbanyak Approved + Submitted)
+        $builderTop = clone $baseChampions;
+        $topPetugas = $builderTop->select('u.username as nama_petugas, 
+            SUM(s.approved_by_pengawas) as approved,
+            SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+            ->groupBy('w.id_ppl')
+            ->orderBy('SUM(s.approved_by_pengawas)', 'DESC')
+            ->orderBy('SUM(s.submitted_by_pencacah + s.submitted_respondent)', 'DESC')
+            ->limit(5)->get()->getResultArray();
+
+        // Kloning builder untuk Bottom 5 (Urutan Terendah Approved + Submitted)
+        $builderBottom = clone $baseChampions;
+        $bottomPetugas = $builderBottom->select('u.username as nama_petugas, 
+            SUM(s.approved_by_pengawas) as approved,
+            SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+            ->groupBy('w.id_ppl')
+            ->orderBy('SUM(s.approved_by_pengawas)', 'ASC')
+            ->orderBy('SUM(s.submitted_by_pencacah + s.submitted_respondent)', 'ASC')
+            ->limit(5)->get()->getResultArray();
+
+        // ==========================================
+        // ADDON: ROOT KOSEKA UNTUK AKORDION AWAL
+        // ==========================================
+        $builderKoseka = $this->db->table('se_progres_subsls' . ' s')
+            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'inner')
+            ->join('users u', 'w.id_koseka = u.id', 'inner')
+            ->where('s.tanggal', $targetTanggal)
+            ->where('w.id_kegiatan', $this->idKegiatanPetugas);
+
+        if ($selectedKab !== 'SUMBAR') {
+            $builderKoseka->like('s.id_subsls', $selectedKab, 'after');
+        }
+        $kosekaData = $builderKoseka->select('w.id_koseka, u.username as nama_koseka,
+            SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
+            SUM(s.approved_by_pengawas) as approved,
+            SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+            ->groupBy('w.id_koseka')->get()->getResultArray();
+
+        return view('seMonitoring/monitoring_progres', [
+            'title' => "monitoring progres",
+            'selectedKab'   => $selectedKab,
+            'offsetHari'    => $offsetHari,
+            'cards'         => $cardsData,
+            'progressRows'  => $progressRows,
+            'chartData'     => json_encode($historicalData),
+            'targetTanggal' => $targetTanggal,
+            'totalHari'      => $totalHariTersedia,
+
+            // Data Tambahan untuk Tabel Baru
+            'tableData'     => $tableData,
+            'pagerLinks'    => $pagerLinks,
+
+            'topPetugas'    => $topPetugas,
+            'bottomPetugas' => $bottomPetugas,
+            'kosekaData'    => $kosekaData,
+        ]);
+    }
+
+    public function getTabelProgres()
+    {
+        $selectedKab   = $this->request->getGet('kabupaten') ?? 'SUMBAR';
+        $page          = (int)($this->request->getGet('page') ?? 1);
+        $perPage       = 50;
+
+        $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
+        $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
+
+        $builder = $this->db->table('se_progres_subsls')->where('tanggal', $targetTanggal);
+        if ($selectedKab !== 'SUMBAR') {
+            $builder->like('id_subsls', $selectedKab, 'after');
+        }
+
+        // Hitung total data untuk kalkulasi jumlah halaman di JS
+        $totalRows = $builder->countAllResults(false);
+        $totalPages = ceil($totalRows / $perPage);
+
+        // Ambil segmen data saat ini
+        $tableData = $builder->select('
+            id_subsls, total, open, draft, rejected_by_pengawas, revoked_by_pengawas,
+            (submitted_by_pencacah + submitted_respondent) as submitted,
+            approved_by_pengawas as approved
+        ')
+            ->limit($perPage, ($page - 1) * $perPage)
+            ->get()
+            ->getResultArray();
+
+        return $this->response->setJSON([
+            'data'         => $tableData,
+            'current_page' => $page,
+            'total_pages'  => $totalPages,
+            'total_rows'   => $totalRows
+        ]);
+    }
+
+    public function downloadExcelProgres()
+    {
+        $selectedKab = $this->request->getGet('kabupaten') ?? 'SUMBAR';
+
+        $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
+        $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
+
+        $builder = $this->db->table('se_progres_subsls')->where('tanggal', $targetTanggal);
+        if ($selectedKab !== 'SUMBAR') {
+            $builder->like('id_subsls', $selectedKab, 'after');
+        }
+
+        $query = $builder->select('
+            id_subsls, total, open, draft, 
+            (submitted_by_pencacah + submitted_respondent) as submitted,
+            approved_by_pengawas, rejected_by_pengawas, revoked_by_pengawas
+        ')->get();
+
+        $filename = "Progres_SE2026_" . $selectedKab . "_" . $targetTanggal . ".csv";
+
+        // Set header browser agar langsung mendownload berkas Excel/CSV
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        // Membuka output stream untuk menulis data baris per baris (Sangat Hemat RAM!)
+        $output = fopen('php://output', 'w');
+
+        // Atur bom agar karakter dibaca rapi di Excel, gunakan separator titik koma (;)
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+        // Baris Header Excel
+        fputcsv($output, ['KODE SUBSLS', 'TOTAL', 'OPEN', 'DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'REVOKED'], ';');
+
+        // Masukkan semua baris data (semua 17.675 baris akan tertulis di sini)
+        foreach ($query->getResultArray() as $row) {
+            fputcsv($output, [
+                $row['id_subsls'] . ' ', // Tambah spasi agar kode SLS panjang tidak berubah jadi format scientific (E+) di Excel
+                $row['total'],
+                $row['open'],
+                $row['draft'],
+                $row['submitted'],
+                $row['approved_by_pengawas'],
+                $row['rejected_by_pengawas'],
+                $row['revoked_by_pengawas']
+            ], ';');
+        }
+
+        fclose($output);
+        exit;
+    }
+
+    // ==========================================
+    // API ENDPOINT 1: LAZY LOAD PML BY KOSEKA
+    // ==========================================
+    public function getPmlByKoseka()
+    {
+        $idKoseka = $this->request->getGet('id_koseka');
+
+        $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
+        $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
+
+        $pmlRows = $this->db->table('se_progres_subsls' . ' s')
+            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'inner')
+            ->join('users u', 'w.id_pml = u.id', 'inner')
+            ->where('s.tanggal', $targetTanggal)
+            ->where('w.id_koseka', $idKoseka)
+            ->where('w.id_kegiatan', $this->idKegiatanPetugas)
+            ->select('w.id_pml, u.username as nama_pml,
+                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
+                SUM(s.approved_by_pengawas) as approved,
+                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+            ->groupBy('w.id_pml')->get()->getResultArray();
+
+        return $this->response->setJSON($pmlRows);
+    }
+
+    // ==========================================
+    // API ENDPOINT 2: LAZY LOAD PPL BY PML
+    // ==========================================
+    public function getPplByPml()
+    {
+        $idPml = $this->request->getGet('id_pml');
+
+        $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
+        $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
+
+        $pplRows = $this->db->table('se_progres_subsls' . ' s')
+            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'inner')
+            ->join('users u', 'w.id_ppl = u.id', 'inner')
+            ->where('s.tanggal', $targetTanggal)
+            ->where('w.id_pml', $idPml)
+            ->where('w.id_kegiatan', $this->idKegiatanPetugas)
+            ->select('w.id_ppl, u.username as nama_ppl,
+                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
+                SUM(s.approved_by_pengawas) as approved,
+                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+            ->groupBy('w.id_ppl')->get()->getResultArray();
+
+        return $this->response->setJSON($pplRows);
     }
 }

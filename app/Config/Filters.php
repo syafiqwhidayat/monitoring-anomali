@@ -85,6 +85,7 @@ class Filters extends BaseFilters
                     'auth/a/*',
                     // Tambahkan rute publik Anda di bawah ini:
                     'faq*',         // Contoh link monitoring tanpa login
+                    'api/*', //pengecualin untuk api
                 ]
             ],
         ],

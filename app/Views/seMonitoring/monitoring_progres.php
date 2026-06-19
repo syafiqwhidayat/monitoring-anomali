@@ -1,0 +1,605 @@
+<?= $this->extend('layout/template'); ?>
+
+<?= $this->section('content'); ?>
+
+<!-- TAMBAHKAN BARIS CDN CHART.JS INI -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- HEADER & FILTER -->
+<div class="page-header d-print-none my-3">
+    <div class="container-xl">
+        <div class="row g-2 align-items-center">
+            <div class="col">
+                <h2 class="page-title">Monitoring Progres Kegiatan SE2026</h2>
+                <div class="text-muted small mt-1">Data Posisi: <strong class="text-primary"><?= $targetTanggal ?></strong></div>
+            </div>
+            <div class="col-auto ms-auto">
+                <form method="GET" action="" id="filterForm">
+                    <select name="kabupaten" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                        <option value="SUMBAR" <?= $selectedKab == 'SUMBAR' ? 'selected' : '' ?>>-- SELURUH PROVINSI --</option>
+                        <option value="1301" <?= $selectedKab == '1301' ? 'selected' : '' ?>>[1301] Kepulauan Mentawai</option>
+                        <option value="1301" <?= $selectedKab == '1302' ? 'selected' : '' ?>>[1302] Pesisir Selatan</option>
+                        <option value="1301" <?= $selectedKab == '1303' ? 'selected' : '' ?>>[1303] Solok</option>
+                        <option value="1301" <?= $selectedKab == '1304' ? 'selected' : '' ?>>[1304] Sijunjung</option>
+                        <option value="1301" <?= $selectedKab == '1305' ? 'selected' : '' ?>>[1305] Tanah Datar</option>
+                        <option value="1301" <?= $selectedKab == '1306' ? 'selected' : '' ?>>[1306] Padang Pariaman</option>
+                        <option value="1301" <?= $selectedKab == '1307' ? 'selected' : '' ?>>[1307] Agam</option>
+                        <option value="1301" <?= $selectedKab == '1308' ? 'selected' : '' ?>>[1308] Lima Puluh Kota</option>
+                        <option value="1301" <?= $selectedKab == '1309' ? 'selected' : '' ?>>[1309] Pasaman</option>
+                        <option value="1301" <?= $selectedKab == '1310' ? 'selected' : '' ?>>[1310] Solok Selatan</option>
+                        <option value="1311" <?= $selectedKab == '1311' ? 'selected' : '' ?>>[1311] Dharmasraya</option>
+                        <option value="1311" <?= $selectedKab == '1312' ? 'selected' : '' ?>>[1312] Pasaman Barat</option>
+                        <option value="1376" <?= $selectedKab == '1371' ? 'selected' : '' ?>>[1371] Kota Padang</option>
+                        <option value="1376" <?= $selectedKab == '1372' ? 'selected' : '' ?>>[1372] Kota Solok</option>
+                        <option value="1376" <?= $selectedKab == '1373' ? 'selected' : '' ?>>[1373] Kota Sawahlunto</option>
+                        <option value="1376" <?= $selectedKab == '1374' ? 'selected' : '' ?>>[1374] Kota Padang Panjang</option>
+                        <option value="1376" <?= $selectedKab == '1375' ? 'selected' : '' ?>>[1375] Kota Bukittinggi</option>
+                        <option value="1376" <?= $selectedKab == '1376' ? 'selected' : '' ?>>[1376] Kota Payakumbuh</option>
+                        <option value="1376" <?= $selectedKab == '1377' ? 'selected' : '' ?>>[1377] Kota Pariaman</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONTENT BODY -->
+<div class="page-body">
+    <div class="container-xl">
+
+        <!-- KARTU INDIKATOR UTAMA -->
+        <?php
+        $total = $cards['total'] ?? 0;
+        $getPercent = function ($val, $tot) {
+            return $tot > 0 ? round(($val / $tot) * 100, 2) : 0;
+        };
+        ?>
+        <div class="row row-cards mb-3">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="text-muted small">Open</div>
+                        <div class="h1 mb-0"><?= number_format($cards['open'] ?? 0) ?></div>
+                        <div class="text-muted small"><?= $getPercent($cards['open'] ?? 0, $total) ?>% dari total</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="text-muted small">Draft</div>
+                        <div class="h1 mb-0 text-yellow"><?= number_format($cards['draft'] ?? 0) ?></div>
+                        <div class="text-muted small"><?= $getPercent($cards['draft'] ?? 0, $total) ?>% dari total</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="text-muted small">Submitted (Ptgs + Rspdn)</div>
+                        <div class="h1 mb-0 text-blue"><?= number_format($cards['submitted'] ?? 0) ?></div>
+                        <div class="text-muted small"><?= $getPercent($cards['submitted'] ?? 0, $total) ?>% dari total</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                    <div class="card-body">
+                        <div class="text-muted small">Approved Pengawas</div>
+                        <div class="h1 mb-0 text-green"><?= number_format($cards['approved'] ?? 0) ?></div>
+                        <div class="text-muted small"><strong><?= $getPercent($cards['approved'] ?? 0, $total) ?>%</strong> dari total</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GRAFIK HISTORIS CHART.JS & PROGRESS BAR -->
+        <div class="row row-cards">
+            <!-- HISTORIS LINE CHART (CHART.JS) -->
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h3 class="card-title">Tren Historis Progres Harian</h3>
+                            <div class="btn-group">
+                                <a href="?kabupaten=<?= $selectedKab ?>&offset_hari=<?= $offsetHari + 1 ?>"
+                                    class="btn btn-sm btn-outline-secondary <?= ($offsetHari * 7) + 7 >= $totalHari ? 'disabled' : '' ?>">
+                                    &larr; Sebelumnya
+                                </a>
+                                <a href="?kabupaten=<?= $selectedKab ?>&offset_hari=<?= $offsetHari - 1 ?>"
+                                    class="btn btn-sm btn-outline-secondary <?= $offsetHari <= 0 ? 'disabled' : '' ?>">
+                                    Sesudahnya &rarr;
+                                </a>
+                            </div>
+                        </div>
+                        <!-- Wadah Canvas Chart.js -->
+                        <div style="height: 320px; position: relative;">
+                            <canvas id="chart-historis-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROGRESS BAR 1 LEVEL DI BAWAHNYA -->
+            <div class="col-lg-5">
+                <div class="card" style="max-height: 375px; overflow-y: auto;">
+                    <div class="card-header">
+                        <h3 class="card-title">Progres Komposisi Status per Kode <?= $selectedKab === 'SUMBAR' ? 'Kabupaten' : 'Kecamatan' ?></h3>
+                    </div>
+                    <div class="card-body">
+                        <?php if (empty($progressRows)): ?>
+                            <div class="text-muted text-center py-4">Tidak ada data progres.</div>
+                        <?php else: ?>
+                            <?php foreach ($progressRows as $row):
+                                $tot = $row['total'] > 0 ? $row['total'] : 1; // Cegah division by zero
+
+                                // Hitung persentase masing-masing status terhadap total wilayah tersebut
+                                $pctOpen      = round(($row['open'] / $tot) * 100, 1);
+                                $pctDraft     = round(($row['draft'] / $tot) * 100, 1);
+                                $pctSubmitted = round(($row['submitted'] / $tot) * 100, 1);
+                                $pctApproved  = round(($row['approved'] / $tot) * 100, 1);
+                            ?>
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small mb-1">
+                                        <span>Kode: <strong><?= $row['kode_wilayah'] ?></strong></span>
+                                        <span class="text-muted small">Target: <strong><?= number_format($row['total']) ?></strong> Assigment</span>
+                                    </div>
+
+                                    <div class="progress progress-sm">
+                                        <?php if ($row['approved'] > 0): ?>
+                                            <div class="progress-bar bg-success" style="width: <?= $pctApproved ?>%"
+                                                title="Approved: <?= number_format($row['approved']) ?> (<?= $pctApproved ?>%)"></div>
+                                        <?php endif; ?>
+
+                                        <?php if ($row['submitted'] > 0): ?>
+                                            <div class="progress-bar bg-blue" style="width: <?= $pctSubmitted ?>%"
+                                                title="Submitted: <?= number_format($row['submitted']) ?> (<?= $pctSubmitted ?>%)"></div>
+                                        <?php endif; ?>
+
+                                        <?php if ($row['draft'] > 0): ?>
+                                            <div class="progress-bar bg-warning" style="width: <?= $pctDraft ?>%"
+                                                title="Draft: <?= number_format($row['draft']) ?> (<?= $pctDraft ?>%)"></div>
+                                        <?php endif; ?>
+
+                                        <?php if ($row['open'] > 0): ?>
+                                            <div class="progress-bar bg-secondary" style="width: <?= $pctOpen ?>%"
+                                                title="Open: <?= number_format($row['open']) ?> (<?= $pctOpen ?>%)"></div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+
+                            <div class="d-flex justify-content-between text-muted small mt-3 pt-2 border-top">
+                                <div><span class="badge bg-success me-1"></span> Appv</div>
+                                <div><span class="badge bg-blue me-1"></span> Subm</div>
+                                <div><span class="badge bg-warning me-1"></span> Drft</div>
+                                <div><span class="badge bg-secondary me-1"></span> Open</div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row row-cards mt-2">
+            <div class="col-md-6">
+                <div class="card card-md">
+                    <div class="card-status-top bg-success"></div>
+                    <div class="card-header">
+                        <h3 class="card-title">🏆 Top 5 Petugas Lapangan (PPL)</h3>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($topPetugas as $index => $p):
+                            $medal = match ($index) {
+                                0 => '🥇',
+                                1 => '🥈',
+                                2 => '🥉',
+                                default => '⭐'
+                            };
+                            $bgRank = match ($index) {
+                                // 0 => 'bg-amber',
+                                // 1 => 'bg-secondary-lt',
+                                // 2 => 'bg-orange-lt',
+                                default => ''
+                            };
+                        ?>
+                            <div class="list-group-item d-flex align-items-center justify-content-between <?= $bgRank ?>">
+                                <div class="d-flex align-items-center">
+                                    <span class="fs-2 me-3"><?= $medal ?></span>
+                                    <div>
+                                        <strong class="text-reset"><?= esc($p['nama_petugas']) ?></strong>
+                                        <div class="text-muted small">Pencapaian Kerja Lapangan</div>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-green text-white">Appv: <?= number_format($p['approved']) ?></span>
+                                    <span class="badge bg-blue-lt">Subm: <?= number_format($p['submitted']) ?></span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card card-md">
+                    <div class="card-status-top bg-danger"></div>
+                    <div class="card-header">
+                        <h3 class="card-title">⚠️ 5 Terbawah Progres Petugas</h3>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <?php foreach ($bottomPetugas as $index => $p): ?>
+                            <div class="list-group-item d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <span class="text-muted me-3 font-weight-bold">#<?= $index + 1 ?></span>
+                                    <div>
+                                        <strong class="text-reset"><?= esc($p['nama_petugas']) ?></strong>
+                                        <div class="text-muted small">Butuh Pendampingan Pengawas</div>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-secondary text-white">Appv: <?= number_format($p['approved']) ?></span>
+                                    <span class="badge bg-orange-lt">Subm: <?= number_format($p['submitted']) ?></span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row row-cards mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📊 Pohon Kinerja Struktural (Koseka &rarr; PML &rarr; PPL)</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="accordion-koseka-root">
+                            <?php foreach ($kosekaData as $k): ?>
+                                <div class="accordion-item border mb-2">
+                                    <h2 class="accordion-header" id="heading-kos-<?= $k['id_koseka'] ?>">
+                                        <button class="accordion-button collapsed d-flex justify-content-between align-items-center"
+                                            type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapse-kos-<?= $k['id_koseka'] ?>"
+                                            onclick="loadPmlData('<?= $k['id_koseka'] ?>')">
+                                            <div class="w-100 d-flex justify-content-between pe-3">
+                                                <span>👔 Koseka: <strong><?= esc($k['nama_koseka']) ?></strong></span>
+                                                <span class="text-muted small">
+                                                    [ Target: <?= number_format($k['total']) ?> |
+                                                    Appv: <span class="text-success"><?= number_format($k['approved']) ?></span> |
+                                                    Subm: <span class="text-blue"><?= number_format($k['submitted']) ?></span> ]
+                                                </span>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse-kos-<?= $k['id_koseka'] ?>" class="accordion-collapse collapse" data-bs-parent="#accordion-koseka-root">
+                                        <div class="accordion-body bg-light-lt py-2 ps-4" id="body-koseka-<?= $k['id_koseka'] ?>">
+                                            <div class="text-muted text-center py-2"><span class="spinner-border spinner-border-sm"></span> Menarik data PML...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABEL DETAIL SUB-SLS (AJAX PAGINATION) -->
+        <div class="row row-cards mt-3">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title">Rincian Data Progres Per Sub-SLS (<span id="total-sls-count">0</span> Data)</h3>
+                        <a href="<?= base_url('se/monitoring-progres/downloadExcel?kabupaten=' . $selectedKab) ?>" class="btn btn-emerald btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
+                                <path d="M7 11l5 5l5 -5" />
+                                <path d="M12 4l0 12" />
+                            </svg>
+                            Unduh Seluruh Data Excel (.csv)
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table card-table table-vcenter text-nowrap table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Kode Sub-SLS</th>
+                                    <th class="text-center">Total</th>
+                                    <th class="text-center">Open</th>
+                                    <th class="text-center">Draft</th>
+                                    <th class="text-center">Submitted</th>
+                                    <th class="text-center">Approved</th>
+                                    <th class="text-center">Rejected</th>
+                                    <th class="text-center">Revoked</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body-ajax">
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">Memuat data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- NAVIGASI PAGINATION JS -->
+                    <div class="card-footer d-flex align-items-center justify-content-between">
+                        <p class="m-0 text-muted small" id="pagination-info">Menampilkan halaman 0 dari 0</p>
+                        <ul class="pagination m-0 ms-auto" id="pagination-nav-js"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+<!-- BLOCK JAVASCRIPT ENGINE -->
+<script>
+    const rawChartData = <?= $chartData ?>;
+    let currentPage = 1;
+    const selectedKab = "<?= $selectedKab ?>";
+    const formatNum = (num) => new Intl.NumberFormat('id-ID').format(num);
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // 1. Inisialisasi Chart.js untuk Line Chart Historis harian
+        if (rawChartData && rawChartData.categories) {
+            const ctx = document.getElementById('chart-historis-canvas').getContext('2d');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: rawChartData.categories,
+                    datasets: [{
+                            label: 'Open',
+                            data: rawChartData.open,
+                            borderColor: '#6c757d',
+                            backgroundColor: '#6c757d',
+                            tension: 0.2,
+                            fill: false
+                        },
+                        {
+                            label: 'Draft',
+                            data: rawChartData.draft,
+                            borderColor: '#f59f00',
+                            backgroundColor: '#f59f00',
+                            tension: 0.2,
+                            fill: false
+                        },
+                        {
+                            label: 'Submitted',
+                            data: rawChartData.submitted,
+                            borderColor: '#206bc4',
+                            backgroundColor: '#206bc4',
+                            tension: 0.2,
+                            fill: false
+                        },
+                        {
+                            label: 'Approved',
+                            data: rawChartData.approved,
+                            borderColor: '#2fb344',
+                            backgroundColor: '#2fb344',
+                            tension: 0.2,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                borderDash: [4, 4]
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Jalankan Pemanggilan Data Tabel Awal
+        loadTablePage(1);
+    });
+
+    // 3. Engine AJAX Pagination Data Sub-SLS
+    async function loadTablePage(page) {
+        currentPage = page;
+        const tbody = document.getElementById('table-body-ajax');
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary spinner-border-sm"></div> Memuat data...</td></tr>';
+
+        try {
+            const response = await fetch(`<?= base_url('se/monitoring-progres/getTableData') ?>?kabupaten=${selectedKab}&page=${page}`);
+            const result = await response.json();
+
+            document.getElementById('total-sls-count').innerText = formatNum(result.total_rows);
+
+            if (result.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">Tidak ada detail data SLS.</td></tr>';
+                return;
+            }
+
+            let htmlRows = '';
+            result.data.forEach(row => {
+                htmlRows += `
+                    <tr>
+                        <td><span class="text-monospace font-weight-bold">${row.id_subsls}</span></td>
+                        <td class="text-center">${formatNum(row.total)}</td>
+                        <td class="text-center"><span class="badge bg-secondary-lt">${formatNum(row.open)}</span></td>
+                        <td class="text-center"><span class="badge bg-warning-lt">${formatNum(row.draft)}</span></td>
+                        <td class="text-center"><span class="badge bg-blue-lt">${formatNum(row.submitted)}</span></td>
+                        <td class="text-center"><span class="badge bg-success-lt">${formatNum(row.approved)}</span></td>
+                        <td class="text-center"><span class="badge bg-danger-lt">${formatNum(row.rejected_by_pengawas)}</span></td>
+                        <td class="text-center"><span class="badge bg-purple-lt">${formatNum(row.revoked_by_pengawas)}</span></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = htmlRows;
+
+            document.getElementById('pagination-info').innerText = `Halaman ${result.current_page} dari ${result.total_pages}`;
+            renderPaginationControls(result.current_page, result.total_pages);
+
+        } catch (error) {
+            console.error("Gagal memuat tabel:", error);
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-3">Terjadi kesalahan saat memuat data.</td></tr>';
+        }
+    }
+
+    function renderPaginationControls(current, total) {
+        const navContainer = document.getElementById('pagination-nav-js');
+        navContainer.innerHTML = '';
+
+        if (total <= 1) return;
+
+        // Button Prev
+        navContainer.innerHTML += `
+            <li class="page-item ${current === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="event.preventDefault(); if(${current} > 1) loadTablePage(${current - 1})">&larr;</a>
+            </li>
+        `;
+
+        let startPage = Math.max(1, current - 2);
+        let endPage = Math.min(total, current + 2);
+
+        if (startPage > 1) {
+            navContainer.innerHTML += `<li class="page-item"><a class="page-link" href="#" onclick="event.preventDefault(); loadTablePage(1)">1</a></li>`;
+            if (startPage > 2) navContainer.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            navContainer.innerHTML += `
+                <li class="page-item ${i === current ? 'active' : ''}">
+                    <a class="page-link" href="#" onclick="event.preventDefault(); loadTablePage(${i})">${i}</a>
+                </li>
+            `;
+        }
+
+        if (endPage < total) {
+            if (endPage < total - 1) navContainer.innerHTML += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+            navContainer.innerHTML += `<li class="page-item"><a class="page-link" href="#" onclick="event.preventDefault(); loadTablePage(${total})">${total}</a></li>`;
+        }
+
+        // Button Next
+        navContainer.innerHTML += `
+            <li class="page-item ${current === total ? 'disabled' : ''}">
+                <a class="page-link" href="#" onclick="event.preventDefault(); if(${current} < ${total}) loadTablePage(${current + 1})">&rarr;</a>
+            </li>
+        `;
+    }
+
+    // Map untuk melacak apakah data wilayah sub-level sudah pernah ditarik/di-cache sebelumnya
+    const loadedKoseka = new Set();
+    const loadedPml = new Set();
+
+    async function loadPmlData(idKoseka) {
+        if (loadedKoseka.has(idKoseka)) return; // Cegah re-fetch berkali-kali jika akordion ditutup-buka
+
+        const container = document.getElementById(`body-koseka-${idKoseka}`);
+
+        try {
+            const response = await fetch(`<?= base_url('se/monitoring-progres/getPmlByKoseka') ?>?id_koseka=${idKoseka}`);
+            const data = await response.json();
+
+            if (data.length === 0) {
+                container.innerHTML = '<div class="text-muted p-2">Tidak ditemukan data PML di bawah Koseka ini.</div>';
+                return;
+            }
+
+            let html = `<div class="accordion" id="accordion-pml-root-${idKoseka}">`;
+            data.forEach(pml => {
+                html += `
+                <div class="accordion-item border my-1">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed bg-white text-dark py-2" type="button" 
+                                data-bs-toggle="collapse" data-bs-target="#collapse-pml-${pml.id_pml}" 
+                                onclick="loadPplData('${pml.id_pml}', '${idKoseka}')">
+                            <div class="w-100 d-flex justify-content-between pe-3 small">
+                                <span>🔍 PML: <strong>${pml.nama_pml}</strong></span>
+                                <span class="text-muted">
+                                    [ Tgt: ${formatNum(pml.total)} | Appv: <span class="text-success">${formatNum(pml.approved)}</span> | Subm: <span class="text-blue">${formatNum(pml.submitted)}</span> ]
+                                </span>
+                            </div>
+                        </button>
+                    </h2>
+                    <div id="collapse-pml-${pml.id_pml}" class="accordion-collapse collapse" data-bs-parent="#accordion-pml-root-${idKoseka}">
+                        <div class="accordion-body bg-white py-2 ps-4" id="body-pml-${pml.id_pml}">
+                            <div class="text-muted text-center py-2"><span class="spinner-border spinner-border-sm"></span> Menarik data PPL...</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+            loadedKoseka.add(idKoseka);
+
+        } catch (error) {
+            console.error("Gagal memuat data PML:", error);
+            container.innerHTML = '<div class="text-danger p-2">Gagal mengambil data dari server.</div>';
+        }
+    }
+
+    async function loadPplData(idPml, idKoseka) {
+        if (loadedPml.has(idPml)) return;
+
+        const container = document.getElementById(`body-pml-${idPml}`);
+
+        try {
+            const response = await fetch(`<?= base_url('se/monitoring-progres/getPplByPml') ?>?id_pml=${idPml}`);
+            const data = await response.json();
+
+            if (data.length === 0) {
+                container.innerHTML = '<div class="text-muted p-2 small">Tidak ada PPL di bawah PML ini.</div>';
+                return;
+            }
+
+            let html = '<div class="list-group list-group-flush small">';
+            data.forEach(ppl => {
+                html += `
+                <div class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 border-bottom">
+                    <span>🏃 PPL: <strong>${ppl.nama_ppl}</strong></span>
+                    <span class="text-muted">
+                        Target: <strong>${formatNum(ppl.total)}</strong> | 
+                        <span class="badge bg-secondary-lt">Open: ${formatNum(ppl.open)}</span> | 
+                        <span class="badge bg-warning-lt">Draft: ${formatNum(ppl.draft)}</span> | 
+                        <span class="badge bg-blue-lt">Subm: ${formatNum(ppl.submitted)}</span> | 
+                        <span class="badge bg-success-lt">Appv: ${formatNum(ppl.approved)}</span>
+                    </span>
+                </div>
+            `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+            loadedPml.add(idPml);
+
+        } catch (error) {
+            console.error("Gagal memuat data PPL:", error);
+            container.innerHTML = '<div class="text-danger p-2 small">Gagal mengambil data PPL.</div>';
+        }
+    }
+</script>
+<?= $this->endSection(); ?>
