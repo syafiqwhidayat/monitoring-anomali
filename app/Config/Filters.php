@@ -36,6 +36,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'activeRole' => ActiveRoleFilter::class, //tambahan cek active role
+        'apiKeyAuth'    => \App\Filters\ApiKeyFilter::class,
     ];
 
     /**

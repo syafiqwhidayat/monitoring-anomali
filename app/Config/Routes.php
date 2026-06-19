@@ -108,6 +108,21 @@ $routes->group('fasihhelpdesk', ['filter' => 'activeRole:superadmin,admin,operat
     $routes->get('closeLaporanBiasa/(:num)', 'FasihHelpdesk::closeLaporanBiasa/$1'); //hanya close laporan tertentu
 });
 
+// Semua route di dalam grup 'api' akan otomatis melewati pengecekan ApiKeyFilter
+$routes->group('api', ['filter' => 'apiKeyAuth'], function ($routes) {
+
+    // 1. API Upload Kabupaten (yang kita diskusikan sebelumnya)
+    // $routes->post('anomali/upload-kabupaten', 'Api\Anomali::uploadKabupaten');
+
+    // Endpoint untuk upload progres CSV dari Python
+    $routes->post('se/upload-progres', 'Api\SeProgresController::uploadProgres');
+
+    // 2. Rencana API baru Anda di masa depan tinggal ditaruh di bawah sini:
+    // $routes->get('anomali/rekap', 'Api\Anomali::getRekap');
+    // $routes->post('se/sync-status', 'Api\MonitoringSE::syncStatus');
+    // $routes->get('wilayah/list', 'Api\Wilayah::index');
+});
+
 $routes->get('faq', 'FasihHelpdesk::publikIndex');              // Portal FAQ Publik + Search Tanpa Login
 $routes->get('faq/baca/(:num)', 'FasihHelpdesk::publikDetail/$1'); // Direct link halaman tunggal FAQ untuk di-share
 
