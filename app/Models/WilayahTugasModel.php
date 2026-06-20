@@ -64,7 +64,19 @@ class WilayahTugasModel extends Model
         $this->builder()->resetQuery();
 
         $builder = $this->builder();
-        $builder->select('wilayah_tugas.id AS id_wt,w.*,ppl.name AS nm_ppl, id_ppl.secret AS em_ppl,pml.name AS nm_pml, id_pml.secret AS em_pml,kos.name AS nm_kos, id_kos.secret AS em_kos,wilayah_tugas.id_ppl AS id_ppl, wilayah_tugas.id_pml AS id_pml, wilayah_tugas.id_koseka AS id_kos')
+        $builder->select('
+    wilayah_tugas.id AS id_wt,
+    w.*,
+    ppl.name AS nm_ppl, 
+    id_ppl.secret AS em_ppl,
+    pml.name AS nm_pml, 
+    id_pml.secret AS em_pml,
+    kos.name AS nm_kos, 
+    id_kos.secret AS em_kos,
+    wilayah_tugas.id_ppl, 
+    wilayah_tugas.id_pml, 
+    wilayah_tugas.id_koseka AS id_kos
+')
             ->join('wilayah w', 'w.id = id_wilayah', 'left')
             ->join('users ppl', 'ppl.id = id_ppl', 'left')
             ->join('auth_identities id_ppl', 'id_ppl.user_id = ppl.id', 'left')
@@ -72,7 +84,7 @@ class WilayahTugasModel extends Model
             ->join('auth_identities id_pml', 'id_pml.user_id = pml.id', 'left')
             ->join('users kos', 'kos.id = id_koseka', 'left')
             ->join('auth_identities id_kos', 'id_kos.user_id = kos.id', 'left')
-            ->groupBy('id_wilayah')
+            // ->groupBy('id_wilayah')
             ->where('id_kegiatan', $idKegiatan);
 
         if ($kdKab) $builder->where('w.kd_kab', $kdKab);
@@ -80,14 +92,37 @@ class WilayahTugasModel extends Model
         if ($kdDes) $builder->where('w.kd_des', $kdDes);
 
         if ($keyword) {
-            $builder->groupStart()
-                ->like('ppl.name', $keyword)
-                ->orLike('pml.name', $keyword)
-                ->orLike('id_ppl.secret', $keyword)
-                ->orLike('id_pml.secret', $keyword)
-                ->groupEnd();
+            // 1. Pecah keyword berdasarkan titik koma (;) atau koma (,)
+            $keywordsArray = preg_split('/[;,]+/', $keyword, -1, PREG_SPLIT_NO_EMPTY);
+
+            // Buka pembungkus utama untuk menyatukan semua keyword dengan kondisi AND utama
+            $builder->groupStart();
+
+            foreach ($keywordsArray as $index => $kw) {
+                $kw = trim($kw); // Bersihkan spasi di ujung teks
+
+                // Jika keyword kedua dan seterusnya, hubungkan antar kelompok kata dengan OR
+                if ($index > 0) {
+                    $builder->orGroupStart();
+                } else {
+                    $builder->groupStart();
+                }
+
+                // PASTIKAN menggunakan $kw, BUKAN $keyword mentah
+                $builder->like('ppl.name', $kw)
+                    ->orLike('pml.name', $kw)
+                    ->orLike('kos.name', $kw)
+                    ->orLike('id_ppl.secret', $kw)
+                    ->orLike('id_pml.secret', $kw)
+                    ->orLike('id_kos.secret', $kw)
+                    ->orLike('wilayah_tugas.id_wilayah', $kw)
+                    ->groupEnd(); // Menutup grup kata individu
+            }
+
+            // Tutup pembungkus utama
+            $builder->groupEnd();
         }
-        return $builder->get()->getResultArray();
+        return $builder;
     }
 
     public function getUserByKegiatan($wilayah_kerja = null)

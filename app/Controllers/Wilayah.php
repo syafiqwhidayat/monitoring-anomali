@@ -51,7 +51,23 @@ class Wilayah extends BaseController
 
         // data
         $data['list_user'] = $this->wilayahTugasModel->getUserByKegiatan($idKegaiatan);
-        $data['wilayah_tugas'] = $this->wilayahTugasModel->getWilayahTugasByKegaitan($idKegaiatan, $data['sel_kab'], $data['sel_kec'], $data['sel_des'], $data['sel_keyword']);
+
+        // ================== MODIFIKASI PAGINATION ==================
+        $perPage = 25; // Jumlah data per halaman
+
+        // 1. Ambil query builder dari fungsi model yang sudah Anda buat
+        $builderWilayah = $this->wilayahTugasModel->getWilayahTugasByKegaitan(
+            $idKegaiatan,
+            $data['sel_kab'],
+            $data['sel_kec'],
+            $data['sel_des'],
+            $data['sel_keyword']
+        );
+
+        // 2. KUNCI UTAMA: Suntikkan builder ke dalam context model, lalu jalankan paginate
+        $data['wilayah_tugas'] = $this->wilayahTugasModel->paginate($perPage, 'default');
+        $data['pager']         = $this->wilayahTugasModel->pager;
+        // ===========================================================
         return view('manajWilayah/manajWilayahTugas', $data);
     }
 

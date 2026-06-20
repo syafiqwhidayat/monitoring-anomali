@@ -70,10 +70,10 @@
                             </a>
                             <div class="dropdown-menu">
                                 <div class="dropdown-menu-columns">
-                                    <a class="dropdown-item" href="<?= base_url('/se/monitoring-progres') ?>">Moniroing Progress SE</a>
+                                    <a class="dropdown-item" href="<?= base_url('/se/monitoring-progres') ?>">Progress SE2026</a>
+                                    <a class="dropdown-item" href="<?= base_url('/se/monitoring-ub') ?>">Progress SE2026-UB</a>
                                     <a class="dropdown-item" href="<?= base_url('/se/monitoring') ?>">Moniroing Keseluruhan</a>
                                     <a class="dropdown-item" href="<?= base_url('/se/monitoring-ngibar') ?>">Moniroing Ngibar</a>
-                                    <a class="dropdown-item" href="<?= base_url('/se/monitoring-ub') ?>">Moniroing SE2026-UB</a>
                                     <a class="dropdown-item" href="<?= base_url('/se/duplikat') ?>">Duplikat Ngibar</a>
                                     <a class="dropdown-item" href="<?= base_url('/se/ngibar') ?>">Daftar Assigment Ngibar</a>
                                     <?php if (session('aktif_role') === 'superadmin'): ?>

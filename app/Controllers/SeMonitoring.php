@@ -1157,9 +1157,9 @@ class SeMonitoring extends BaseController
         $cardsData = $builderCards->select('
             SUM(total) as total,
             SUM(open) as open,
-            SUM(draft) as draft,
+            SUM(draft + rejected_by_pengawas) as draft,
             SUM(approved_by_pengawas) as approved,
-            SUM(submitted_by_pencacah + submitted_respondent) as submitted
+            SUM(submitted_by_pencacah + submitted_respondent + revoked_by_pengawas + rejected_by_admin_kabupaten) as submitted
         ')->get()->getRowArray();
 
         // 3. QUERY PROGRESS BAR (1 Level Wilayah di Bawahnya - Detail Status)
@@ -1172,9 +1172,9 @@ class SeMonitoring extends BaseController
         LEFT(id_subsls, {$lenGroup}) as kode_wilayah,
         SUM(total) as total,
         SUM(open) as open,
-        SUM(draft) as draft,
+        SUM(draft + rejected_by_pengawas) as draft,
         SUM(approved_by_pengawas) as approved,
-        SUM(COALESCE(submitted_by_pencacah, 0) + COALESCE(submitted_respondent, 0)) as submitted")
+        SUM(COALESCE(submitted_by_pencacah, 0) + COALESCE(submitted_respondent, 0) + COALESCE(revoked_by_pengawas, 0) + COALESCE(rejected_by_admin_kabupaten, 0)) as submitted")
             ->groupBy("LEFT(id_subsls, {$lenGroup})")
             ->get()
             ->getResultArray();
@@ -1198,9 +1198,9 @@ class SeMonitoring extends BaseController
             $histRows = $builderHist->select('
                 tanggal,
                 SUM(open) as open,
-                SUM(draft) as draft,
+                SUM(draft + rejected_by_pengawas) as draft,
                 SUM(approved_by_pengawas) as approved,
-                SUM(submitted_by_pencacah + submitted_respondent) as submitted
+                SUM(submitted_by_pencacah + submitted_respondent + revoked_by_pengawas + rejected_by_admin_kabupaten) as submitted
             ')->groupBy('tanggal')->orderBy('tanggal', 'ASC')->get()->getResultArray();
 
             // Format ulang agar siap dikonsumsi Chart JSON
@@ -1253,7 +1253,7 @@ class SeMonitoring extends BaseController
 
         // Kloning builder untuk Top 5 (Urutan Terbanyak Approved + Submitted)
         $builderTop = clone $baseChampions;
-        $topPetugas = $builderTop->select('u.username as nama_petugas, 
+        $topPetugas = $builderTop->select('u.name as nama_petugas, u.wilayah_kerja as wilayah,
             SUM(s.approved_by_pengawas) as approved,
             SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
             ->groupBy('w.id_ppl')
@@ -1263,7 +1263,7 @@ class SeMonitoring extends BaseController
 
         // Kloning builder untuk Bottom 5 (Urutan Terendah Approved + Submitted)
         $builderBottom = clone $baseChampions;
-        $bottomPetugas = $builderBottom->select('u.username as nama_petugas, 
+        $bottomPetugas = $builderBottom->select('u.name as nama_petugas, u.wilayah_kerja as wilayah, 
             SUM(s.approved_by_pengawas) as approved,
             SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
             ->groupBy('w.id_ppl')
@@ -1274,20 +1274,32 @@ class SeMonitoring extends BaseController
         // ==========================================
         // ADDON: ROOT KOSEKA UNTUK AKORDION AWAL
         // ==========================================
-        $builderKoseka = $this->db->table('se_progres_subsls' . ' s')
-            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'inner')
-            ->join('users u', 'w.id_koseka = u.id', 'inner')
-            ->where('s.tanggal', $targetTanggal)
-            ->where('w.id_kegiatan', $this->idKegiatanPetugas);
+        if ($selectedKab !== "SUMBAR") {
+            $builderKoseka = $this->db->table('se_progres_subsls' . ' s')
+                ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'left')
+                ->join('users u', 'w.id_koseka = u.id', 'left')
+                ->where('s.tanggal', $targetTanggal);
 
-        if ($selectedKab !== 'SUMBAR') {
-            $builderKoseka->like('s.id_subsls', $selectedKab, 'after');
+            // Filter kegiatan hanya berlaku jika baris wilayah_tugas ditemukan
+            $builderKoseka->groupStart()
+                ->where('w.id_kegiatan', $this->idKegiatanPetugas)
+                ->orWhere('w.id_kegiatan IS NULL')
+                ->groupEnd();
+
+            if ($selectedKab !== 'SUMBAR') {
+                $builderKoseka->like('s.id_subsls', $selectedKab, 'after');
+            }
+            $kosekaData = $builderKoseka->select('
+                IFNULL(w.id_koseka, 0) as id_koseka, 
+                IFNULL(u.name, "Belum Ada Koseka") as nama_koseka,
+                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
+                SUM(s.approved_by_pengawas) as approved,
+                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted
+            ')
+                ->groupBy('IFNULL(w.id_koseka, 0)')->get()->getResultArray();
+        } else {
+            $kosekaData = null;
         }
-        $kosekaData = $builderKoseka->select('w.id_koseka, u.username as nama_koseka,
-            SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
-            SUM(s.approved_by_pengawas) as approved,
-            SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
-            ->groupBy('w.id_koseka')->get()->getResultArray();
 
         return view('seMonitoring/monitoring_progres', [
             'title' => "monitoring progres",
@@ -1402,21 +1414,35 @@ class SeMonitoring extends BaseController
     public function getPmlByKoseka()
     {
         $idKoseka = $this->request->getGet('id_koseka');
+        $kdKab = $this->request->getGet('kd_kab');
 
         $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
         $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
 
-        $pmlRows = $this->db->table('se_progres_subsls' . ' s')
-            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'inner')
-            ->join('users u', 'w.id_pml = u.id', 'inner')
+        $builder = $this->db->table('se_progres_subsls' . ' s')
+            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'left')
+            ->join('users u', 'w.id_pml = u.id', 'left')
             ->where('s.tanggal', $targetTanggal)
-            ->where('w.id_koseka', $idKoseka)
+            ->where('IFNULL(w.id_koseka, 0)', $idKoseka);
+
+        // KUNCI 1: Batasi hanya untuk kabupaten yang sedang dibuka agar tidak bocor ke kab lain
+        if ($kdKab) {
+            $builder->like('s.id_subsls', $kdKab, 'after');
+        }
+
+        // KUNCI 2: Amankan filter kegiatan agar SLS yang belum di-assign (NULL) tidak hilang
+        $builder->groupStart()
             ->where('w.id_kegiatan', $this->idKegiatanPetugas)
-            ->select('w.id_pml, u.username as nama_pml,
-                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
-                SUM(s.approved_by_pengawas) as approved,
-                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
-            ->groupBy('w.id_pml')->get()->getResultArray();
+            ->orWhere('w.id_kegiatan IS NULL')
+            ->groupEnd();
+
+        $pmlRows = $builder->select('
+            IFNULL(w.id_pml, 0) as id_pml, 
+            IFNULL(u.username, "Belum Ada PML") as nama_pml,
+            SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
+            SUM(s.approved_by_pengawas) as approved,
+            SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+            ->groupBy('IFNULL(w.id_pml, 0)')->get()->getResultArray();
 
         return $this->response->setJSON($pmlRows);
     }
@@ -1427,21 +1453,36 @@ class SeMonitoring extends BaseController
     public function getPplByPml()
     {
         $idPml = $this->request->getGet('id_pml');
+        $kdKab = $this->request->getGet('kd_kab');
 
         $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
         $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
 
-        $pplRows = $this->db->table('se_progres_subsls' . ' s')
-            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'inner')
-            ->join('users u', 'w.id_ppl = u.id', 'inner')
+        $builder = $this->db->table('se_progres_subsls' . ' s')
+            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'left')
+            ->join('users u', 'w.id_ppl = u.id', 'left')
             ->where('s.tanggal', $targetTanggal)
-            ->where('w.id_pml', $idPml)
+            // HAPUS ->where('w.id_pml', $idPml) karena bikin mentok saat NULL
+            ->where('IFNULL(w.id_pml, 0)', $idPml);
+
+        // KUNCI 1: Batasi wilayah kabupaten
+        if ($kdKab) {
+            $builder->like('s.id_subsls', $kdKab, 'after');
+        }
+
+        // KUNCI 2: Amankan filter kegiatan
+        $builder->groupStart()
             ->where('w.id_kegiatan', $this->idKegiatanPetugas)
-            ->select('w.id_ppl, u.username as nama_ppl,
-                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
-                SUM(s.approved_by_pengawas) as approved,
-                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
-            ->groupBy('w.id_ppl')->get()->getResultArray();
+            ->orWhere('w.id_kegiatan IS NULL')
+            ->groupEnd();
+
+        $pplRows = $builder->select('
+            IFNULL(w.id_ppl, 0) as id_ppl, 
+            IFNULL(u.username, "Belum Ada PPL") as nama_ppl,
+            SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
+            SUM(s.approved_by_pengawas) as approved,
+            SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+            ->groupBy('IFNULL(w.id_ppl, 0)')->get()->getResultArray();
 
         return $this->response->setJSON($pplRows);
     }

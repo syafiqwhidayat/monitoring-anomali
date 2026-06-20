@@ -9,33 +9,35 @@
 <div class="page-header d-print-none my-3">
     <div class="container-xl">
         <div class="row g-2 align-items-center">
-            <div class="col">
-                <h2 class="page-title">Monitoring Progres Kegiatan SE2026</h2>
+            <div class="col-12 col-sm-auto text-center text-sm-start">
+                <h2 class="page-title justify-content-center justify-content-sm-start">Monitoring Progres Kegiatan SE2026</h2>
                 <div class="text-muted small mt-1">Data Posisi: <strong class="text-primary"><?= $targetTanggal ?></strong></div>
             </div>
-            <div class="col-auto ms-auto">
+
+            <div class="col-12 col-sm-auto ms-sm-auto w-100 w-sm-auto">
                 <form method="GET" action="" id="filterForm">
-                    <select name="kabupaten" class="form-select" onchange="document.getElementById('filterForm').submit()">
+                    <select name="kabupaten" class="form-select w-100"
+                        onchange="document.getElementById('filterForm').submit()">
                         <option value="SUMBAR" <?= $selectedKab == 'SUMBAR' ? 'selected' : '' ?>>-- SELURUH PROVINSI --</option>
                         <option value="1301" <?= $selectedKab == '1301' ? 'selected' : '' ?>>[1301] Kepulauan Mentawai</option>
-                        <option value="1301" <?= $selectedKab == '1302' ? 'selected' : '' ?>>[1302] Pesisir Selatan</option>
-                        <option value="1301" <?= $selectedKab == '1303' ? 'selected' : '' ?>>[1303] Solok</option>
-                        <option value="1301" <?= $selectedKab == '1304' ? 'selected' : '' ?>>[1304] Sijunjung</option>
-                        <option value="1301" <?= $selectedKab == '1305' ? 'selected' : '' ?>>[1305] Tanah Datar</option>
-                        <option value="1301" <?= $selectedKab == '1306' ? 'selected' : '' ?>>[1306] Padang Pariaman</option>
-                        <option value="1301" <?= $selectedKab == '1307' ? 'selected' : '' ?>>[1307] Agam</option>
-                        <option value="1301" <?= $selectedKab == '1308' ? 'selected' : '' ?>>[1308] Lima Puluh Kota</option>
-                        <option value="1301" <?= $selectedKab == '1309' ? 'selected' : '' ?>>[1309] Pasaman</option>
-                        <option value="1301" <?= $selectedKab == '1310' ? 'selected' : '' ?>>[1310] Solok Selatan</option>
+                        <option value="1302" <?= $selectedKab == '1302' ? 'selected' : '' ?>>[1302] Pesisir Selatan</option>
+                        <option value="1303" <?= $selectedKab == '1303' ? 'selected' : '' ?>>[1303] Solok</option>
+                        <option value="1304" <?= $selectedKab == '1304' ? 'selected' : '' ?>>[1304] Sijunjung</option>
+                        <option value="1305" <?= $selectedKab == '1305' ? 'selected' : '' ?>>[1305] Tanah Datar</option>
+                        <option value="1306" <?= $selectedKab == '1306' ? 'selected' : '' ?>>[1306] Padang Pariaman</option>
+                        <option value="1307" <?= $selectedKab == '1307' ? 'selected' : '' ?>>[1307] Agam</option>
+                        <option value="1308" <?= $selectedKab == '1308' ? 'selected' : '' ?>>[1308] Lima Puluh Kota</option>
+                        <option value="1309" <?= $selectedKab == '1309' ? 'selected' : '' ?>>[1309] Pasaman</option>
+                        <option value="1310" <?= $selectedKab == '1310' ? 'selected' : '' ?>>[1310] Solok Selatan</option>
                         <option value="1311" <?= $selectedKab == '1311' ? 'selected' : '' ?>>[1311] Dharmasraya</option>
-                        <option value="1311" <?= $selectedKab == '1312' ? 'selected' : '' ?>>[1312] Pasaman Barat</option>
-                        <option value="1376" <?= $selectedKab == '1371' ? 'selected' : '' ?>>[1371] Kota Padang</option>
-                        <option value="1376" <?= $selectedKab == '1372' ? 'selected' : '' ?>>[1372] Kota Solok</option>
-                        <option value="1376" <?= $selectedKab == '1373' ? 'selected' : '' ?>>[1373] Kota Sawahlunto</option>
-                        <option value="1376" <?= $selectedKab == '1374' ? 'selected' : '' ?>>[1374] Kota Padang Panjang</option>
-                        <option value="1376" <?= $selectedKab == '1375' ? 'selected' : '' ?>>[1375] Kota Bukittinggi</option>
+                        <option value="1312" <?= $selectedKab == '1312' ? 'selected' : '' ?>>[1312] Pasaman Barat</option>
+                        <option value="1371" <?= $selectedKab == '1371' ? 'selected' : '' ?>>[1371] Kota Padang</option>
+                        <option value="1372" <?= $selectedKab == '1372' ? 'selected' : '' ?>>[1372] Kota Solok</option>
+                        <option value="1373" <?= $selectedKab == '1373' ? 'selected' : '' ?>>[1373] Kota Sawahlunto</option>
+                        <option value="1374" <?= $selectedKab == '1374' ? 'selected' : '' ?>>[1374] Kota Padang Panjang</option>
+                        <option value="1375" <?= $selectedKab == '1375' ? 'selected' : '' ?>>[1375] Kota Bukittinggi</option>
                         <option value="1376" <?= $selectedKab == '1376' ? 'selected' : '' ?>>[1376] Kota Payakumbuh</option>
-                        <option value="1376" <?= $selectedKab == '1377' ? 'selected' : '' ?>>[1377] Kota Pariaman</option>
+                        <option value="1377" <?= $selectedKab == '1377' ? 'selected' : '' ?>>[1377] Kota Pariaman</option>
                     </select>
                 </form>
             </div>
@@ -58,34 +60,81 @@
             <div class="col-sm-6 col-lg-3">
                 <div class="card card-sm">
                     <div class="card-body">
-                        <div class="text-muted small">Open</div>
+                        <div class="d-flex align-items-center justify-content-between text-muted small mb-1">
+                            <span>Open</span>
+                            <span class="cursor-pointer text-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Jumlah Assigment / Prelist yang belum didata sama sekali oleh petugas lapangan.">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                                    <path d="M12 9h.01" />
+                                    <path d="M11 12h1v4h1" />
+                                </svg>
+                            </span>
+                        </div>
                         <div class="h1 mb-0"><?= number_format($cards['open'] ?? 0) ?></div>
                         <div class="text-muted small"><?= $getPercent($cards['open'] ?? 0, $total) ?>% dari total</div>
                     </div>
                 </div>
             </div>
+
             <div class="col-sm-6 col-lg-3">
                 <div class="card card-sm">
                     <div class="card-body">
-                        <div class="text-muted small">Draft</div>
+                        <div class="d-flex align-items-center justify-content-between text-muted small mb-1">
+                            <span>Draft</span>
+                            <span class="cursor-pointer text-warning" data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Jumlah Assigment disimpan sementara oleh PPL atau responden, Assigment Rejected oleh PML">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                                    <path d="M12 9h.01" />
+                                    <path d="M11 12h1v4h1" />
+                                </svg>
+                            </span>
+                        </div>
                         <div class="h1 mb-0 text-yellow"><?= number_format($cards['draft'] ?? 0) ?></div>
                         <div class="text-muted small"><?= $getPercent($cards['draft'] ?? 0, $total) ?>% dari total</div>
                     </div>
                 </div>
             </div>
+
             <div class="col-sm-6 col-lg-3">
                 <div class="card card-sm">
                     <div class="card-body">
-                        <div class="text-muted small">Submitted (Ptgs + Rspdn)</div>
+                        <div class="d-flex align-items-center justify-content-between text-muted small mb-1">
+                            <span>Submitted</span>
+                            <span class="cursor-pointer text-blue" data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Jumlah Assigment Submitted oleh PPL, Assigment Submitted oleh Responden, Revoked oleh pengawas, Rejected oleh Admin">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                                    <path d="M12 9h.01" />
+                                    <path d="M11 12h1v4h1" />
+                                </svg>
+                            </span>
+                        </div>
                         <div class="h1 mb-0 text-blue"><?= number_format($cards['submitted'] ?? 0) ?></div>
                         <div class="text-muted small"><?= $getPercent($cards['submitted'] ?? 0, $total) ?>% dari total</div>
                     </div>
                 </div>
             </div>
+
             <div class="col-sm-6 col-lg-3">
                 <div class="card card-sm">
                     <div class="card-body">
-                        <div class="text-muted small">Approved Pengawas</div>
+                        <div class="d-flex align-items-center justify-content-between text-muted small mb-1">
+                            <span>Approved Pengawas</span>
+                            <span class="cursor-pointer text-success" data-bs-toggle="tooltip" data-bs-placement="top"
+                                title="Jumlah Assigment Approved oleh PML">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
+                                    <path d="M12 9h.01" />
+                                    <path d="M11 12h1v4h1" />
+                                </svg>
+                            </span>
+                        </div>
                         <div class="h1 mb-0 text-green"><?= number_format($cards['approved'] ?? 0) ?></div>
                         <div class="text-muted small"><strong><?= $getPercent($cards['approved'] ?? 0, $total) ?>%</strong> dari total</div>
                     </div>
@@ -120,72 +169,77 @@
                 </div>
             </div>
 
-            <!-- PROGRESS BAR 1 LEVEL DI BAWAHNYA -->
             <div class="col-lg-5">
-                <div class="card" style="max-height: 375px; overflow-y: auto;">
+                <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Progres Komposisi Status per Kode <?= $selectedKab === 'SUMBAR' ? 'Kabupaten' : 'Kecamatan' ?></h3>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body" style="max-height: 290px; overflow-y: auto;">
                         <?php if (empty($progressRows)): ?>
                             <div class="text-muted text-center py-4">Tidak ada data progres.</div>
                         <?php else: ?>
                             <?php foreach ($progressRows as $row):
-                                $tot = $row['total'] > 0 ? $row['total'] : 1; // Cegah division by zero
+                                $tot = $row['total'] > 0 ? $row['total'] : 1;
 
-                                // Hitung persentase masing-masing status terhadap total wilayah tersebut
                                 $pctOpen      = round(($row['open'] / $tot) * 100, 1);
                                 $pctDraft     = round(($row['draft'] / $tot) * 100, 1);
                                 $pctSubmitted = round(($row['submitted'] / $tot) * 100, 1);
                                 $pctApproved  = round(($row['approved'] / $tot) * 100, 1);
+
+                                // Menyusun teks ringkasan multisub-status dengan baris baru (HTML)
+                                $tooltipContent = "🟢 Approved: " . number_format($row['approved']) . " ({$pctApproved}%)<br>" .
+                                    "🔵 Submitted: " . number_format($row['submitted']) . " ({$pctSubmitted}%)<br>" .
+                                    "🟡 Draft: " . number_format($row['draft']) . " ({$pctDraft}%)<br>" .
+                                    "⚪ Open: " . number_format($row['open']) . " ({$pctOpen}%)";
                             ?>
                                 <div class="mb-3">
                                     <div class="d-flex justify-content-between small mb-1">
                                         <span>Kode: <strong><?= $row['kode_wilayah'] ?></strong></span>
-                                        <span class="text-muted small">Target: <strong><?= number_format($row['total']) ?></strong> Assigment</span>
+                                        <span class="text-muted small">Target: <strong><?= number_format($row['total']) ?></strong> Assignment</span>
                                     </div>
 
-                                    <div class="progress progress-sm">
+                                    <div class="progress progress-sm cursor-pointer"
+                                        data-bs-toggle="tooltip"
+                                        data-bs-html="true"
+                                        data-bs-placement="top"
+                                        title="<?= $tooltipContent ?>">
+
                                         <?php if ($row['approved'] > 0): ?>
-                                            <div class="progress-bar bg-success" style="width: <?= $pctApproved ?>%"
-                                                title="Approved: <?= number_format($row['approved']) ?> (<?= $pctApproved ?>%)"></div>
+                                            <div class="progress-bar bg-success" style="width: <?= $pctApproved ?>%"></div>
                                         <?php endif; ?>
 
                                         <?php if ($row['submitted'] > 0): ?>
-                                            <div class="progress-bar bg-blue" style="width: <?= $pctSubmitted ?>%"
-                                                title="Submitted: <?= number_format($row['submitted']) ?> (<?= $pctSubmitted ?>%)"></div>
+                                            <div class="progress-bar bg-blue" style="width: <?= $pctSubmitted ?>%"></div>
                                         <?php endif; ?>
 
                                         <?php if ($row['draft'] > 0): ?>
-                                            <div class="progress-bar bg-warning" style="width: <?= $pctDraft ?>%"
-                                                title="Draft: <?= number_format($row['draft']) ?> (<?= $pctDraft ?>%)"></div>
+                                            <div class="progress-bar bg-warning" style="width: <?= $pctDraft ?>%"></div>
                                         <?php endif; ?>
 
                                         <?php if ($row['open'] > 0): ?>
-                                            <div class="progress-bar bg-secondary" style="width: <?= $pctOpen ?>%"
-                                                title="Open: <?= number_format($row['open']) ?> (<?= $pctOpen ?>%)"></div>
+                                            <div class="progress-bar bg-secondary" style="width: <?= $pctOpen ?>%"></div>
                                         <?php endif; ?>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
-
-                            <div class="d-flex justify-content-between text-muted small mt-3 pt-2 border-top">
-                                <div><span class="badge bg-success me-1"></span> Appv</div>
-                                <div><span class="badge bg-blue me-1"></span> Subm</div>
-                                <div><span class="badge bg-warning me-1"></span> Drft</div>
-                                <div><span class="badge bg-secondary me-1"></span> Open</div>
-                            </div>
-                        <?php endif; ?>
                     </div>
+
+                    <div class="d-flex card-footer justify-content-between text-muted small mt-3 pt-2 border-top">
+                        <div><span class="badge bg-success me-1"></span> Appv</div>
+                        <div><span class="badge bg-blue me-1"></span> Subm</div>
+                        <div><span class="badge bg-warning me-1"></span> Drft</div>
+                        <div><span class="badge bg-secondary me-1"></span> Open</div>
+                    </div>
+                <?php endif; ?>
                 </div>
             </div>
         </div>
 
         <div class="row row-cards mt-2">
             <div class="col-md-6">
-                <div class="card card-md">
+                <div class="card card-md h-100">
                     <div class="card-status-top bg-success"></div>
-                    <div class="card-header">
+                    <div class="card-header py-3">
                         <h3 class="card-title">🏆 Top 5 Petugas Lapangan (PPL)</h3>
                     </div>
                     <div class="list-group list-group-flush">
@@ -197,23 +251,31 @@
                                 default => '⭐'
                             };
                             $bgRank = match ($index) {
-                                // 0 => 'bg-amber',
-                                // 1 => 'bg-secondary-lt',
-                                // 2 => 'bg-orange-lt',
+                                0 => 'bg-emerald-lt',
+                                1 => 'bg-azure-lt',
+                                2 => 'bg-orange-lt',
                                 default => ''
                             };
                         ?>
-                            <div class="list-group-item d-flex align-items-center justify-content-between <?= $bgRank ?>">
-                                <div class="d-flex align-items-center">
-                                    <span class="fs-2 me-3"><?= $medal ?></span>
-                                    <div>
-                                        <strong class="text-reset"><?= esc($p['nama_petugas']) ?></strong>
-                                        <div class="text-muted small">Pencapaian Kerja Lapangan</div>
+                            <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-3 <?= $bgRank ?>">
+                                <div class="d-flex align-items-center me-2" style="min-width: 0;">
+                                    <span class="fs-2 me-2" style="line-height: 1; flex-shrink: 0;"><?= $medal ?></span>
+                                    <div style="min-width: 0;">
+                                        <div class="text-reset fw-bold text-truncate" title="<?= esc($p['nama_petugas']) ?>">
+                                            <?= esc($p['nama_petugas']) ?>
+                                        </div>
+                                        <div class="text-muted small text-truncate">
+                                            📍 Wilayah: <span class="badge bg-light text-dark font-monospace px-1 py-0"><?= esc($p['wilayah'] ?? '-') ?></span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="text-end">
-                                    <span class="badge bg-green text-white">Appv: <?= number_format($p['approved']) ?></span>
-                                    <span class="badge bg-blue-lt">Subm: <?= number_format($p['submitted']) ?></span>
+                                <div class="text-end d-flex flex-column flex-sm-row gap-1 align-items-end align-items-sm-center" style="flex-shrink: 0;">
+                                    <span class="badge bg-green text-green-fg px-2 py-1" style="font-size: 0.75rem; min-width: 75px;">
+                                        Appv: <?= number_format($p['approved']) ?>
+                                    </span>
+                                    <span class="badge bg-blue-lt px-2 py-1" style="font-size: 0.75rem; min-width: 75px;">
+                                        Subm: <?= number_format($p['submitted']) ?>
+                                    </span>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -222,24 +284,32 @@
             </div>
 
             <div class="col-md-6">
-                <div class="card card-md">
+                <div class="card card-md h-100">
                     <div class="card-status-top bg-danger"></div>
-                    <div class="card-header">
+                    <div class="card-header py-3">
                         <h3 class="card-title">⚠️ 5 Terbawah Progres Petugas</h3>
                     </div>
                     <div class="list-group list-group-flush">
                         <?php foreach ($bottomPetugas as $index => $p): ?>
-                            <div class="list-group-item d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center">
-                                    <span class="text-muted me-3 font-weight-bold">#<?= $index + 1 ?></span>
-                                    <div>
-                                        <strong class="text-reset"><?= esc($p['nama_petugas']) ?></strong>
-                                        <div class="text-muted small">Butuh Pendampingan Pengawas</div>
+                            <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-3">
+                                <div class="d-flex align-items-center me-2" style="min-width: 0;">
+                                    <span class="text-danger me-3 fw-bold fs-3 text-center" style="width: 25px; flex-shrink: 0;">#<?= $index + 1 ?></span>
+                                    <div style="min-width: 0;">
+                                        <div class="text-reset fw-semibold text-truncate" title="<?= esc($p['nama_petugas']) ?>">
+                                            <?= esc($p['nama_petugas']) ?>
+                                        </div>
+                                        <div class="text-muted small text-truncate">
+                                            📍 Wilayah: <span class="badge bg-light text-dark font-monospace px-1 py-0"><?= esc($p['wilayah'] ?? '-') ?></span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="text-end">
-                                    <span class="badge bg-secondary text-white">Appv: <?= number_format($p['approved']) ?></span>
-                                    <span class="badge bg-orange-lt">Subm: <?= number_format($p['submitted']) ?></span>
+                                <div class="text-end d-flex flex-column flex-sm-row gap-1 align-items-end align-items-sm-center" style="flex-shrink: 0;">
+                                    <span class="badge bg-secondary text-secondary-fg px-2 py-1" style="font-size: 0.75rem; min-width: 75px;">
+                                        Appv: <?= number_format($p['approved']) ?>
+                                    </span>
+                                    <span class="badge bg-orange-lt px-2 py-1" style="font-size: 0.75rem; min-width: 75px;">
+                                        Subm: <?= number_format($p['submitted']) ?>
+                                    </span>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -256,30 +326,44 @@
                     </div>
                     <div class="card-body">
                         <div class="accordion" id="accordion-koseka-root">
-                            <?php foreach ($kosekaData as $k): ?>
-                                <div class="accordion-item border mb-2">
-                                    <h2 class="accordion-header" id="heading-kos-<?= $k['id_koseka'] ?>">
-                                        <button class="accordion-button collapsed d-flex justify-content-between align-items-center"
-                                            type="button" data-bs-toggle="collapse"
-                                            data-bs-target="#collapse-kos-<?= $k['id_koseka'] ?>"
-                                            onclick="loadPmlData('<?= $k['id_koseka'] ?>')">
-                                            <div class="w-100 d-flex justify-content-between pe-3">
-                                                <span>👔 Koseka: <strong><?= esc($k['nama_koseka']) ?></strong></span>
-                                                <span class="text-muted small">
-                                                    [ Target: <?= number_format($k['total']) ?> |
-                                                    Appv: <span class="text-success"><?= number_format($k['approved']) ?></span> |
-                                                    Subm: <span class="text-blue"><?= number_format($k['submitted']) ?></span> ]
-                                                </span>
+                            <?php if (!empty($kosekaData)): ?>
+                                <?php foreach ($kosekaData as $k): ?>
+                                    <div class="accordion-item border mb-2">
+                                        <h2 class="accordion-header" id="heading-kos-<?= $k['id_koseka'] ?>">
+                                            <button class="accordion-button collapsed d-flex justify-content-between align-items-center"
+                                                type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#collapse-kos-<?= $k['id_koseka'] ?>"
+                                                onclick="loadPmlData('<?= $k['id_koseka'] ?>')">
+                                                <div class="w-100 d-flex justify-content-between pe-3">
+                                                    <span>👔 Koseka: <strong><?= esc($k['nama_koseka']) ?></strong></span>
+                                                    <span class="text-muted small">
+                                                        [ Target: <?= number_format($k['total']) ?> |
+                                                        Appv: <span class="text-success"><?= number_format($k['approved']) ?></span> |
+                                                        Subm: <span class="text-blue"><?= number_format($k['submitted']) ?></span> ]
+                                                    </span>
+                                                </div>
+                                            </button>
+                                        </h2>
+                                        <div id="collapse-kos-<?= $k['id_koseka'] ?>" class="accordion-collapse collapse" data-bs-parent="#accordion-koseka-root">
+                                            <div class="accordion-body bg-light-lt py-2 ps-4" id="body-koseka-<?= $k['id_koseka'] ?>">
+                                                <div class="text-muted text-center py-2"><span class="spinner-border spinner-border-sm"></span> Menarik data PML...</div>
                                             </div>
-                                        </button>
-                                    </h2>
-                                    <div id="collapse-kos-<?= $k['id_koseka'] ?>" class="accordion-collapse collapse" data-bs-parent="#accordion-koseka-root">
-                                        <div class="accordion-body bg-light-lt py-2 ps-4" id="body-koseka-<?= $k['id_koseka'] ?>">
-                                            <div class="text-muted text-center py-2"><span class="spinner-border spinner-border-sm"></span> Menarik data PML...</div>
                                         </div>
                                     </div>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <div class="alert alert-important alert-warning text-center py-3" role="alert">
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                            <path stroke="none" d="M0 0h24 24H0z" fill="none" />
+                                            <path d="M12 9v4" />
+                                            <path d="M12 17h.01" />
+                                            <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75" />
+                                        </svg>
+                                        <span class="fw-semibold">Tidak Ada Data</span>
+                                    </div>
                                 </div>
-                            <?php endforeach; ?>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -521,7 +605,7 @@
         const container = document.getElementById(`body-koseka-${idKoseka}`);
 
         try {
-            const response = await fetch(`<?= base_url('se/monitoring-progres/getPmlByKoseka') ?>?id_koseka=${idKoseka}`);
+            const response = await fetch(`<?= base_url('se/monitoring-progres/getPmlByKoseka') ?>?id_koseka=${idKoseka}&kd_kab=${selectedKab}`);
             const data = await response.json();
 
             if (data.length === 0) {
@@ -569,7 +653,7 @@
         const container = document.getElementById(`body-pml-${idPml}`);
 
         try {
-            const response = await fetch(`<?= base_url('se/monitoring-progres/getPplByPml') ?>?id_pml=${idPml}`);
+            const response = await fetch(`<?= base_url('se/monitoring-progres/getPplByPml') ?>?id_pml=${idPml}&kd_kab=${selectedKab}`);
             const data = await response.json();
 
             if (data.length === 0) {
@@ -601,5 +685,13 @@
             container.innerHTML = '<div class="text-danger p-2 small">Gagal mengambil data PPL.</div>';
         }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        // Aktifkan semua komponen tooltip di halaman web
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
 </script>
 <?= $this->endSection(); ?>

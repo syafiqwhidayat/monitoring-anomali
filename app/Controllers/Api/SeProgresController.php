@@ -82,12 +82,14 @@ class SeProgresController extends ResourceController
                             'id_subsls'             => $idSubsls,             // Indeks 22 (KODE_SUBSLS_16)
                             'total'                 => (int)$row[23],         // Indeks 23 (total)
                             'open'                  => (int)$row[24],         // Indeks 24 (open)
-                            'submitted_by_pencacah' => (int)$row[25],         // Indeks 25 (submitted_by_pencacah)
-                            'draft'                 => (int)$row[26],         // Indeks 26 (draft)
-                            'approved_by_pengawas'  => (int)$row[27],         // Indeks 27 (approved_by_pengawas)
+                            'submitted_respondent'  => (int)$row[25],         // Indeks 29 (submitted_respondent)
+                            'approved_by_pengawas'  => (int)$row[26],         // Indeks 27 (approved_by_pengawas)
+                            'submitted_by_pencacah' => (int)$row[27],         // Indeks 25 (submitted_by_pencacah)
                             'rejected_by_pengawas'  => (int)$row[28],         // Indeks 28 (rejected_by_pengawas)
-                            'submitted_respondent'  => (int)$row[29],         // Indeks 29 (submitted_respondent)
+                            'draft'                 => (int)$row[29],         // Indeks 26 (draft)
                             'revoked_by_pengawas'   => (int)$row[30],         // Indeks 30 (revoked_by_pengawas)
+                            'rejected_by_admin_kabupaten'   => (int)$row[31],         // Indeks 30 (revoked_by_pengawas)
+                            'edited_by_pengawas'   => (int)$row[32],         // Indeks 30 (revoked_by_pengawas)
                             'tanggal'               => $today
                         ];
                         $berhasil++;
