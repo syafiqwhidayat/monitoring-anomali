@@ -1438,7 +1438,7 @@ class SeMonitoring extends BaseController
 
         $pmlRows = $builder->select('
             IFNULL(w.id_pml, 0) as id_pml, 
-            IFNULL(u.username, "Belum Ada PML") as nama_pml,
+            IFNULL(u.name, "Belum Ada PML") as nama_pml,
             SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
             SUM(s.approved_by_pengawas) as approved,
             SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
@@ -1478,7 +1478,7 @@ class SeMonitoring extends BaseController
 
         $pplRows = $builder->select('
             IFNULL(w.id_ppl, 0) as id_ppl, 
-            IFNULL(u.username, "Belum Ada PPL") as nama_ppl,
+            IFNULL(u.name, "Belum Ada PPL") as nama_ppl,
             SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
             SUM(s.approved_by_pengawas) as approved,
             SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')

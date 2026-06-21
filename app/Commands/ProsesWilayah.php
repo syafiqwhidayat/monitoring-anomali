@@ -295,7 +295,7 @@ class ProsesWilayah extends BaseCommand
                     $userPML = new \App\Entities\User($dataUserPML);
                     $userPML->password = 'password123'; // Password default
                     if ($userModel->save($userPML)) {
-                        CLI::write('berhasil dijalankan');
+                        CLI::write('membuat user baru');
                         $userPML->id = $userModel->getInsertID();
                         if (str_contains($dataUserPML['email'], '@bps.go.id')) {
                             $userPML->addGroup('operator');
@@ -334,7 +334,7 @@ class ProsesWilayah extends BaseCommand
                         $userPML = new \App\Entities\User($dataUserKos);
                         $userPML->password = 'password123'; // Password default
                         if ($userModel->save($userPML)) {
-                            CLI::write('berhasil dijalankan');
+                            CLI::write('membuat user baru');
                             $userPML->id = $userModel->getInsertID();
                             if (str_contains($dataUserKos['email'], '@bps.go.id')) {
                                 $userPML->addGroup('operator');
