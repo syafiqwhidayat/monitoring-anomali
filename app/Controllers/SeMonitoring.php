@@ -858,6 +858,9 @@ class SeMonitoring extends BaseController
         ]);
     }
 
+    // +++++++++++++++++++++++++++++++++++++++
+    // Fungsi untuk monitoring Progres
+    // +++++++++++++++++++++++++++++++++++++++
     public function monitoringUB()
     {
         $selectedWilayah = $this->request->getGet('wilayah') ?? '1300'; // 1300 = Seluruh Prov Sumbar
@@ -865,7 +868,7 @@ class SeMonitoring extends BaseController
 
         // Ambil halaman saat ini untuk keperluan nomor urut tabel (default halaman 1)
         $currentPage      = $this->request->getGet('page') ?? 1;
-        $perPage          = 25;
+        $perPage          = 15;
 
         $data['title'] = "Monitoring UB";
 
@@ -895,31 +898,67 @@ class SeMonitoring extends BaseController
         $data['selected_wilayah'] = $selectedWilayah;
         $data['filter_tanggal']    = $filterTanggal;
 
-        // --- 1. DATA PIE CHART (STATUS TERBARU) ---
-        $builderPie = $this->db->table('se_list_se26_ub');
+        // --- Definisi SQL String Pengelompokan Status Berdasarkan Aturan Baru ---
+        // Karena rejected_by_pengawas masuk ke draft dan submitted, kita hitung di kedua kondisi secara adil
+        $sqlDraft     = "SUM(CASE WHEN status IN ('draft', 'rejected_by_pengawas') THEN 1 ELSE 0 END)";
+        $sqlSubmitted = "SUM(CASE WHEN status IN ('submitted_by_pencacah', 'submitted_respondent', 'rejected_by_pengawas') THEN 1 ELSE 0 END)";
+        $sqlApproved  = "SUM(CASE WHEN status IN ('approved_by_pengawa', 'rejected_by_admin_kabupaten', 'revoked_by_pengawas') THEN 1 ELSE 0 END)";
+        $sqlOpen      = "SUM(CASE WHEN status IN ('open') THEN 1 ELSE 0 END)";
+
+
+        // --- 1. DATA PIE CHART (STATUS TERBARU DENGAN MAPPING) ---
+        $builderPie = $this->db->table('se_list_se26_ub')
+            ->select("
+            {$sqlDraft} as DRAFT,
+            {$sqlSubmitted} as SUBMITTED,
+            {$sqlApproved} as APPROVED,
+            {$sqlOpen} as OPEN
+        ");
+
         if ($selectedWilayah !== '1300') {
             $builderPie->where('id_wilayah', $selectedWilayah);
         }
-        $pieQuery = $builderPie->select('status, COUNT(*) as jml')->groupBy('status')->get()->getResultArray();
+        $pieQuery = $builderPie->get()->getRowArray();
 
-        $pieData = ['DRAFT' => 0, 'SUBMITED' => 0, 'REJECTED' => 0, 'OPEN' => 0];
-        foreach ($pieQuery as $p) {
-            $pieData[strtoupper($p['status'])] = (int)$p['jml'];
-        }
+        $pieData = [
+            'APPROVED'  => (int)($pieQuery['APPROVED'] ?? 0),
+            'SUBMITTED' => (int)($pieQuery['SUBMITTED'] ?? 0),
+            'DRAFT'     => (int)($pieQuery['DRAFT'] ?? 0),
+            'OPEN'      => (int)($pieQuery['OPEN'] ?? 0)
+        ];
         $data['pie_json'] = json_encode(array_values($pieData));
+        $data['cards'] = [
+            'total' => $pieData['DRAFT'] + $pieData['APPROVED'] + $pieData['SUBMITTED'] + $pieData['OPEN'],
+            'open' => $pieData['OPEN'],
+            'approved' => $pieData['APPROVED'],
+            'submitted' => $pieData['SUBMITTED'],
+            'draft' => $pieData['DRAFT'],
+        ];
+
 
         // --- 2. DATA BAR CHART (WILAYAH ATAU TIM PJ) ---
         $barLabels = [];
-        $barSeries = ['DRAFT' => [], 'SUBMITED' => [], 'REJECTED' => [], 'OPEN' => []];
+        $barSeries = ['DRAFT' => [], 'APPROVED' => [], 'SUBMITTED' => [], 'OPEN' => []];
 
         if ($selectedWilayah === '1300') {
             // Tampilkan Bar Chart per Kabupaten
             foreach ($data['kab_kota'] as $kode => $nama) {
                 $barLabels[] = $nama;
-                foreach (['DRAFT', 'SUBMITED', 'REJECTED', 'OPEN'] as $st) {
-                    $barSeries[$st][] = $this->db->table('se_list_se26_ub')
-                        ->where('id_wilayah', $kode)->where('status', $st)->countAllResults();
-                }
+
+                $kabQuery = $this->db->table('se_list_se26_ub')
+                    ->select("
+                    {$sqlDraft} as DRAFT,
+                    {$sqlApproved} as APPROVED,
+                    {$sqlSubmitted} as SUBMITTED,
+                    {$sqlOpen} as OPEN
+                ")
+                    ->where('id_wilayah', $kode)
+                    ->get()->getRowArray();
+
+                $barSeries['DRAFT'][]     = (int)($kabQuery['DRAFT'] ?? 0);
+                $barSeries['APPROVED'][]  = (int)($kabQuery['APPROVED'] ?? 0);
+                $barSeries['SUBMITTED'][] = (int)($kabQuery['SUBMITTED'] ?? 0);
+                $barSeries['OPEN'][]      = (int)($kabQuery['OPEN'] ?? 0);
             }
         } else {
             // Tampilkan Bar Chart per Tim Penanggung Jawab di Kab Terpilih
@@ -931,30 +970,42 @@ class SeMonitoring extends BaseController
 
             foreach ($pjQuery as $pjRow) {
                 $barLabels[] = $pjRow['pj'];
-                foreach (['DRAFT', 'SUBMITED', 'REJECTED', 'OPEN'] as $st) {
-                    $qCount = $this->db->table('se_list_se26_ub')
-                        ->where('id_wilayah', $selectedWilayah)
-                        ->where('status', $st);
-                    if ($pjRow['pj'] === "Belum Ada PJ") {
-                        $qCount->where('tim_pj IS NULL');
-                    } else {
-                        $qCount->where('tim_pj', $pjRow['pj']);
-                    }
-                    $barSeries[$st][] = $qCount->countAllResults();
+
+                $pjQueryCount = $this->db->table('se_list_se26_ub')
+                    ->select("
+                    {$sqlDraft} as DRAFT,
+                    {$sqlSubmitted} as SUBMITTED,
+                    {$sqlApproved} as APPROVED,
+                    {$sqlOpen} as OPEN
+                ")
+                    ->where('id_wilayah', $selectedWilayah);
+
+                if ($pjRow['pj'] === "Belum Ada PJ") {
+                    $pjQueryCount->where('tim_pj IS NULL');
+                } else {
+                    $pjQueryCount->where('tim_pj', $pjRow['pj']);
                 }
+
+                $pjRes = $pjQueryCount->get()->getRowArray();
+
+                $barSeries['DRAFT'][]     = (int)($pjRes['DRAFT'] ?? 0);
+                $barSeries['SUBMITTED'][] = (int)($pjRes['SUBMITTED'] ?? 0);
+                $barSeries['APPROVED'][]  = (int)($pjRes['APPROVED'] ?? 0);
+                $barSeries['OPEN'][]      = (int)($pjRes['OPEN'] ?? 0);
             }
         }
         $data['bar_json'] = json_encode([
             'labels' => $barLabels,
             'datasets' => [
-                ['label' => 'REJECTED', 'data' => $barSeries['REJECTED'], 'backgroundColor' => '#EE8911'],
-                ['label' => 'SUBMITED', 'data' => $barSeries['SUBMITED'], 'backgroundColor' => '#94C11F'],
-                ['label' => 'DRAFT', 'data' => $barSeries['DRAFT'], 'backgroundColor' => '#0369A1'],
+                ['label' => 'APPROVED', 'data' => $barSeries['APPROVED'], 'backgroundColor' => '#94C11F'],
+                ['label' => 'SUBMITTED', 'data' => $barSeries['SUBMITTED'], 'backgroundColor' => '#0369A1'],
+                ['label' => 'DRAFT', 'data' => $barSeries['DRAFT'], 'backgroundColor' => '#EE8911'],
                 ['label' => 'OPEN', 'data' => $barSeries['OPEN'], 'backgroundColor' => '#B3B3B3'],
             ]
         ]);
 
-        // --- 3. DATA LINE CHART HISTORIS (se_mon_ub) ---
+
+        // --- 3. DATA LINE CHART HISTORIS (Mengambil dari se_mon_ub dengan aturan baru) ---
         $builderLine = $this->db->table('se_mon_ub')->select('tanggal')->groupBy('tanggal')->orderBy('tanggal', 'ASC');
         if ($selectedWilayah !== '1300') {
             $builderLine->where('id_wilayah', $selectedWilayah);
@@ -962,29 +1013,46 @@ class SeMonitoring extends BaseController
         $tglQuery = $builderLine->get()->getResultArray();
 
         $lineLabels = [];
-        $lineSeries = ['DRAFT' => [], 'SUBMITED' => [], 'REJECTED' => [], 'OPEN' => []];
+        $lineSeries = ['DRAFT' => [], 'APPROVED' => [], 'SUBMITTED' => [], 'OPEN' => []];
+
+        // Query Aggregation Khusus untuk se_mon_ub karena datanya sudah berbentuk rows per-status mentah
+        $sqlMonDraft     = "SUM(CASE WHEN status IN ('draft', 'rejected_by_pengawas') THEN jumlah ELSE 0 END)";
+        $sqlMonApproved  = "SUM(CASE WHEN status IN ('approved_by_pengawa', 'rejected_by_admin_kabupaten', 'revoked_by_pengawas') THEN jumlah ELSE 0 END)";
+        $sqlMonSubmitted = "SUM(CASE WHEN status IN ('submitted_by_pencacah', 'submitted_respondent', 'rejected_by_pengawas') THEN jumlah ELSE 0 END)";
+        $sqlMonOpen      = "SUM(CASE WHEN status IN ('open') THEN jumlah ELSE 0 END)";
 
         foreach ($tglQuery as $tRow) {
             $lineLabels[] = date('d M Y', strtotime($tRow['tanggal']));
-            foreach (['DRAFT', 'SUBMITED', 'REJECTED', 'OPEN'] as $st) {
-                $sumQuery = $this->db->table('se_mon_ub')
-                    ->selectSum('jumlah')
-                    ->where('tanggal', $tRow['tanggal'])
-                    ->where('status', $st);
-                if ($selectedWilayah !== '1300') {
-                    $sumQuery->where('id_wilayah', $selectedWilayah);
-                }
-                $res = $sumQuery->get()->getRowArray();
-                $lineSeries[$st][] = (int)($res['jumlah'] ?? 0);
+
+            $sumQuery = $this->db->table('se_mon_ub')
+                ->select("
+                {$sqlMonDraft} as DRAFT,
+                {$sqlMonApproved} as APPROVED,
+                {$sqlMonSubmitted} as SUBMITTED,
+                {$sqlMonOpen} as OPEN
+            ")
+                ->where('tanggal', $tRow['tanggal']);
+
+            if ($selectedWilayah !== '1300') {
+                $sumQuery->where('id_wilayah', $selectedWilayah);
             }
+
+            $res = $sumQuery->get()->getRowArray();
+
+            $lineSeries['DRAFT'][]     = (int)($res['DRAFT'] ?? 0);
+            $lineSeries['APPROVED'][]  = (int)($res['APPROVED'] ?? 0);
+            $lineSeries['SUBMITTED'][] = (int)($res['SUBMITTED'] ?? 0);
+            $lineSeries['OPEN'][]      = (int)($res['OPEN'] ?? 0);
         }
+
         $data['line_json'] = json_encode([
-            'labels' => $lineLabels,
-            'draft' => $lineSeries['DRAFT'],
-            'submited' => $lineSeries['SUBMITED'],
-            'rejected' => $lineSeries['REJECTED'],
-            'open' => $lineSeries['OPEN']
+            'labels'   => $lineLabels,
+            'draft'    => $lineSeries['DRAFT'],
+            'approved' => $lineSeries['APPROVED'],  // Dialihkan memetakan data APPROVED agar masuk ke struktur Line Chart Anda sebelumnya
+            'submited' => $lineSeries['SUBMITTED'], // Tetap pakai key lama view Anda 'submited' agar chart tidak broken
+            'open'     => $lineSeries['OPEN']
         ]);
+
 
         // --- 4. LIST TABEL DENGAN PAGINATION MANUAL (TANPA MODEL) ---
         $builderList = $this->db->table('se_list_se26_ub');
@@ -994,6 +1062,40 @@ class SeMonitoring extends BaseController
         if (!empty($filterTanggal)) {
             $builderList->where('DATE(fasih_modified_at)', $filterTanggal);
         }
+
+        // --- 5. DATA PIE CHART (STATUS IDENTIFIKASI) ---
+        $builderPieIden = $this->db->table('se_list_se26_ub')
+            ->select("
+            SUM(CASE WHEN keberadaan IS NULL 
+                   OR TRIM(keberadaan) = '' 
+                   OR LOWER(keberadaan) = 'null' THEN 1 ELSE 0 END) as BELUM,
+            SUM(CASE WHEN keberadaan = 'ditemukan' THEN 1 ELSE 0 END) as DITEMUKAN,
+            SUM(CASE WHEN keberadaan = 'tidak ditemukan' THEN 1 ELSE 0 END) as `TAK-DITEMUKAN`,
+            SUM(CASE WHEN keberadaan = 'tutup' THEN 1 ELSE 0 END) as TUTUP,
+            SUM(CASE WHEN keberadaan = 'ganda' THEN 1 ELSE 0 END) as GANDA
+        ", false);
+
+        if ($selectedWilayah !== '1300') {
+            $builderPieIden->where('id_wilayah', $selectedWilayah);
+        }
+        $pieIdenQuery = $builderPieIden->get()->getRowArray();
+
+        $pieIdenData = [
+            'DITEMUKAN'  => (int)($pieIdenQuery['DITEMUKAN'] ?? 0),
+            'TAK-DITEMUKAN' => (int)($pieIdenQuery['TAK-DITEMUKAN'] ?? 0),
+            'GANDA'      => (int)($pieIdenQuery['GANDA'] ?? 0),
+            'TUTUP'      => (int)($pieIdenQuery['TUTUP'] ?? 0),
+            'BELUM'     => (int)($pieIdenQuery[' BELUM'] ?? 0),
+        ];
+        $data['pieIden_json'] = json_encode(array_values($pieIdenData));
+        $data['cards_iden'] = [
+            'total' => $pieIdenData['BELUM'] + $pieIdenData['DITEMUKAN'] + $pieIdenData['TAK-DITEMUKAN'] + $pieIdenData['TUTUP'] + $pieIdenData['GANDA'],
+            'belum' => $pieIdenData['BELUM'],
+            'ditemuukan' => $pieIdenData['DITEMUKAN'],
+            'tak_ditemukan' => $pieIdenData['TAK-DITEMUKAN'],
+            'tutup' => $pieIdenData['TUTUP'],
+            'ganda' => $pieIdenData['GANDA'],
+        ];
 
         // Hitung total baris sebelum di-limit untuk dasar perhitungan pagination
         $totalRows = $builderList->countAllResults(false);
@@ -1009,6 +1111,7 @@ class SeMonitoring extends BaseController
             'total_rows'   => $totalRows,
             'total_pages'  => ceil($totalRows / $perPage)
         ];
+
         return view('seMonitoring/se26_ub_view', $data);
     }
 
@@ -1139,6 +1242,51 @@ class SeMonitoring extends BaseController
         return $this->response->setJSON(['status' => 'error', 'message' => 'Gagal mengubah data.'], 400);
     }
 
+    public function updateKeberadaan()
+    {
+        $sampleId   = $this->request->getPost('sample_id');
+        $keberadaan = $this->request->getPost('keberadaan');
+
+        if (empty($sampleId)) {
+            return $this->response->setJSON([
+                'status'  => 400,
+                'message' => 'Sample ID wajib disertakan.'
+            ])->setStatusCode(400);
+        }
+
+        $valueToUpdate = ($keberadaan === '') ? null : trim($keberadaan);
+
+        $db = \Config\Database::connect();
+
+        try {
+            $updated = $db->table('se_list_se26_ub')
+                ->where('sample_id', $sampleId)
+                ->update([
+                    'keberadaan' => $valueToUpdate,
+                    'uploaded_at' => date('Y-m-d H:i:s')
+                ]);
+
+            if ($updated) {
+                return $this->response->setJSON([
+                    'status'  => 200,
+                    'message' => 'Status keberadaan sampel berhasil diperbarui.'
+                ])->setStatusCode(200);
+            } else {
+                return $this->response->setJSON([
+                    'status'  => 404,
+                    'message' => 'Data sampel tidak ditemukan atau tidak ada perubahan data.'
+                ])->setStatusCode(404);
+            }
+        } catch (\Throwable $th) {
+            return $this->response->setJSON([
+                'status'  => 500,
+                'message' => 'Gagal memperbarui database: ' . $th->getMessage()
+            ])->setStatusCode(500);
+        }
+    }
+    // +++++++++++++++++++++++++++++++++++++++
+    // Fungsi untuk monitoring Progres
+    // +++++++++++++++++++++++++++++++++++++++
     public function dashboardProgres()
     {
         // Parameter Filter Utama

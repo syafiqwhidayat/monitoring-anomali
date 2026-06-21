@@ -62,7 +62,7 @@
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between text-muted small mb-1">
                             <span>Open</span>
-                            <span class="cursor-pointer text-secondary" data-bs-toggle="tooltip" data-bs-placement="top"
+                            <span class="cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top"
                                 title="Jumlah Assigment / Prelist yang belum didata sama sekali oleh petugas lapangan.">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-info-circle" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />

@@ -57,6 +57,7 @@ $routes->group('se', ['filter' => 'activeRole:superadmin,admin,operator'], stati
     $routes->get('ngibar', 'SeMonitoring::listNgibar');
     $routes->get('flag-duplikat/(:num)/(:num)', 'SeMonitoring::flagDuplikat/$1/$2');
     $routes->get('monitoring-ub', 'SeMonitoring::monitoringUB');
+    $routes->post('monitoring-ub/update-keberadaan', 'SeMonitoring::updateKeberadaan');
     $routes->get('monitoring-progres', 'SeMonitoring::dashboardProgres');
     $routes->get('monitoring-progres/getTableData', 'SeMonitoring::getTabelProgres');
     $routes->get('monitoring-progres/downloadExcel', 'SeMonitoring::downloadExcelProgres');
@@ -133,6 +134,7 @@ $routes->group('api', ['filter' => 'apiKeyAuth'], function ($routes) {
 
     // Endpoint untuk upload progres CSV dari Python
     $routes->post('se/upload-progres', 'Api\SeProgresController::uploadProgres');
+    $routes->post('se/upload-list-ub', 'Api\SeListUbController::uploadListUb');
 
     // 2. Rencana API baru Anda di masa depan tinggal ditaruh di bawah sini:
     // $routes->get('anomali/rekap', 'Api\Anomali::getRekap');
