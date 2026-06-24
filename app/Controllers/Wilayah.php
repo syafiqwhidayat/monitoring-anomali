@@ -29,6 +29,7 @@ class Wilayah extends BaseController
         // Data Dummy Wilayah Tugas & Mitra
         $data['title'] = "Manajemen Wiayah Tugas";
         $isOrganik = session('isOrganik');
+        $userWilayah = auth()->user()->wilayah_kerja;
 
         if (!$isOrganik) {
             return redirect()->to('')->with('error', 'Mitra Tidak Punya Akses untuk Manaj Wialyah Tugas');
@@ -36,16 +37,25 @@ class Wilayah extends BaseController
 
         $idKegaiatan = session('aktif_kegiatan');
 
+        if ($userWilayah === '1300') {
+            $data['sel_kab'] = $this->request->getGet('sel-kab') ?? null;
+            // $data['list_kab'] = $this->wilayahTugasModel->getWilayah('kab', $data['sel_prov']);
+        } else {
+            // dd(substr($userWilayah, -2));
+            $data['sel_kab'] = substr($userWilayah, -2);
+            //  $data['list_kab']
+        }
+
         // isian filter
         // $data['id'] = $this->request->getGet('id') ?? null;
         $data['sel_prov'] = $this->request->getGet('sel-prov') ?? 13;
-        $data['sel_kab'] = $this->request->getGet('sel-kab') ?? null;
+        // $data['sel_kab'] = $this->request->getGet('sel-kab') ?? null;
         $data['sel_kec'] = $this->request->getGet('sel-kec') ?? null;
         $data['sel_des'] = $this->request->getGet('sel-des') ?? null;
         $data['sel_keyword'] = $this->request->getGet('sel-keyword') ?? null;
 
         // list filter
-        $data['list_kab'] = $this->wilayahTugasModel->getWilayah('kab', $data['sel_prov']);
+        $data['list_kab'] = $this->wilayahTugasModel->getWilayah('kab', $data['sel_prov'], null, null, null, $userWilayah);
         $data['list_kec'] = $this->wilayahTugasModel->getWilayah('kec', $data['sel_prov'], $data['sel_kab']);
         $data['list_des'] = $this->wilayahTugasModel->getWilayah('des', $data['sel_prov'], $data['sel_kab'], $data['sel_kec']);
 

@@ -157,7 +157,7 @@ class WilayahTugasModel extends Model
         return ($data->asArray()->findAll());
     }
 
-    public function getWilayah($level = 'kab', $idProv = null, $idKab = null, $idKec = null, $idDes = null)
+    public function getWilayah($level = 'kab', $idProv = null, $idKab = null, $idKec = null, $idDes = null, $userWilayah = null)
     {
         $idKegiatan = session('aktif_kegiatan');
         $data = $this->distinct()
@@ -169,6 +169,11 @@ class WilayahTugasModel extends Model
                 $data->select('kd_kab AS id, nm_kab AS nama');
                 if (!$idProv) {
                     return null;
+                }
+                // JIKA USER BUKAN PROVINSI, BATASI PILIHAN KABUPATEN HANYA UNTUK KABUPATENNYA SAJA
+                if ($userWilayah && $userWilayah !== '1300') {
+                    $kabUser = substr($userWilayah, -2);
+                    $data->where('kd_kab', $kabUser);
                 }
                 break;
             case 'kec':
