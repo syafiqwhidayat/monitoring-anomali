@@ -171,7 +171,7 @@ class ProsesWilayah extends BaseCommand
                 ];
                 $dataUserKos = [];
 
-                if ($row[8]) {
+                if (isset($row[8]) && !empty(trim($row[8]))) {
                     $dataUserKos = [
                         'email'         => strtolower($row[8] ?? ''), // Kolom H
                         'name'         =>  ucwords($row[8] ?? ''), // Kolom H
@@ -207,7 +207,7 @@ class ProsesWilayah extends BaseCommand
                     ];
                     continue;
                 }
-                if (!$dataUserKos) {
+                if (!empty($dataUserKos)) {
                     if (!$validation->run($dataUserKos)) {
                         $gagal++;
                         $errorDetails[] = [
@@ -267,6 +267,7 @@ class ProsesWilayah extends BaseCommand
                         $userPPL->addGroup('mitra');
                         $this->mapUsers[$dataUserPPL['email']]['id'] = $userPPL->id;
                         $this->mapUsers[$dataUserPPL['email']]['wilayah_kerja'] = $dataUserPPL['wilayah_kerja'];
+                        $this->mapUsers[$dataUserPPL['email']]['username'] = $dataUserPPL['username'];
                         $this->mapUserName[$dataUserPPL['username']] = $userPPL->id;
                     } else {
                         $gagal++;
@@ -304,6 +305,7 @@ class ProsesWilayah extends BaseCommand
                         $userPML->addGroup('mitra');
                         $this->mapUsers[$dataUserPML['email']]['id'] = $userPML->id;
                         $this->mapUsers[$dataUserPML['email']]['wilayah_kerja'] = $dataUserPML['wilayah_kerja'];
+                        $this->mapUsers[$dataUserPML['email']]['username'] = $dataUserPML['username'];
                         $this->mapUserName[$dataUserPML['username']] = $userPML->id;
                     } else {
                         CLI::write('gagal ini dijalankan');
@@ -329,7 +331,7 @@ class ProsesWilayah extends BaseCommand
                     }
                 }
 
-                if (isset($dataUserKos)) {
+                if (!empty($dataUserKos)) {
                     if (!isset($this->mapUsers[$dataUserKos['email']])) {
                         $userPML = new \App\Entities\User($dataUserKos);
                         $userPML->password = 'password123'; // Password default
@@ -343,6 +345,7 @@ class ProsesWilayah extends BaseCommand
                             $userPML->addGroup('mitra');
                             $this->mapUsers[$dataUserKos['email']]['id'] = $userPML->id;
                             $this->mapUsers[$dataUserKos['email']]['wilayah_kerja'] = $dataUserKos['wilayah_kerja'];
+                            $this->mapUsers[$dataUserKos['email']]['username'] = $dataUserKos['username'];
                             $this->mapUserName[$dataUserKos['username']] = $userPML->id;
                         } else {
                             CLI::write('gagal ini dijalankan');
@@ -375,7 +378,7 @@ class ProsesWilayah extends BaseCommand
                     'id_ppl' => $this->mapUsers[$dataUserPPL['email']]['id'],
                     'id_pml' => $this->mapUsers[$dataUserPML['email']]['id'],
                 ];
-                if (isset($dataUserKos)) {
+                if (!empty($dataUserKos)) {
                     $dataWilayahTugas['id_koseka'] = $this->mapUsers[$dataUserKos['email']]['id'];
                 } else {
                     $dataWilayahTugas['id_koseka'] = null;
@@ -429,6 +432,7 @@ class ProsesWilayah extends BaseCommand
                 'status' => 'gagal',
                 'error_details' => json_encode([['baris' => '-', 'data' => 'Sistem', 'pesan' => [$e->getMessage()]]])
             ]);
+            return 1;
         }
     }
     public function generateUniqueUsername($email)
@@ -438,7 +442,7 @@ class ProsesWilayah extends BaseCommand
         }
         $email = strtolower($email);
         // jika sudah ada, kembalikan
-        if (isset($this->mapUsers[$email]['username'])) {
+        if (isset($this->mapUsers[$email]) && isset($this->mapUsers[$email]['username']) && isset($this->mapUsers[$email]['username'])) {
             $username = $this->mapUsers[$email]['username'];
             return $username;
         }
