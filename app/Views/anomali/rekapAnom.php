@@ -94,14 +94,14 @@
                 <table class="table table-bordered align-middle" width="100%" cellspacing="0">
                     <thead class="table-dark text-center">
                         <tr>
-                            <th width="15%">Kode/Assigment/Roster</th>
-                            <th width="12%">Petugas Lapangan</th>
-                            <th width="8%">Wilayah Kerja</th>
-                            <th width="7%">Kode Anom</th>
-                            <th>Detil Anom</th>
-                            <th width="22%">Konfirmasi / Jawaban Lapangan</th>
-                            <th width="8%">Status Lap</th>
-                            <th width="8%">Status Insert</th>
+                            <th width="10%">Kode/Assigment/Roster</th>
+                            <th width="10%">Petugas Lapangan</th>
+                            <th width="10%">Wilayah Kerja</th>
+                            <th width="10%">Kode Anom</th>
+                            <th width="10%">Detil Anom</th>
+                            <th width="10%">Konfirmasi / Jawaban Lapangan</th>
+                            <th width="10%">Status Lap</th>
+                            <th width="10%">Status Insert</th>
                         </tr>
                     </thead>
                     <tbody>

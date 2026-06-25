@@ -1405,8 +1405,8 @@ class SeMonitoring extends BaseController
             SUM(s.approved_by_pengawas) as approved,
             SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
             ->groupBy('w.id_ppl')
-            ->orderBy('SUM(s.approved_by_pengawas)', 'DESC')
-            ->orderBy('SUM(s.submitted_by_pencacah + s.submitted_respondent)', 'DESC')
+            // ->orderBy('SUM(s.approved_by_pengawas)', 'DESC')
+            ->orderBy('SUM(s.approved_by_pengawas + s.submitted_by_pencacah + s.submitted_respondent)', 'DESC')
             ->limit(5)->get()->getResultArray();
 
         // Kloning builder untuk Bottom 5 (Urutan Terendah Approved + Submitted)
@@ -1415,8 +1415,8 @@ class SeMonitoring extends BaseController
             SUM(s.approved_by_pengawas) as approved,
             SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
             ->groupBy('w.id_ppl')
-            ->orderBy('SUM(s.approved_by_pengawas)', 'ASC')
-            ->orderBy('SUM(s.submitted_by_pencacah + s.submitted_respondent)', 'ASC')
+            // ->orderBy('SUM(s.approved_by_pengawas)', 'ASC')
+            ->orderBy('SUM(s.approved_by_pengawas + s.submitted_by_pencacah + s.submitted_respondent)', 'ASC')
             ->limit(5)->get()->getResultArray();
 
         // ==========================================
@@ -1440,7 +1440,7 @@ class SeMonitoring extends BaseController
             $kosekaData = $builderKoseka->select('
                 IFNULL(w.id_koseka, 0) as id_koseka, 
                 IFNULL(u.name, "Belum Ada Koseka") as nama_koseka,
-                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
+                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft+s.rejected_by_pengawas) as draft,
                 SUM(s.approved_by_pengawas) as approved,
                 SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted
             ')
@@ -1512,15 +1512,29 @@ class SeMonitoring extends BaseController
         $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
         $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
 
-        $builder = $this->db->table('se_progres_subsls')->where('tanggal', $targetTanggal);
+        $builder = $this->db->table('se_progres_subsls' . ' s')
+            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'left')
+            ->join('users p', 'w.id_ppl = p.id', 'left')
+            ->join('users m', 'w.id_pml = m.id', 'left')
+            ->join('users k', 'w.id_koseka = k.id', 'left')
+            ->where('tanggal', $targetTanggal);
+
         if ($selectedKab !== 'SUMBAR') {
             $builder->like('id_subsls', $selectedKab, 'after');
         }
 
         $query = $builder->select('
-            id_subsls, total, open, draft, 
-            (submitted_by_pencacah + submitted_respondent) as submitted,
-            approved_by_pengawas, rejected_by_pengawas, revoked_by_pengawas
+            s.id_subsls AS id_subsls,
+            s.total AS total,
+            s.open AS open,
+            s.draft AS draft, 
+            (s.submitted_by_pencacah + s.submitted_respondent) as submitted,
+            s.approved_by_pengawas AS approved_by_pengawas,
+            s.rejected_by_pengawas AS rejected_by_pengawas,
+            s.revoked_by_pengawas AS revoked_by_pengawas,
+            p.name AS PPL,
+            m.name AS PML,
+            k.name AS Koseka,
         ')->get();
 
         $filename = "Progres_SE2026_" . $selectedKab . "_" . $targetTanggal . ".csv";
@@ -1536,7 +1550,7 @@ class SeMonitoring extends BaseController
         fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
         // Baris Header Excel
-        fputcsv($output, ['KODE SUBSLS', 'TOTAL', 'OPEN', 'DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'REVOKED'], ';');
+        fputcsv($output, ['KODE SUBSLS', 'TOTAL', 'OPEN', 'DRAFT', 'SUBMITTED', 'APPROVED', 'REJECTED', 'REVOKED', 'PPL', 'PML', 'KOSEKA'], ';');
 
         // Masukkan semua baris data (semua 17.675 baris akan tertulis di sini)
         foreach ($query->getResultArray() as $row) {
@@ -1548,7 +1562,10 @@ class SeMonitoring extends BaseController
                 $row['submitted'],
                 $row['approved_by_pengawas'],
                 $row['rejected_by_pengawas'],
-                $row['revoked_by_pengawas']
+                $row['revoked_by_pengawas'],
+                $row['PPL'],
+                $row['PML'],
+                $row['Koseka'],
             ], ';');
         }
 
@@ -1587,7 +1604,7 @@ class SeMonitoring extends BaseController
         $pmlRows = $builder->select('
             IFNULL(w.id_pml, 0) as id_pml, 
             IFNULL(u.name, "Belum Ada PML") as nama_pml,
-            SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
+            SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft + s.rejected_by_pengawas) as draft,
             SUM(s.approved_by_pengawas) as approved,
             SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
             ->groupBy('IFNULL(w.id_pml, 0)')->get()->getResultArray();
@@ -1627,7 +1644,7 @@ class SeMonitoring extends BaseController
         $pplRows = $builder->select('
             IFNULL(w.id_ppl, 0) as id_ppl, 
             IFNULL(u.name, "Belum Ada PPL") as nama_ppl,
-            SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft) as draft,
+            SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft + s.rejected_by_pengawas) as draft,
             SUM(s.approved_by_pengawas) as approved,
             SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
             ->groupBy('IFNULL(w.id_ppl, 0)')->get()->getResultArray();

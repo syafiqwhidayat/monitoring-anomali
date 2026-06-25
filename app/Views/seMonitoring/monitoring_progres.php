@@ -235,6 +235,36 @@
             </div>
         </div>
 
+        <div class="row row-cards mt-3">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <h3 class="card-title">Grafik Kinerja Harian (Selesai/Approved Baru vs Kemarin)</h3>
+                        <div id="chart-performance-container" style="height: 250px;">
+                            <canvas id="chart-performance-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-sm bg-primary-lt text-primary d-flex flex-column justify-content-between" style="min-height: 290px;">
+                    <div class="card-body d-flex flex-column justify-content-center text-center">
+                        <div class="text-uppercase font-weight-bold tracking-wider mb-2" style="font-size: 0.75rem;">
+                            Proyeksi Selesai Pendataan
+                        </div>
+                        <div class="h1 mb-3 font-weight-bolder" id="proyeksi-tanggal">Menghitung...</div>
+                        <p class="text-muted small px-3" id="proyeksi-detail">
+                            Memproses rata-rata performa 7 hari terakhir...
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 text-center pb-3">
+                        <span class="badge bg-primary text-white" id="proyeksi-speed">0 dokumen/hari</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row row-cards mt-2">
             <div class="col-md-6">
                 <div class="card card-md h-100">
@@ -339,7 +369,8 @@
                                                     <span class="text-muted small">
                                                         [ Target: <?= number_format($k['total']) ?> |
                                                         Appv: <span class="text-success"><?= number_format($k['approved']) ?></span> |
-                                                        Subm: <span class="text-blue"><?= number_format($k['submitted']) ?></span> ]
+                                                        Subm: <span class="text-blue"><?= number_format($k['submitted']) ?></span> |
+                                                        Draft: <span class="text-success"><?= number_format($k['draft']) ?></span> ]
                                                     </span>
                                                 </div>
                                             </button>
@@ -428,11 +459,23 @@
     const formatNum = (num) => new Intl.NumberFormat('id-ID').format(num);
 
     document.addEventListener("DOMContentLoaded", function() {
+        const displayLabels = rawChartData.categories.slice(1);
+
+        const deltaApproved = [];
+        const deltaSubmitted = [];
+        const deltaOpen = [];
 
         // 1. Inisialisasi Chart.js untuk Line Chart Historis harian
         if (rawChartData && rawChartData.categories) {
-            const ctx = document.getElementById('chart-historis-canvas').getContext('2d');
 
+            for (let i = 1; i < rawChartData.categories.length; i++) {
+                // Pengurangan: Hari ini (i) - Kemarin (i-1)
+                deltaApproved.push(rawChartData.approved[i] - rawChartData.approved[i - 1]);
+                deltaSubmitted.push(rawChartData.submitted[i] - rawChartData.submitted[i - 1]);
+                deltaOpen.push(rawChartData.open[i] - rawChartData.open[i - 1]);
+            }
+
+            const ctx = document.getElementById('chart-historis-canvas').getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -491,9 +534,22 @@
                     scales: {
                         y: {
                             beginAtZero: true,
+                            // grid: {
+                            //     color: 'rgba(0, 0, 0, 0.05)',
+                            //     borderDash: [4, 4]
+                            // }
                             grid: {
-                                color: 'rgba(0, 0, 0, 0.05)',
-                                borderDash: [4, 4]
+                                color: (context) => {
+                                    // Optimasi Visual: Berikan garis tebal abu-abu gelap khusus untuk angka 0 (baseline)
+                                    if (context.tick.value === 0) {
+                                        return 'rgba(0, 0, 0, 0.3)';
+                                    }
+                                    return 'rgba(0, 0, 0, 0.05)';
+                                },
+                                borderDash: (context) => {
+                                    if (context.tick.value === 0) return [0]; // Garis lurus tanpa putus di angka 0
+                                    return [4, 4]; // Garis putus-putus untuk grid lainnya
+                                }
                             }
                         },
                         x: {
@@ -506,8 +562,140 @@
             });
         }
 
+        // Render Grafik Kinerja menggunakan LINE CHART
+        // console.log(deltaSubmitted);
+        const ctxPerf = document.getElementById('chart-performance-canvas').getContext('2d');
+        new Chart(ctxPerf, {
+            type: 'line',
+            data: {
+                labels: displayLabels,
+                datasets: [{
+                        label: 'Δ Open (Baru)',
+                        data: deltaOpen,
+                        borderColor: '#6c757d', // Abu
+                        backgroundColor: '#6c757d',
+                        tension: 0.2,
+                        fill: false,
+                        // borderWidth: 3,
+                        // pointRadius: 4,
+                        // pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Δ Submitted (Baru)',
+                        data: deltaSubmitted,
+                        borderColor: '#206bc4', // Biru
+                        backgroundColor: '#206bc4',
+                        tension: 0.2,
+                        fill: false,
+                        // borderWidth: 3,
+                        // pointRadius: 4,
+                        // pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Δ Approved (Baru)',
+                        data: deltaApproved,
+                        borderColor: '#2fb344', // Hijau sukses
+                        backgroundColor: '#2fb344', // Transparan area fill (opsional)
+                        tension: 0.2, // Membuat garis agak melengkung halus
+                        fill: false, // Ubah jadi true jika ingin ada bayangan di bawah garis
+                        // borderWidth: 3,
+                        // pointRadius: 4,
+                        // pointHoverRadius: 6
+                    },
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 12,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        // Mengizinkan batas bawah otomatis menyesuaikan jika ada nilai negatif
+                        beginAtZero: false,
+                        grid: {
+                            color: (context) => {
+                                // Optimasi Visual: Berikan garis tebal abu-abu gelap khusus untuk angka 0 (baseline)
+                                if (context.tick.value === 0) {
+                                    return 'rgba(0, 0, 0, 0.3)';
+                                }
+                                return 'rgba(0, 0, 0, 0.05)';
+                            },
+                            borderDash: (context) => {
+                                if (context.tick.value === 0) return [0]; // Garis lurus tanpa putus di angka 0
+                                return [4, 4]; // Garis putus-putus untuk grid lainnya
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // --- LOGIKA PROYEKSI ESTIMASI SELESAI ---
+        const sisaOpenTerakhir = rawChartData.open[rawChartData.open.length - 1];
+        const sisaOpen2Terakhir = rawChartData.open[rawChartData.open.length - 2];
+        const totalPenurunanOpen = sisaOpen2Terakhir - sisaOpenTerakhir;
+        const rataRataPenurunanPerHari = totalPenurunanOpen;
+        console.log(totalPenurunanOpen);
+
+        const proyeksiTglEl = document.getElementById('proyeksi-tanggal');
+        const proyeksiDetailEl = document.getElementById('proyeksi-detail');
+        const proyeksiSpeedEl = document.getElementById('proyeksi-speed');
+
+        if (proyeksiTglEl && proyeksiDetailEl && proyeksiSpeedEl) {
+            if (sisaOpenTerakhir === 0) {
+                proyeksiTglEl.innerText = "SELESAI";
+                proyeksiDetailEl.innerText = "Seluruh dokumen target telah selesai diproses.";
+                proyeksiSpeedEl.innerText = "Progress 100%";
+            } else if (rataRataPenurunanPerHari <= 0) {
+                proyeksiTglEl.innerText = "Stagnan / Melambat";
+                proyeksiTglEl.className = "h2 mb-3 font-weight-bolder text-danger";
+                proyeksiDetailEl.innerText = "Tidak ada penurunan jumlah status 'Open' dalam 7 hari terakhir.";
+                proyeksiSpeedEl.innerText = `Sisa Open: ${formatNum(sisaOpenTerakhir)} dokumen`;
+            } else {
+                const sisaHari = Math.ceil(sisaOpenTerakhir / rataRataPenurunanPerHari);
+                const tglTerakhirStr = rawChartData.categories[rawChartData.categories.length - 1];
+                const tglProyeksi = new Date(tglTerakhirStr + " 2026");
+                // const tglProyeksi = new Date(tglTerakhirStr);
+                tglProyeksi.setDate(tglProyeksi.getDate() + sisaHari);
+
+                const tglFormatId = tglProyeksi.toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                proyeksiTglEl.innerText = tglFormatId;
+                proyeksiDetailEl.innerHTML = `Berdasarkan sisa <strong>${formatNum(sisaOpenTerakhir)}</strong> dokumen bertstatus 'Open', pendataan diperkirakan selesai dalam <strong>${sisaHari} hari</strong> lagi.`;
+                proyeksiSpeedEl.innerText = `Speed: ↓ ${formatNum(Math.round(rataRataPenurunanPerHari))} Open / hari`;
+            }
+        }
+
         // 2. Jalankan Pemanggilan Data Tabel Awal
         loadTablePage(1);
+
+        // Aktifkan semua komponen tooltip di halaman web
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
     });
 
     // 3. Engine AJAX Pagination Data Sub-SLS
@@ -624,7 +812,7 @@
                             <div class="w-100 d-flex justify-content-between pe-3 small">
                                 <span>🔍 PML: <strong>${pml.nama_pml}</strong></span>
                                 <span class="text-muted">
-                                    [ Tgt: ${formatNum(pml.total)} | Appv: <span class="text-success">${formatNum(pml.approved)}</span> | Subm: <span class="text-blue">${formatNum(pml.submitted)}</span> ]
+                                    [ Tgt: ${formatNum(pml.total)} | Appv: <span class="text-success">${formatNum(pml.approved)}</span> | Subm: <span class="text-blue">${formatNum(pml.submitted)}</span> | Draft: <span class="text-blue">${formatNum(pml.draft)}</span> ]
                                 </span>
                             </div>
                         </button>
@@ -686,12 +874,12 @@
         }
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        // Aktifkan semua komponen tooltip di halaman web
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
-    });
+    //document.addEventListener("DOMContentLoaded", function() {
+    // Aktifkan semua komponen tooltip di halaman web
+    //    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    //    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+    //        return new bootstrap.Tooltip(tooltipTriggerEl)
+    //    });
+    //});
 </script>
 <?= $this->endSection(); ?>
