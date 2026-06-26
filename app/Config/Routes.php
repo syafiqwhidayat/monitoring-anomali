@@ -30,7 +30,7 @@ $routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator,mit
     $routes->get('konfir-fasih', 'Anom::konfirFasih'); //memunculkan anomali yg mau di edit
 });
 $routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
-    $routes->get('konfirmasiBulk', 'Anom::konfirFasih'); //untuk konfirmasi secara bulk
+    $routes->get('konfirmasiBulk', 'Anom::konfirmasiBulk'); //untuk konfirmasi secara bulk
     $routes->get('rekap-anomali', 'Anom::rekapAnomali'); //untuk konfirmasi secara bulk
 
 });
