@@ -7,104 +7,85 @@ use CodeIgniter\CLI\CLI;
 
 class JobRunner extends BaseCommand
 {
-    /**
-     * The Command's Group
-     *
-     * @var string
-     */
-    protected $group = 'App';
-
-    /**
-     * The Command's Name
-     *
-     * @var string
-     */
-    protected $name = 'proses:semua';
-
-    /**
-     * The Command's Description
-     *
-     * @var string
-     */
-    protected $description = 'Menjalankan antrean proses wilayah dan anomali secara otomatis.';
-
-    /**
-     * The Command's Usage
-     *
-     * @var string
-     */
-    protected $usage = 'proses:semua';
-
-    /**
-     * The Command's Arguments
-     *
-     * @var array
-     */
-    protected $arguments = [];
-
-    /**
-     * The Command's Options
-     *
-     * @var array
-     */
-    protected $options = [];
-
-    /**
-     * Actually execute a command.
-     *
-     * @param array $params
-     */
+    protected $group       = 'App';
+    protected $name        = 'proses:semua';
+    protected $description = 'Menjalankan antrean proses dengan pengaman anti-overlap.';
+    protected $usage       = 'proses:semua';
 
     public function run(array $params)
     {
         $db = \Config\Database::connect();
-        // CLI::write("Tidak ada antrean saat ini.", "yellow");
-        // return;
+        set_time_limit(0);
 
-        // Ambil 1 antrean tertua yang statusnya masih 'antri'
-        $job = $db->table('log_upload')
-            ->where('status', 'pending')
-            ->orderBy('created_at', 'ASC')
+        // =================================================================
+        // PENGAMAN 1: CEK APAKAH CRON SEBELUMNYA MASIH BERJALAN
+        // =================================================================
+        $runningJob = $db->table('log_upload')
+            ->where('status', 'proses')
             ->get()
             ->getRow();
 
-        if (!$job) {
-            CLI::write("Tidak ada antrean saat ini.", "yellow");
+        if ($runningJob) {
+            // Jika ada yang statusnya 'proses', hentikan cron saat ini agar tidak overlap
+            CLI::write("ℹ️ Cron sebelumnya masih berjalan memproses Job ID: {$runningJob->id}. Lewati sesi ini.", "yellow");
             return;
         }
+        // =================================================================
 
-        // Update status agar tidak diambil oleh proses cron berikutnya (Race Condition)
-        $db->table('log_upload')->update(['status' => 'proses'], ['id' => $job->id]);
+        CLI::write("=== Memulai Pengecekan Antrean Job ===", "green");
+        $jobProcessedCount = 0;
 
-        CLI::write("Memproses Job ID: {$job->id} (Tipe: {$job->jenis})", "cyan");
+        while (true) {
+            // Ambil 1 antrean tertua yang berstatus 'pending'
+            $job = $db->table('log_upload')
+                ->where('status', 'pending')
+                ->orderBy('created_at', 'ASC')
+                ->get()
+                ->getRow();
 
-        try {
-            // Set timeout PHP secara manual untuk job ini (misal 10 menit)
-            set_time_limit(600);
-
-            // Tentukan nama command yang akan dipanggil
-            $command = null;
-            if ($job->jenis === 'wilayah') {
-                $command = "proses:wilayah $job->nama_file $job->id $job->id_kegiatan $job->wilayah";
-            } else {
-                $command = "proses:anomali $job->nama_file $job->id $job->id_kegiatan $job->wilayah";
+            // Jika sudah tidak ada antrean pending, keluar dari loop
+            if (!$job) {
+                break;
             }
 
-            // Panggil command proses yang sudah Anda buat sebelumnya secara internal
-            // Format: command($commandName, [$params])
-            command($command);
+            $jobProcessedCount++;
 
-            // Update status selesai
-            // $db->table('log_upload')->update(['status' => 'selesai'], ['id' => $job->id]);
-            CLI::write("Job ID {$job->id} Berhasil.", "green");
-        } catch (\Throwable $th) {
-            // Update status gagal jika terjadi error sistem
-            $db->table('log_upload')->update([
-                'status' => 'gagal',
-                'error_details' => json_encode($th->getMessage()),
-            ], ['id' => $job->id]);
+            // Kunci status menjadi 'proses'
+            $db->table('log_upload')->update(['status' => 'proses'], ['id' => $job->id]);
 
-            CLI::error("Error pada Job ID {$job->id}: " . $th->getMessage());
+            CLI::write("\n[Job #{$jobProcessedCount}] Memproses Job ID: {$job->id} (Tipe: {$job->jenis})", "cyan");
+
+            try {
+                $command = null;
+                if ($job->jenis === 'wilayah') {
+                    $command = "proses:wilayah $job->nama_file $job->id $job->id_kegiatan $job->wilayah";
+                } elseif ($job->jenis === 'anomali') {
+                    $command = "proses:anomali $job->nama_file $job->id $job->id_kegiatan $job->wilayah";
+                } elseif ($job->jenis === 'anomali_individu') {
+                    $command = "proses:anomali_individu $job->nama_file $job->id $job->id_kegiatan $job->wilayah";
+                } else {
+                    $command = "proses:konfirmasi $job->nama_file $job->id $job->wilayah";
+                }
+
+                // Jalankan command internal
+                command($command);
+
+                CLI::write("Job ID {$job->id} Sukses dijalankan.", "green");
+            } catch (\Throwable $th) {
+                // Update status gagal jika terjadi error catchable
+                $db->table('log_upload')->update([
+                    'status'        => 'gagal',
+                    'error_details' => json_encode([['baris' => '-', 'data' => 'System Runner', 'messages' => [$th->getMessage()]]]),
+                ], ['id' => $job->id]);
+
+                CLI::error("Error pada Job ID {$job->id}: " . $th->getMessage());
+            }
+        }
+
+        if ($jobProcessedCount === 0) {
+            CLI::write("Tidak ada antrean pending saat ini.", "yellow");
+        } else {
+            CLI::write("\n=== Semua antrean selesai diproses. Total Job: {$jobProcessedCount} ===", "green");
         }
     }
 }

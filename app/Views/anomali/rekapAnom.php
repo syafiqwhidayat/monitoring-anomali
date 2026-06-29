@@ -85,9 +85,14 @@
             <div>
                 <i class="fas fa-list-ol me-1"></i> Matriks Jawaban Terkelompok per Assignment
             </div>
-            <a href="<?= current_url() . '?' . http_build_query(array_merge($_GET, ['export' => 'excel'])); ?>" class="btn btn-primary btn-sm">
-                <i class="fas fa-file-excel me-1"></i> Download ke Excel
-            </a>
+            <div>
+                <a href="<?= current_url() . '?' . http_build_query(array_merge($_GET, ['export' => 'excel'])); ?>" class="btn btn-primary btn-sm">
+                    <i class="fas fa-file-excel me-1"></i> Download ke Excel
+                </a>
+                <a href="<?= current_url() . '?' . http_build_query(array_merge($_GET, ['export' => 'template'])); ?>" class="btn btn-primary btn-sm">
+                    <i class="fas fa-file-excel me-1"></i> Download template Konfirmasi
+                </a>
+            </div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -102,6 +107,7 @@
                             <th width="10%">Konfirmasi / Jawaban Lapangan</th>
                             <th width="10%">Status Lap</th>
                             <th width="10%">Status Insert</th>
+                            <th width="10%">Tanggal Updated</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -142,7 +148,20 @@
                                             <div><strong>PML:</strong> <span class="text-muted"><?= $row['nama_pml'] ?? '-'; ?></span></div>
                                         </td>
                                         <td rowspan="<?= $rowspans[$current_id]; ?>" class="text-center" style="font-family: monospace;">
-                                            `<?= $row['id_wilayah']; ?>
+                                            <div class="d-flex flex-column align-items-center gap-1">
+
+                                                <span>`<?= esc($row['id_wilayah']); ?></span>
+
+                                                <a href="https://fasih-sm.bps.go.id/app/assignment-detail/<?= esc($row['id_wilayah']); ?>"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="badge bg-blue-lt text-blue px-1-5 py-0-5 rounded text-decoration-none"
+                                                    style="font-size: 0.65rem; max-width: 80px; font-family: var(--bs-font-sans-serif);"
+                                                    title="Buka Fasih untuk wilayah <?= esc($row['id_wilayah']); ?>">
+                                                    ke Fasih-SM
+                                                </a>
+
+                                            </div>
                                         </td>
                                     <?php endif; ?>
 
@@ -160,6 +179,9 @@
                                         <span class="badge <?= $row['is_insert'] === '1' ? 'bg-warning text-white' : 'bg-success text-white'; ?>">
                                             <?= $row['is_insert'] === '1' ? 'Aktif' : 'Clean'; ?>
                                         </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <?= $row['date_updated']; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

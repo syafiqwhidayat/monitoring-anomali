@@ -32,6 +32,9 @@ $routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator,mit
 $routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
     $routes->get('konfirmasiBulk', 'Anom::konfirmasiBulk'); //untuk konfirmasi secara bulk
     $routes->get('rekap-anomali', 'Anom::rekapAnomali'); //untuk konfirmasi secara bulk
+    $routes->get('log', 'Anom::log'); //untuk konfirmasi secara bulk
+    $routes->get('log-detil/(:num)', 'Anom::logDetil/$1'); //untuk memunculkan detil error
+    $routes->post('store', 'Anom::store'); //untuk upload template
 
 });
 

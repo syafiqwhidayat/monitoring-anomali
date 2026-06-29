@@ -184,31 +184,68 @@ class ProsesAnomali extends BaseCommand
                 CLI::write("Kabuten yg dijalankan: $kdKab");
                 $len = count($rows);
                 CLI::write("panjang data: $len");
-                // Cari semua ID di tabel anomali menurut kegiatan tertentu dan kabupaten tertentu.
-                $ids = $this->anomaliModel
-                    ->builder()
-                    ->select('anomali.id')
-                    ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali')
-                    ->where('k.id_kegiatan', $this->idKegiatan)
-                    ->where('left(anomali.id_wilayah,4)', $kdKab)
-                    ->where('k.level_anomali', $this->levelAnomali)
-                    ->get()
-                    ->getResultArray();
 
-                // Ambil array ID Anomali dari kegiatan tertentu saja
-                $idsArray = array_column($ids, 'id');
+                // fungsi untuk mengupdate hanya pada list anomali tertentu yg muncul di file upload.
+                // Kumpulkan semua kode anomali unik khusus untuk kabupaten ini dari rows Excel
+                $uniqueKodesInExcel = [];
+                for ($i = 0; $i < $len; $i++) {
+                    $row = $rows[$i];
+                    // Posisi kolom anomali: jika isRT kolom indeks 9, jika non-RT kolom indeks 7
+                    $anomaliStr = $isRT ? ($row[9] ?? '') : ($row[7] ?? '');
 
-                // batas mulai transaksi data.
-                $this->db->transStart();
-
-                // Update semua anomali dari kegitan tertentu is_insert = 0
-                if (!empty($idsArray)) {
-                    $this->anomaliModel
-                        ->builder()
-                        ->whereIn('id', $idsArray)
-                        ->set(['is_insert' => 0])
-                        ->update();
+                    // Pecah jika dalam satu cell ada multiple anomali dipisahkan koma
+                    $arrAnomali = explode(',', rtrim($anomaliStr, ','));
+                    foreach ($arrAnomali as $kode) {
+                        $cleanKode = strtoupper(trim($kode));
+                        if (!empty($cleanKode)) {
+                            $uniqueKodesInExcel[$cleanKode] = true;
+                        }
+                    }
                 }
+
+                // Petakan kode anomali dari Excel ke ID Kategori Anomali menggunakan cache map
+                // targetKategoriIds berisi idKategori anomli yg muncul di file
+                $targetKategoriIds = [];
+                foreach (array_keys($uniqueKodesInExcel) as $kodeAnom) {
+                    if (isset($this->mappedKategori[$kodeAnom]['id'])) {
+                        $targetKategoriIds[] = $this->mappedKategori[$kodeAnom]['id'];
+                    }
+                }
+
+                // Jika file kosong atau tidak ada kategori valid, tidak perlu set is_insert = 0
+                if (empty($targetKategoriIds)) {
+                    CLI::write("⚠️ Tidak ada kategori anomali valid dalam data Excel untuk Kab $kdKab.", 'yellow');
+                    // continue;
+                } else {
+                    // Cari semua ID di tabel anomali menurut kegiatan tertentu dan kabupaten tertentu.
+                    $idsQuery = $this->anomaliModel
+                        ->builder()
+                        ->select('anomali.id')
+                        ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali')
+                        ->where('k.id_kegiatan', $this->idKegiatan)
+                        ->where('left(anomali.id_wilayah,4)', $kdKab)
+                        ->where('k.level_anomali', $this->levelAnomali)
+                        ->whereIn('anomali.id_kategori_anomali', $targetKategoriIds);
+
+                    $ids = $idsQuery->get()->getResultArray();
+
+                    // Ambil array ID Anomali dari kegiatan tertentu saja
+                    $idsArray = array_column($ids, 'id');
+
+                    // batas mulai transaksi data.
+                    $this->db->transStart();
+
+                    // Update semua anomali dari kegitan tertentu is_insert = 0
+                    if (!empty($idsArray)) {
+                        $this->anomaliModel
+                            ->builder()
+                            ->whereIn('id', $idsArray)
+                            ->set(['is_insert' => 0])
+                            ->update();
+                    }
+                }
+
+
                 try {
                     // 2. Mulai membaca data (Skip baris 0/header)
                     for ($i = 0; $i < $len; $i++) {
@@ -413,6 +450,10 @@ class ProsesAnomali extends BaseCommand
             // --- CATCH LUAR ---
             // Menangkap error yang sangat parah (misal: memori limit atau tabel hilang)
             CLI::error("Sistem berhenti total: " . $th->getMessage());
+            $this->logModel->update($logId, [
+                'status'        => 'gagal',
+                'error_details' => json_encode([['baris' => '-', 'data' => 'System Runner', 'messages' => [$th->getMessage()]]]),
+            ]);
         };
     }
 

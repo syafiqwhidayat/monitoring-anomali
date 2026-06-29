@@ -22,10 +22,10 @@ $isTargetKhusus = ($jenis === 'Ruta' || $jenis === 'Anom');
         <?php endif; ?>
 
         <div class="accordion modern-accordion w-100 main-part-accordion" id="accordionAnomali<?= $uniqueId; ?>">
-            <div><?= $jenis; ?></div>
+            <!-- <div><?= $jenis; ?></div> -->
             <?php foreach ($listAnom as $d): ?>
                 <div class="accordion-item search-target-item" data-id="<?= $d['id']; ?>">
-                    <h2 class="accordion-header">
+                    <h2 class="accordion-header position-relative">
                         <button class="accordion-button collapsed py-2 px-2 px-md-3" type="button"
                             data-bs-toggle="collapse"
                             data-bs-target="#collapse_<?= $jenis; ?>_<?= $d['id']; ?>"
@@ -52,6 +52,51 @@ $isTargetKhusus = ($jenis === 'Ruta' || $jenis === 'Anom');
                             </div>
                         </button>
                     </h2>
+
+                    <!-- <h2 class="accordion-header position-relative">
+                        <div class="d-flex align-items-center w-100">
+
+                            <button class="accordion-button collapsed py-2 px-2 px-md-3" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapse_<?= $jenis; ?>_<?= $d['id']; ?>"
+                                aria-expanded="false"
+                                aria-controls="collapse_<?= $jenis; ?>_<?= $d['id']; ?>"
+                                style="padding-right: 140px !important;">
+                                <div class="d-flex align-items-center gap-1 gap-md-3" style="min-width: 0;">
+                                    <span class="badge bg-blue-lt text-blue font-monospace px-1-5 py-1 rounded text-truncate match-badge"
+                                        style="font-size: 0.725rem; max-width: 85px; display: inline-block; vertical-align: middle;"
+                                        title="<?= esc($d['kd']); ?>">
+                                        <?= esc($d['kd']); ?>
+                                    </span>
+
+                                    <span class="text-secondary fw-semibold text-start text-truncate d-inline-block match-name"
+                                        style="font-size: 0.775rem; max-width: 150px; vertical-align: middle; --bs-md-max-width: 100%;">
+                                        <?= esc($d['nm']); ?>
+                                    </span>
+                                </div>
+                            </button>
+
+                            <div class="d-flex align-items-center gap-2 position-absolute" style="right: 40px; z-index: 10; pointer-events: auto;">
+
+                                <?php if ($jenis === 'Ruta'): ?>
+                                    <a href="https://fasih-sm.bps.go.id/app/assignment-detail/<?= esc($d['kd']); ?>"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onclick="event.stopPropagation();"
+                                        class="badge bg-blue-lt text-blue font-monospace px-1-5 py-1 rounded text-truncate match-badge"
+                                        style="font-size: 0.725rem; max-width: 85px; display: inline-block; vertical-align: middle; text-decoration: none;"
+                                        title="<?= esc($d['kd']); ?>">
+                                        Fasih
+                                    </a>
+                                <?php endif; ?>
+
+                                <span class="badge bg-light text-muted border rounded-pill fw-bold px-1-5 py-0-5 badge-counter" style="font-size: 0.65rem;">
+                                    <?= number_format($d['jmlAnom'], 0, ',', '.'); ?> A
+                                </span>
+                            </div>
+
+                        </div>
+                    </h2> -->
 
                     <div id="collapse_<?= $jenis; ?>_<?= $d['id']; ?>" class="accordion-collapse collapse">
                         <div class="accordion-body nested-body data-load-container container-<?= $jenis; ?>">

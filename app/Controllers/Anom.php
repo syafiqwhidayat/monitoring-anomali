@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use \App\Models\AnomaliModel;
 use App\Models\KatAnomaliModel;
+use App\Models\LogUploadModel;
 // use App\Models\AnomaliKegiatanWilayahTugasModel;
 use Config\Services;
 use Faker\Provider\Lorem;
@@ -16,11 +17,13 @@ class Anom extends BaseController
     protected $katAnomaliModel;
     protected $akwtModel;
     protected $validation;
+    protected $logModel;
 
     public function __construct()
     {
         $this->anomaliModel = new AnomaliModel();
         $this->katAnomaliModel = new KatAnomaliModel();
+        $this->logModel = new LogUploadModel();
         // $this->akwtModel = new AnomaliKegiatanWilayahTugasModel();
         $this->validation = \Config\Services::validation();
     }
@@ -550,6 +553,7 @@ class Anom extends BaseController
         $data['listSelFlag'] = array_merge($data['listSelFlag'], $this->anomaliModel->getFlagByUser() ?? []);
 
         $isExport = $this->request->getGet('export') === 'excel';
+        $isTemplate = $this->request->getGet('export') === 'template';
 
         try {
             $builder = $this->anomaliModel->builder();
@@ -618,6 +622,9 @@ class Anom extends BaseController
             if ($isExport) {
                 $data['listAnom'] = $builder->get()->getResultArray();
                 return view('anomali/excelRekapAnom', $data);
+            } elseif ($isTemplate) {
+                $data['listAnom'] = $builder->get()->getResultArray();
+                return view('anomali/excelRekapTemplate', $data);
             } else {
                 // Menghitung total data asli yang lolos filter
                 $totalRows = $builder->countAllResults(false);
@@ -638,5 +645,149 @@ class Anom extends BaseController
         }
         // dd($data['listAnom']);
         return view('anomali/rekapAnom', $data);
+    }
+
+    public function log()
+    {
+        $data['title'] = "Upload Konfirmasi";
+        $userWilayah = auth()->user()->wilayah_kerja;
+
+        // filter
+        $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
+        // data filter
+        $data['listLevel'] = [
+            [
+                'id' => '',
+                'nama' => "Semua Anomali",
+            ],
+        ];
+        $listSelLevel = $this->anomaliModel->getLevelAnomByUser() ?? [];
+        $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel ?? []);
+
+        $data['logs'] = [];
+
+        $datalog = $this->logModel->select('log_upload.*,idn.secret AS email')
+            ->join('auth_identities idn', 'id_user = idn.user_id')
+            ->where('id_kegiatan', session()->get('aktif_kegiatan'))
+            ->where('jenis', 'konfirmasi')
+            ->orderBy('created_at', 'DESC');
+
+        if ($data['filterLevel'] != '') {
+            $datalog->where('log_upload.wilayah', $data['filterLevel']);
+        }
+        if ($userWilayah !== '1300') {
+            $datalog->where('wilayah', $userWilayah);
+        }
+
+        $data['logs'] = $datalog->findAll();
+
+
+        return view('anomali/logUploadKonfirmasi', $data);
+    }
+
+    public function store()
+    {
+        // dd('ini dijalankan');
+        $file = $this->request->getFile('file_anomali');
+
+        if ($file->isValid() && !$file->hasMoved()) {
+            // 1. Simpan file ke folder writable/uploads
+            $oldName = $file->getName();
+            $newName = $file->getRandomName();
+            $file->move(WRITEPATH . 'uploads', $newName);
+            $idKegiatan = session()->get('aktif_kegiatan');
+            $isRT = session()->get('is_rt');
+            $wilayah = auth()->user()->wilayah_kerja;
+
+            // 2. Buat catatan awal di tabel upload_logs (status: pending)
+            $logId = $this->logModel->insert([
+                'nama_file' => $newName,
+                'nama_file_awal' => $oldName,
+                'status'    => 'pending',
+                'id_user'   => auth()->id(), // Siapa yang upload
+                'id_kegiatan' => session()->get('aktif_kegiatan'),
+                'jenis' => 'konfirmasi',
+                'wilayah' => auth()->user()->wilayah_kerja,
+            ]);
+
+            // 3. PANGGIL COMMAND DI BACKGROUND
+            // Kita kirimkan Nama File dan ID Log sebagai parameter
+            // Tanda '&' di akhir perintah adalah kunci agar berjalan di background
+            // $command = "php " . FCPATH . "../spark proses:wilayah " . $newName . " " . $logId . " > /dev/null 2>&1 &"; //command linux
+            // $command = "start /B php " . FCPATH . "../spark proses:anomali " . $newName . " " . $logId . " " . $idKegiatan .  " " . $levelAnom; //command windows
+            // $command = "start /B php " . FCPATH . "../spark proses:anomali " . $newName . " " . $logId . " " . $idKegiatan . " " . $levelAnom . " > NUL 2> NUL";
+            // shell_exec($command);
+            $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:konfirmasi ' . $newName . ' ' . $logId . ' ' . $wilayah . ' > NUL 2>&1"';
+            // 2. Gunakan blok try-catch untuk menangkap jika fungsi dilarang
+            try {
+                if (function_exists('popen')) {
+                    \pclose(\popen($command, "r"));
+                } elseif (function_exists('shell_exec')) {
+                    \shell_exec($command);
+                } else {
+                    // Catat di log jika semua fungsi eksekusi mati
+                    log_message('error', 'Semua fungsi eksekusi shell (popen, shell_exec) dinonaktifkan di server.');
+
+                    // buat agar pesan akan di proses secara berkala
+                    $this->logModel->update($logId, [
+                        'status' => 'pending',
+                        'error_details' => json_encode([['baris' => '-', 'data' => 'Sistem', 'messages' => 'File akan di proses secara berkala sesuai antrian']])
+                    ]);
+                }
+            } catch (\Exception $e) {
+                log_message('error', $e->getMessage());
+            }
+
+            return redirect()->to('/anomali/log')->with('message', 'Upload berhasil! Sistem sedang memproses data di latar belakang.');
+        }
+    }
+
+    public function logDetil($id)
+    {
+        $log = $this->logModel->find($id);
+        $errors = json_decode($log['error_details'], true);
+        // dd($errors);
+        $data['errors'] = $errors;
+
+        if (empty($errors)) {
+            return '
+        <div class="text-center p-4">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon mb-2 text-muted icon-lg" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg>
+            <p class="text-secondary">Tidak ada rincian kesalahan untuk ID ini atau proses berhasil 100%.</p>
+        </div>';
+        }
+
+        // Susun Tabel HTML dengan format Tabler
+        $html = '<div class="table-responsive">
+                <table class="table table-vcenter card-table table-striped">
+                    <thead>
+                        <tr>
+                            <th class="w-1">Baris</th>
+                            <th>Nama/Data</th>
+                            <th>Keterangan Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>';
+
+        // dd($errors);
+        foreach ($errors as $err) {
+            $pesanTampil = '';
+            if (is_array($err['messages'])) {
+                $pesanTampil = implode(', ', $err['messages']);
+            } else {
+                $pesanTampil = $err['messages'];
+            }
+            $html .= '<tr>
+                    <td><span class="badge bg-red-lt">' . $err['baris'] . '</span></td>
+                    <td class="small fw-bold text-uppercase">' . $err['data'] . '</td>
+                    <td class="text-danger small">' . $pesanTampil . '</td>
+                  </tr>';
+        }
+
+        $html .= '    </tbody>
+                </table>
+            </div>';
+
+        return view('log_upload/log_comp_error', $data);
     }
 }
