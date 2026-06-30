@@ -44,8 +44,8 @@ $routes->group('manajemen-anomali', ['filter' => 'activeRole:superadmin,admin'],
     $routes->get('edit/(:any)', 'ManajAnom::edit/$1'); //edit kategori anomali
     $routes->post('updateKategori', 'ManajAnom::updateKategori'); //update kategori anomali
     $routes->get('log', 'ManajAnom::log'); //memunculkan log upload
-    $routes->get('template', 'ManajAnom::downloadTemplate'); //download template
-    $routes->post('store', 'ManajAnom::store'); //menambah log tambahan anomali
+    $routes->get('template/(:any)', 'ManajAnom::downloadTemplate/$1'); //download template
+    $routes->post('store/(:any)', 'ManajAnom::store/$1'); //menambah log tambahan anomali
     $routes->get('log-detil/(:num)', 'ManajAnom::logDetil/$1'); //memunculkan error log
 });
 

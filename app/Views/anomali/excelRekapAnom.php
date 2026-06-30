@@ -26,7 +26,7 @@ header("Expires: 0");
             <th style="width: 150px;">Nama PML</th>
             <th style="width: 120px;">Kode Wilayah</th>
             <th style="width: 100px;">Kode Anomali</th>
-            <th style="width: 350px;">Aturan Kebijakan Validation</th>
+            <th style="width: 350px;">Detil Anomali</th>
             <th style="width: 380px; background-color: #ffda6a; color: black;">Isi Konfirmasi / Tanggapan Lapangan</th>
             <th style="width: 100px;">Status Is_Lap</th>
             <th style="width: 100px;">Status Is_Insert</th>

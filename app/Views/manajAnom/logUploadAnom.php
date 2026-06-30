@@ -130,21 +130,32 @@
 <div class="modal modal-blur fade" id="modalUpload" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <form action="<?= base_url('/manajemen-anomali/store') ?>" method="post" enctype="multipart/form-data">
+            <form id="formUploadAnomali" action="<?= base_url('/manajemen-anomali/store/anomali') ?>" method="post" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title">Upload Anomali</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p> Template Upload Anomali :</p>
-                    <a href="<?= base_url('/manajemen-anomali/template'); ?>" class="btn btn-outline-primary">
+                    <div class="mb-3">
+                        <label class="form-label">Jenis Data Anomali</label>
+                        <select class="form-select" id="selectJenisAnomali" name="jenis_anomali">
+                            <option value="anomali">Anomali Wilayah / Kelompok</option>
+                            <option value="anomali_individu">Anomali Individu (Pertahankan Konfirmasi)</option>
+                            <option value="anomali_individu_forced">Anomali Individu (Paksa Timpa Konfirmasi)</option>
+                        </select>
+                    </div>
+
+                    <p class="mb-2">Template Upload Anomali :</p>
+                    <a id="btnDownloadTemplate" href="<?= base_url('/manajemen-anomali/template/anomali'); ?>" class="btn btn-outline-primary w-100 mb-3">
                         <i class="bi bi-download"></i> Unduh Template Excel (.xlsx)
                     </a>
+
                     <div class="hr-text"></div>
+
                     <div class="mb-3">
                         <label class="form-label">Pilih File (Excel/CSV)</label>
                         <input type="file" name="file_anomali" class="form-control" required>
-                        <small class="form-hint mt-2">Upload excel akan menambahkan monitoring SE2026. Upload Excel hanya bisa dilaksanakan oleh superadmin.</small>
+                        <small class="form-hint mt-2">Pastikan struktur kolom file Excel Anda sesuai dengan template yang dipilih.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -157,6 +168,16 @@
 </div>
 
 <script>
+    document.getElementById('selectJenisAnomali').addEventListener('change', function() {
+        const jenis = this.value;
+        const urlTemplate = '<?= base_url('manajemen-anomali/template') ?>/' + jenis;
+        const urlStore = '<?= base_url('manajemen-anomali/store') ?>/' + jenis;
+
+        // Ubah action form submit
+        document.getElementById('btnDownloadTemplate').setAttribute('href', urlTemplate);
+        document.getElementById('formUploadAnomali').setAttribute('action', urlStore);
+    });
+
     function showError(id) {
         const modal = new bootstrap.Modal(document.getElementById('modal-error'));
         modal.show();

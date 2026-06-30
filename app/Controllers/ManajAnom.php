@@ -7,6 +7,9 @@ use App\Models\KatAnomaliModel;
 use App\Models\LogUploadModel;
 use Config\Services;
 use Faker\Provider\Lorem;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class ManajAnom extends BaseController
 {
@@ -110,22 +113,42 @@ class ManajAnom extends BaseController
 
         // cek apakah user punya hak update
         $kategoriAnom = $this->katAnomaliModel->find($id);
-        if ($kategoriAnom['level_anomali'] !== auth()->user()->wilayah_kerja) {
+        if (!$kategoriAnom) {
+            return redirect()->back()->with('error', 'Data Kategori Anomali tidak ditemukan.');
+        }
+
+        // PENGAMAN 2: Cek hak akses wilayah kerja (Gunakan substr jika panjang kode wilayah berbeda)
+        $userWilayah = auth()->user()->wilayah_kerja; // Misal: 1311
+
+        if ($kategoriAnom['level_anomali'] !== $userWilayah) {
             return redirect()->back()->with('error', 'User tidak punya akses edit Kategori Anomali');
         }
 
         if ($action === "toggle") {
-            $is_show = $this->request->getVar('is_show');
-            $data = ['is_show' => !$is_show];
+            $currentShow = (int) $kategoriAnom['is_show'];
+            $data        = ['is_show' => $currentShow === 1 ? 0 : 1];
+
             $this->katAnomaliModel->update($id, $data);
-            return redirect()->back()->with('message', 'Status Lihat diubah');
+            return redirect()->back()->with('message', 'Status keterlihatan anomali berhasil diubah.');
         } elseif ($action === "delete") {
+            $db = \Config\Database::connect();
+            $db->transStart();
+
+            // Hapus relasi anak
+            $this->anomaliModel->where('id_kategori_anomali', $id)->delete();
+            // Hapus master induk
             $this->katAnomaliModel->delete($id);
-            return redirect()->back()->with('message', 'anomali berhasil dihapus');
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return redirect()->back()->with('error', 'Gagal menghapus data anomali terkait.');
+            }
+
+            return redirect()->back()->with('message', 'Kategori dan seluruh data anomali terkait berhasil dihapus');
         } else {
             return redirect()->back()->with('error', 'aksi tidak valid');
         }
-        // return view('anomali/manajemen');
     }
 
     public function edit($id)
@@ -178,12 +201,62 @@ class ManajAnom extends BaseController
         return redirect()->to(base_url('/manajemen-anomali/list'))->with('message', 'data berhasil di update');
     }
 
-    public function downloadTemplate()
+    public function downloadTemplate($jenis = 'anomali')
     {
-        return $this->response->download(FCPATH . 'assets\templates\template_anomali.xlsx', null);
+        // return $this->response->download(FCPATH . 'assets\templates\template_anomali.xlsx', null);
+        $spreadsheet = new Spreadsheet();
+        $sheet       = $spreadsheet->getActiveSheet();
+
+        // Atur Header & Contoh Data Berdasarkan Jenis
+        if ($jenis === 'anomali') {
+            $title = "template_anomali.xlsx";
+            $headers = ['KODE PROV', 'KODE KAB', 'KODE KEC', 'KODE DESA', 'KODESUBSLS', 'ID-ASSIGMENT', 'KD-ROSTER', 'NAMA KRT/USAHA', 'NAMA ROSTER', 'KODE ANOMALI'];
+            $example = ['13', '11', '010', '002', '001200', 'uenl-f51sdffe-fdsfasdf-4525dd', 'K1', 'BUDI', 'ANI', '00-AN001;00-AN002'];
+        } else {
+            // Berlaku untuk anomali_individu maupun anomali_individu_forced (strukturnya sama)
+            $title = "template_anomali_individu.xlsx";
+            // Index [0] sampai [6] rekonstruksi id_assignment, [9] kode_anomali, [10] isi_fasih, [8] konfirmasi
+            $headers = ['KODE PROV', 'KODE KAB', 'KODE KEC', 'KODE DESA', 'KODESUBSLS', 'ID-ASSIGMENT', 'KD-ROSTER', 'NAMA KRT/USAHA', 'NAMA ROSTER', 'KODE ANOMALI', 'DATA FASIH', 'KONFIRMASI'];
+            $example = ['13', '11', '010', '002', '001200', 'uenl-f51sdffe-fdsfasdf-4525dd', 'K1', 'BUDI', 'ANI', '00-AN001', 'Jumlah Pendapatan = 340000', ''];
+        }
+
+        // Tulis Header ke Baris 1
+        foreach ($headers as $colIndex => $headerText) {
+            // Mengubah indeks angka (1, 2, 3...) menjadi huruf kolom ('A', 'B', 'C'...)
+            $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
+
+            // Tulis nilai ke koordinat sel, contoh: A1, B1, C1...
+            $sheet->setCellValue($colLetter . '1', $headerText);
+
+            // Set font menjadi Bold
+            $sheet->getStyle($colLetter . '1')->getFont()->setBold(true);
+        }
+
+        // Tulis Contoh Data ke Baris 2
+        foreach ($example as $colIndex => $exampleValue) {
+            $colLetter = Coordinate::stringFromColumnIndex($colIndex + 1);
+
+            // Tulis nilai ke baris 2, contoh: A2, B2, C2...
+            $sheet->setCellValue($colLetter . '2', $exampleValue);
+        }
+
+        // Auto-size kolom agar rapi saat dibuka user
+        foreach (range(1, count($headers)) as $colID) {
+            $colLetter = Coordinate::stringFromColumnIndex($colID);
+            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+
+        // Stream ke Browser untuk didownload
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $title . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        exit;
     }
 
-    public function store()
+    public function store($jenis = 'anomali')
     {
         $file = $this->request->getFile('file_anomali');
 
@@ -195,16 +268,17 @@ class ManajAnom extends BaseController
             $idKegiatan = session()->get('aktif_kegiatan');
             $isRT = session()->get('is_rt');
             $levelAnom = auth()->user()->wilayah_kerja;
+            $idUser = auth()->id();
 
             // 2. Buat catatan awal di tabel upload_logs (status: pending)
             $logId = $this->logModel->insert([
                 'nama_file' => $newName,
                 'nama_file_awal' => $oldName,
                 'status'    => 'pending',
-                'id_user'   => auth()->id(), // Siapa yang upload
-                'id_kegiatan' => session()->get('aktif_kegiatan'),
-                'jenis' => 'anomali',
-                'wilayah' => auth()->user()->wilayah_kerja,
+                'id_user'   => $idUser, // Siapa yang upload
+                'id_kegiatan' => $idKegiatan,
+                'jenis' => $jenis,
+                'wilayah' => $levelAnom,
             ]);
 
             // 3. PANGGIL COMMAND DI BACKGROUND
@@ -214,6 +288,14 @@ class ManajAnom extends BaseController
             // $command = "start /B php " . FCPATH . "../spark proses:anomali " . $newName . " " . $logId . " " . $idKegiatan .  " " . $levelAnom; //command windows
             // $command = "start /B php " . FCPATH . "../spark proses:anomali " . $newName . " " . $logId . " " . $idKegiatan . " " . $levelAnom . " > NUL 2> NUL";
             // shell_exec($command);
+            switch ($jenis) {
+                case 'anomali_individu':
+                    $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:anomali_individu ' . $newName . ' ' . $logId . ' ' . $idKegiatan . ' ' . $levelAnom . ' ' . $idUser . ' > NUL 2>&1"';
+                case 'anomali_individu_forced':
+                    $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:anomali_individu ' . $newName . ' ' . $logId . ' ' . $idKegiatan . ' ' . $levelAnom . ' ' . $idUser . ' 1 > NUL 2>&1"';
+                default:
+                    $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:anomali ' . $newName . ' ' . $logId . ' ' . $idKegiatan . ' ' . $levelAnom . ' > NUL 2>&1"';
+            }
             $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:anomali ' . $newName . ' ' . $logId . ' ' . $idKegiatan . ' ' . $levelAnom . ' > NUL 2>&1"';
             // 2. Gunakan blok try-catch untuk menangkap jika fungsi dilarang
             try {

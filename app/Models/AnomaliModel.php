@@ -22,6 +22,7 @@ class AnomaliModel extends Model
         'is_lap',
         'is_insert',
         'is_sistem',
+        'isi_fasih',
     ];
 
     public function getAnomaliByWilayah($wilayah = null, $isEdit = null, $kode_anomali = null, $flag = null, $levelAnomali = null, $isRT = true)

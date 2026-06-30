@@ -62,7 +62,9 @@ class JobRunner extends BaseCommand
                 } elseif ($job->jenis === 'anomali') {
                     $command = "proses:anomali $job->nama_file $job->id $job->id_kegiatan $job->wilayah";
                 } elseif ($job->jenis === 'anomali_individu') {
-                    $command = "proses:anomali_individu $job->nama_file $job->id $job->id_kegiatan $job->wilayah";
+                    $command = "proses:anomali_individu $job->nama_file $job->id $job->id_kegiatan $job->wilayah $job->id_user $job->wilayah";
+                } elseif ($job->jenis === 'anomali_individu_forced') {
+                    $command = "proses:anomali_individu $job->nama_file $job->id $job->id_kegiatan $job->wilayah $job->id_user $job->wilayah 1";
                 } else {
                     $command = "proses:konfirmasi $job->nama_file $job->id $job->wilayah";
                 }
