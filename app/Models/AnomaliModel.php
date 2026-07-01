@@ -270,7 +270,7 @@ class AnomaliModel extends Model
             $joinKatAnomali->where('anomali.id_kategori_anomali', $idKat);
         }
         if ($idWilayah) {
-            $joinKatAnomali->whereIn('kategori_anomali.level_anomali', ['1300', $idWilayah]);
+            $joinKatAnomali->whereIn('kategori_anomali.level_anomali', ['0000', '1300', $idWilayah]);
         }
         if ($idKegiatan) {
             $joinKatAnomali->where('kategori_anomali.id_kegiatan', $idKegiatan);
@@ -393,7 +393,7 @@ class AnomaliModel extends Model
             ->where('k.id_kegiatan', $id_kegiatan);
 
         if ($wilayah_kerja != '1300') {
-            $data->whereIn('k.level_anomali', ['1300', $wilayah_kerja]);
+            $data->whereIn('k.level_anomali', ['0000', '1300', $wilayah_kerja]);
         }
         $data->orderBy('level_anomali', 'ASC')
             ->orderBy('kode_anomali', 'ASC')
@@ -412,7 +412,7 @@ class AnomaliModel extends Model
             ->where('k.id_kegiatan', $id_kegiatan);
 
         if ($wilayah_kerja != '1300') {
-            $data->whereIn('k.level_anomali', ['1300', $wilayah_kerja]);
+            $data->whereIn('k.level_anomali', ['0000', '1300', $wilayah_kerja]);
         }
 
         $data->orderBy('level_anomali', 'ASC')
