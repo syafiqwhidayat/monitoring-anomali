@@ -431,7 +431,7 @@ class AnomaliModel extends Model
             ->where('k.id_kegiatan', $id_kegiatan);
 
         if ($wilayah_kerja != '1300') {
-            $data->whereIn('k.level_anomali', ['1300', $wilayah_kerja]);
+            $data->whereIn('k.level_anomali', ['0000', '1300', $wilayah_kerja]);
         }
 
         $data->orderBy('level_anomali', 'ASC')

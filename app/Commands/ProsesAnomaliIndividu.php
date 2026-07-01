@@ -28,6 +28,8 @@ class ProsesAnomaliIndividu extends BaseCommand
         $idUser                = $params[4] ?? null;
         $forcedKonfirmasi      = $params[5] ?? 0;
 
+        // $levelWilayah       = $kegiatan['level_wilayah'] ?? 4;
+
         if (!$fileName || !$logId || !$idKegiatan || !$idKab) {
             CLI::error("Parameter kurang lengkap! Dibutuhkan: namaFile, logId, idKegiatan, dan kodeKabOtoritas.");
             return 1;
@@ -108,14 +110,17 @@ class ProsesAnomaliIndividu extends BaseCommand
             $mappedKategori = [];
             if (!empty($uniqueKodes)) {
                 $kategoriData = $this->db->table('kategori_anomali')
-                    ->select('id, kode_anomali')
+                    ->select('id, kode_anomali,level_anomali')
                     ->where('id_kegiatan', $idKegiatan)
                     ->whereIn('kode_anomali', $uniqueKodes)
                     ->get()
                     ->getResultArray();
 
                 foreach ($kategoriData as $kat) {
-                    $mappedKategori[$kat['kode_anomali']] = $kat['id'];
+                    $mappedKategori[$kat['kode_anomali']] = [
+                        'id'            => $kat['id'],
+                        'level_anomali' => $kat['level_anomali']
+                    ];;
                 }
             }
 
@@ -145,7 +150,7 @@ class ProsesAnomaliIndividu extends BaseCommand
             // 4. RESET SEMUA IS_INSERT JADI 0 DI AWAL (Hanya yang terdampak di Excel)
             // =================================================================
             if (!empty($uniqueAssigments) && !empty($uniqueKodes)) {
-                $involvedKategoriIds = !empty($mappedKategori) ? array_values($mappedKategori) : [0];
+                $involvedKategoriIds = !empty($mappedKategori) ? array_column($mappedKategori, 'id') : [0];
 
                 $this->db->table('anomali')
                     // ->whereIn('id_assigment', $uniqueAssigments)
@@ -216,6 +221,62 @@ class ProsesAnomaliIndividu extends BaseCommand
                     continue;
                 }
 
+                // Jalankan validasi
+                $dataToValidate = [
+                    'kode_prov'  => trim($row[0] ?? ''),
+                    'kode_kab'   => trim($row[1] ?? ''),
+                    'kode_kec'   => trim($row[2] ?? ''),
+                    'kode_desa'  => trim($row[3] ?? ''),
+                    'kode_sls'   => trim($row[4] ?? ''),
+                    'kode_krt'   => $kdKrt,       // Disesuaikan dengan kebutuhan kolom 'kode_nrt' Anda
+                    'nama_krt'   => $nmKrt,       // Disesuaikan dengan kebutuhan kolom 'nama_nrt' Anda
+                    'kode_art'   => $kdArt,       // Disesuaikan dengan kebutuhan kolom 'kode_nrt' Anda
+                    'nama_art'   => $nmArt,       // Disesuaikan dengan kebutuhan kolom 'nama_nrt' Anda
+                    'anomali'    => $kodeAnomali,
+                    'id_wilayah' => $idWilayah,
+                ];
+
+                $rule = [
+                    'kode_prov' => 'required|exact_length[2]',
+                    'kode_kab'  => 'required|exact_length[2]',
+                    'kode_kec'  => 'permit_empty|exact_length[3]',
+                    'kode_desa' => 'permit_empty|exact_length[3]',
+                    'kode_sls'  => 'permit_empty|exact_length[6]',
+                    'kode_krt'      => 'required|max_length[255]',
+                    'nama_krt'     => 'required|max_length[255]',
+                    'kode_art'      => 'max_length[255]',
+                    'nama_art'     => 'max_length[255]',
+                    'anomali'   => 'required',
+                    'id_wilayah' => 'is_not_unique[wilayah.id]',
+                    // 'id_wilayah' => 'required|exact_length[' . $levelWilayah . ']|is_not_unique[wilayah.id]',
+                ];
+                $message = [
+                    'id_wilayah' => [
+                        'is_not_unique' => 'id wilayah tidak ditemukan di master wilayah',
+                        'exact_length' => 'id wilayah tidak sama dengan yang didefinisikan di kegiatan'
+                    ],
+                ];
+
+                $validation = \Config\Services::validation();
+                $validation->setRules($rule, $message);
+                if (!$validation->run($dataToValidate)) {
+                    // Jika gagal, ambil semua pesan error yang terjadi pada baris ini
+                    $errorsBaris = $validation->getErrors();
+
+                    // Gabungkan pesan error menjadi satu string kalimat
+                    $gabunganPesanError = implode(', ', $errorsBaris);
+
+                    // Masukkan ke array log error_details Anda
+                    $error_details[] = [
+                        'baris'    => $rowNum,
+                        'data'     => "ID Assigment: " . ($id_assigment ?: '-'),
+                        'messages' => "Validasi Gagal: " . $gabunganPesanError
+                    ];
+
+                    // Skip baris ini dan lanjutkan ke baris excel berikutnya karena data tidak valid
+                    continue;
+                }
+
                 // -------------------------------------------------------------
                 // PERIKSA / BUAT KATEGORI ANOMALI JIKA BELUM ADA
                 // -------------------------------------------------------------
@@ -231,9 +292,26 @@ class ProsesAnomaliIndividu extends BaseCommand
                     $newKategoriId = $this->db->insertID();
 
                     // Masukkan ke cache memori agar baris berikutnya tidak buat duplikat lagi
-                    $mappedKategori[$kodeAnomali] = $newKategoriId;
+                    $mappedKategori[$kodeAnomali] = [
+                        'id'            => $newKategoriId,
+                        'level_anomali' => $idKab
+                    ];
+                } else {
+                    // JIKA SUDAH ADA -> Cek Kewenangan Level Wilayahnya
+                    $existingKategori = $mappedKategori[$kodeAnomali];
+                    $levelAnomaliDb   = $existingKategori['level_anomali'];
+
+                    if ($levelAnomaliDb !== $idKab) {
+                        $errorDetails[] = [
+                            'baris'    => $rowNum,
+                            'data'     => "Kd Anomali: $kodeAnomali",
+                            'messages' => ["Gagal! User tidak punya akses untuk menambahkan anomali ini"]
+                        ];
+                        $gagal++;
+                        continue; // Lewati baris Excel ini dan lanjut ke baris berikutnya
+                    }
                 }
-                $idKategoriAnomali = $mappedKategori[$kodeAnomali];
+                $idKategoriAnomali = $mappedKategori[$kodeAnomali]['id'];
 
                 // -------------------------------------------------------------
                 // PERIKSA / BUAT ASSIGMENT JIKA BELUM ADA
@@ -257,6 +335,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                 // -------------------------------------------------------------
                 // KLASIFIKASI UPSERT TABEL ANOMALI
                 // -------------------------------------------------------------
+                $currentAssignmentId = $mappedAssigment[$id_assigment];
                 $checkKey = $mappedAssigment[$id_assigment] . '_' . $kodeAnomali;
                 if (isset($mappedExisting[$checkKey])) {
                     // KONDISI A: DATA SUDAH ADA -> UPDATE
@@ -286,21 +365,33 @@ class ProsesAnomaliIndividu extends BaseCommand
                         }
                     }
 
-                    $batchUpdateAnomali[] = [
-                        'id'           => $existingData['id'],
-                        'id_user'    => $idUser,
-                        'isi_fasih'    => $isiFasih,
-                        'is_insert'    => 1,
-                        'is_sistem'    => 0,
-                        'konfirmasi'    => $finalKonfirmasi,
-                        'date_updated' => date('Y-m-d H:i:s')
-                    ];
+                    // Jika ID masih null (berarti buatan instan dari loop baris sebelumnya), lakukan update via object key alternatif nanti
+                    if ($existingData['id'] === null) {
+                        // Untuk mencegah duplikasi batch insert, baris duplikat di excel dimanipulasi langsung di array insert
+                        foreach ($batchInsertAnomali as $bKey => $bInsert) {
+                            if ($bInsert['id_assigment'] == $currentAssignmentId && $bInsert['id_kategori_anomali'] == $idKategoriAnomali) {
+                                $batchInsertAnomali[$bKey]['konfirmasi'] = $finalKonfirmasi;
+                                $batchInsertAnomali[$bKey]['isi_fasih']  = $isiFasih;
+                                $batchInsertAnomali[$bKey]['id_user']    = $idUser;
+                            }
+                        }
+                    } else {
+                        $batchUpdateAnomali[] = [
+                            'id'           => $existingData['id'],
+                            'id_user'    => $idUser,
+                            'isi_fasih'    => $isiFasih,
+                            'is_insert'    => 1,
+                            'is_sistem'    => 0,
+                            'konfirmasi'    => $finalKonfirmasi,
+                            'date_updated' => date('Y-m-d H:i:s')
+                        ];
+                    }
                 } else {
                     // KONDISI B: DATA BELUM ADA -> INSERT
                     $batchInsertAnomali[] = [
                         'id_kategori_anomali' => $idKategoriAnomali,
                         'id_wilayah'          => $idWilayah ?: substr($id_assigment, 0, 10),
-                        'id_assigment'        => $mappedAssigment[$id_assigment],
+                        'id_assigment'        => $currentAssignmentId,
                         'isi_fasih'           => $isiFasih,
                         'konfirmasi'           => $konfirmasi,
                         'is_insert'           => 1,
@@ -328,6 +419,10 @@ class ProsesAnomaliIndividu extends BaseCommand
                 // ->whereIn('id_assigment', $uniqueAssigments)
                 ->whereIn('id_kategori_anomali', $involvedKategoriIds)
                 ->where('is_insert', 0)
+                ->groupStart() // Jaga-jaga jika ada NULL
+                ->where('konfirmasi', '')
+                ->orWhere('konfirmasi', null)
+                ->groupEnd()
                 ->update(['is_sistem' => 1, 'konfirmasi' => 'System: Sudah diperbaiki di fasih']);
 
             $this->db->transComplete();
