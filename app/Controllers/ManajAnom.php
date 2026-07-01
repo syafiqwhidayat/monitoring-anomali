@@ -90,7 +90,7 @@ class ManajAnom extends BaseController
         $datalog = $this->logModel->select('log_upload.*,idn.secret AS email')
             ->join('auth_identities idn', 'id_user = idn.user_id')
             ->where('id_kegiatan', session()->get('aktif_kegiatan'))
-            ->where('jenis', 'anomali')
+            ->whereIn('jenis', ['anomali', 'anomali_individu', 'anomali_individu_forced'])
             ->orderBy('created_at', 'DESC');
 
         if ($data['filterLevel'] != '') {
@@ -160,7 +160,7 @@ class ManajAnom extends BaseController
         $data['data'] = $this->katAnomaliModel->find($id);
         // dd($data['data']);
 
-        return view('ManajAnom/edit', $data);
+        return view('manajAnom/edit', $data);
     }
 
     public function updateKategori()

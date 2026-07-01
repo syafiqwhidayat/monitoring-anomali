@@ -256,7 +256,12 @@ class Anom extends BaseController
         $datum['is_lap'] = $this->request->getVar('kondisi_lapangan') ?? 0;
         $rules = [
             'id'           => 'required|is_natural_no_zero',
-            'konfirmasi' => 'required|trim|alpha_numeric_punct|min_length[5]'
+            'konfirmasi' => [
+                'required',
+                'trim',
+                'regex_match[/^[A-Za-z0-9~!#\$%&\*\-_+=\|:\., ]+$/]', // Menggunakan pipa di sini sepenuhnya aman
+                'min_length[5]'
+            ]
         ];
         $this->validation->reset();
         $this->validation->setRules($rules);

@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const statusFailed = (msg) =>
     `<span class="text-danger small fw-bold">❌ Gagal: ${msg}</span>`;
   const statusError =
-    '<span class="text-danger small fw-bold">⚠️ Gangguan Koneksi!</span>';
+    '<span class="text-danger small fw-bold">⚠️ Gangguan Koneksi / Error!</span>';
 
   if (parentAccordionKec) {
     // --- A. Logic Ambil Data Sub-Level (AJAX Bawaan) ---

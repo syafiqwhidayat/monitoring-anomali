@@ -162,20 +162,49 @@ class ProsesAnomaliIndividu extends BaseCommand
             // 5. CACHE DATA EXISTING ANOMALI (Ke Memori RAM)
             // =================================================================
             $mappedExisting = [];
-            if (!empty($uniqueAssigments) && !empty($uniqueKodes)) {
-                $dbData = $this->db->table('anomali')
-                    ->select('anomali.id, anomali.id_assigment, anomali.isi_fasih, kategori_anomali.kode_anomali,anomali.konfirmasi,anomali.is_sistem')
-                    ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
-                    ->where('kategori_anomali.id_kegiatan', $idKegiatan)
-                    ->whereIn('anomali.id_assigment', $uniqueAssigmentIds)
-                    ->whereIn('kategori_anomali.kode_anomali', $uniqueKodes)
-                    ->get()
-                    ->getResultArray();
+            if (!empty($uniqueAssigments) && !empty($uniqueKodes) && !empty($uniqueAssigmentIds)) {
+                $chunks = array_chunk($uniqueAssigmentIds, 2000);
+                foreach ($chunks as $chunkIds) {
+                    $getDb = $this->db->table('anomali')
+                        ->select('anomali.id, anomali.id_assigment, anomali.isi_fasih, kategori_anomali.kode_anomali, anomali.konfirmasi, anomali.is_sistem')
+                        ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
+                        ->where('kategori_anomali.id_kegiatan', $idKegiatan)
+                        ->whereIn('anomali.id_assigment', $chunkIds) // Gunakan potongan chunk
+                        ->whereIn('kategori_anomali.kode_anomali', $uniqueKodes)
+                        ->get();
 
-                foreach ($dbData as $rowDb) {
-                    $uniqueKey = $rowDb['id_assigment'] . '_' . $rowDb['kode_anomali'];
-                    $mappedExisting[$uniqueKey] = $rowDb;
+                    if ($getDb && is_object($getDb)) {
+                        $dbData = $getDb->getResultArray();
+                        foreach ($dbData as $rowDb) {
+                            $uniqueKey = $rowDb['id_assigment'] . '_' . $rowDb['kode_anomali'];
+                            $mappedExisting[$uniqueKey] = $rowDb;
+                        }
+                    } else {
+                        $error = $this->db->error();
+                        throw new \Exception("Gagal mengambil data existing di hosting. Pesan MySQL: " . $error['message']);
+                    }
                 }
+                // $getDb = $this->db->table('anomali')
+                //     ->select('anomali.id, anomali.id_assigment, anomali.isi_fasih, kategori_anomali.kode_anomali,anomali.konfirmasi,anomali.is_sistem')
+                //     ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
+                //     ->where('kategori_anomali.id_kegiatan', $idKegiatan)
+                //     ->whereIn('anomali.id_assigment', $uniqueAssigmentIds)
+                //     ->whereIn('kategori_anomali.kode_anomali', $uniqueKodes)
+                //     ->get()
+                //     ->getResultArray();
+
+                // // Pastikan hasil get() valid dan merupakan sebuah Object sebelum memanggil getResultArray()
+                // if ($getDb && is_object($getDb)) {
+                //     $dbData = $getDb->getResultArray();
+                //     foreach ($dbData as $rowDb) {
+                //         $uniqueKey = $rowDb['id_assigment'] . '_' . $rowDb['kode_anomali'];
+                //         $mappedExisting[$uniqueKey] = $rowDb;
+                //     }
+                // } else {
+                //     // Jika gagal karena query error/terlalu panjang, lemparkan ke Log/Exception agar tahu error SQL-nya
+                //     $error = $this->db->error();
+                //     throw new \Exception("Gagal mengambil data existing dari database. SQL Error: " . $error['message']);
+                // }
             }
 
             // =================================================================
@@ -199,6 +228,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                 $konfirmasi     = trim($row[11] ?? '');
 
                 if (empty($id_assigment) && empty($kodeAnomali)) {
+                    $gagal++;
                     continue;
                 }
 
@@ -267,13 +297,14 @@ class ProsesAnomaliIndividu extends BaseCommand
                     $gabunganPesanError = implode(', ', $errorsBaris);
 
                     // Masukkan ke array log error_details Anda
-                    $error_details[] = [
+                    $errorDetails[] = [
                         'baris'    => $rowNum,
                         'data'     => "ID Assigment: " . ($id_assigment ?: '-'),
                         'messages' => "Validasi Gagal: " . $gabunganPesanError
                     ];
 
                     // Skip baris ini dan lanjutkan ke baris excel berikutnya karena data tidak valid
+                    $gagal++;
                     continue;
                 }
 

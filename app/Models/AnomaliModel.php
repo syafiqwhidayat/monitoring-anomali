@@ -133,6 +133,7 @@ class AnomaliModel extends Model
             $data->groupStart()
                 ->where('wt.id_ppl', $idUser)
                 ->orWhere('wt.id_pml', $idUser)
+                ->orWhere('wt.id_koseka', $idUser)
                 ->groupEnd();
         }
 
