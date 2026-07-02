@@ -52,6 +52,11 @@ $routes->group('manajemen-anomali', ['filter' => 'activeRole:superadmin,admin'],
 $routes->get('monitoring/', 'Monitoring::index', ['filter' => 'activeRole:superadmin,admin,operator']); //menampilkan seluruh anomali
 $routes->get('monitoring-sel', 'Monitoring::view', ['filter' => 'activeRole:superadmin,admin,operator']); //menampilkan selected
 
+$routes->group('identifikasi', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
+    $routes->get('anades', 'Identifikasi::anades'); //untuk konfirmasi secara bulk
+
+});
+
 $routes->group('se', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
     // Rute yang bisa diakses oleh semua (superadmin, admin, operator)
     $routes->get('monitoring', 'SeMonitoring::index');
