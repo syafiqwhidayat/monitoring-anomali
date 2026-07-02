@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   // untuk halaman daftar anomali
   const parentAccordionKec = document.getElementById("accordionAnomaliKec");
-  const deleteModal = document.getElementById("deleteModal");
+  const deleteModal = document.getElementById("konfirHapus");
   const isEdit = window.location.href.includes("listEdit") ? "1" : "0";
 
   //untuk halaman manajemen anomali
@@ -203,21 +203,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // untuk halaman manajemen anomali
   if (deleteModal) {
-    // Tangkap event saat Modal mulai ditampilkan (Bootstrap Event)
     deleteModal.addEventListener("show.bs.modal", function (event) {
-      // Dapatkan tombol yang memicu modal
-      const button = event.relatedTarget;
+      // 1. Ambil elemen yang memicu modal (pastikan mengarah ke element yang punya data-id)
+      let button = event.relatedTarget;
+      
+      // Jika user tidak sengaja klik gambar ikon trash di dalam button, naikkan ke element button-nya
+      if (button.tagName !== 'BUTTON') {
+        button = button.closest('button');
+      }
 
-      // Ambil ID dari atribut data-id tombol
+      console.log("Tombol Pemicu:", button); // Debugging info
+
+      // 2. Ekstrak data atributnya
+      const anomaliId = button.getAttribute("data-id");
       const anomaliKode = button.getAttribute("data-kode");
+      
+      console.log("ID didapat:", anomaliId); // Debugging info
+      console.log("Kode didapat:", anomaliKode); // Debugging info
 
-      // 1. Masukkan ID ke hidden input di dalam Modal
-      const modalInput = deleteModal.querySelector("#delete_id_input");
-      modalInput.value = anomaliKode;
+      // 3. Masukkan ID ke hidden input di form Modal
+      // Gunakan document.getElementById agar pencariannya global dan absolut mendeteksi ID tersebut
+      const modalInput = document.getElementById("delete_id_input");
+      if (modalInput) {
+        modalInput.value = anomaliId;
+        console.log("Value input modal sekarang:", modalInput.value); // Pastikan ini terisi angka id
+      } else {
+        console.error("Elemen #delete_id_input tidak ditemukan di HTML!");
+      }
 
-      // 2. Tampilkan ID di badan modal untuk konfirmasi
-      const modalDisplay = deleteModal.querySelector("#anomali-id-display");
-      modalDisplay.textContent = anomaliKode;
+      // 4. Tampilkan teks Kode di badan modal
+      const modalDisplay = document.getElementById("anomali-id-display");
+      if (modalDisplay) {
+        modalDisplay.textContent = anomaliKode || anomaliId;
+      }
     });
   }
 });

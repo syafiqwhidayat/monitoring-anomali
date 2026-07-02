@@ -141,7 +141,7 @@ class AnomaliModel extends Model
     }
 
     // mendapatkan daftar anomali.
-    public function getListAnomali($idArt = false, $isEdit = false)
+    public function getListAnomali($idArt = false, $isEdit = false, $kode_anomali = null, $flag = null, $levelAnomali = null)
     {
         $query = $this->builder();
         $idKegiatan = session()->get('aktif_kegiatan') ?? null;
@@ -150,7 +150,7 @@ class AnomaliModel extends Model
         $query->select('anomali.id AS id, art.kd_assigment AS id_assigment, k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom, anomali.konfirmasi, anomali.is_lap AS is_lap')
             ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-            ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left')
+            // ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left')
             ->where('k.is_show', true)
             ->where('art.kd_assigment', $idArt); // Mencocokkan string gabungan dengan underscore secara presisi
 
@@ -165,6 +165,18 @@ class AnomaliModel extends Model
         if ($idKegiatan) {
             $query = $query->where('k.id_kegiatan', $idKegiatan);
         };
+
+        if ($kode_anomali) {
+            $query = $query->where('id_kategori_anomali', $kode_anomali);
+        }
+
+        if ($flag) {
+            $query = $query->where('k.flag', $flag);
+        }
+
+        if ($levelAnomali) {
+            $query = $query->where('k.level_anomali', $levelAnomali);
+        }
 
         $data  = $query->get()->getResultArray();
 

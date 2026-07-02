@@ -417,8 +417,10 @@ class ProsesAnomaliIndividu extends BaseCommand
                             'date_updated' => date('Y-m-d H:i:s')
                         ];
                     }
+                    CLI::write("final knfirmasi: $finalKonfirmasi");
                 } else {
                     // KONDISI B: DATA BELUM ADA -> INSERT
+                    CLI::write("knfirmasi: $konfirmasi");
                     $batchInsertAnomali[] = [
                         'id_kategori_anomali' => $idKategoriAnomali,
                         'id_wilayah'          => $idWilayah ?: substr($id_assigment, 0, 10),
@@ -446,15 +448,24 @@ class ProsesAnomaliIndividu extends BaseCommand
                 $this->db->table('anomali')->updateBatch($batchUpdateAnomali, 'id');
             }
             // membuat yg tidak muncul sebagai konfirmasi by sistem
-            $this->db->table('anomali')
-                // ->whereIn('id_assigment', $uniqueAssigments)
-                ->whereIn('id_kategori_anomali', $involvedKategoriIds)
-                ->where('is_insert', 0)
-                ->groupStart() // Jaga-jaga jika ada NULL
-                ->where('konfirmasi', '')
-                ->orWhere('konfirmasi', null)
-                ->groupEnd()
-                ->update(['is_sistem' => 1, 'konfirmasi' => 'System: Sudah diperbaiki di fasih']);
+            if (!empty($involvedKategoriIds)) {
+                $sweeper = $this->db->table('anomali')
+                    ->whereIn('id_kategori_anomali', $involvedKategoriIds);
+
+                // Amankan data yang baru saja diproses agar tidak ikut terubah
+                if (!empty($uniqueAssigments)) {
+                    $sweeper->whereNotIn('id_assigment', $uniqueAssigments);
+                }
+
+                $sweeper->groupStart()
+                    ->where('konfirmasi', '')
+                    ->orWhere('konfirmasi', null)
+                    ->groupEnd()
+                    ->update([
+                        'is_sistem'  => 1,
+                        'konfirmasi' => 'System: Sudah diperbaiki di fasih'
+                    ]);
+            }
 
             $this->db->transComplete();
 

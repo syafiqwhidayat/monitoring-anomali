@@ -114,26 +114,30 @@
                             <td><?= $l['definisi_anomali'] ?? '<span class="fst-italic text-muted">Belum didefinisikan</span>'; ?></td>
                             <td><?= $l['detil_anomali'] ?? '<span class="fst-italic text-muted">Belum didetilkan</span>'; ?></td>
                             <td>
-                                <form action="<?= base_url('/manajemen-anomali/action'); ?>" method="POST">
-                                    <input type="hidden" name="id" value="<?= $l['id']; ?>">
-                                    <input type="hidden"
-                                        name="is_show"
-                                        value="<?= $l['is_show']; ?>">
-                                    <button type="submit"
-                                        name="action" value="toggle"
-                                        class="btn btn-primary p-1 d-flex align-items-center"
-                                        <?= ($l['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
-                                        <img src="<?= ($l['is_show']) ? base_url('/img/icons/eye-slash.svg') : base_url('/img/icons/eye.svg'); ?>"
-                                            alt="Ikon Simpan" width="16" height="16">
-                                    </button>
-                                    <a aria-current="page" class="btn btn-warning p-1 d-flex justify-content-center a-butt" href="<?= base_url('/manajemen-anomali/edit/' . $l['id']); ?>"><img src="<?= base_url("/img/icons/edit.svg"); ?>" alt="Ikon Simpan" width="16" height="16"></a>
+                                <div>
+                                    <form action="<?= base_url('/manajemen-anomali/action'); ?>" method="POST" class="m-0">
+                                        <input type="hidden" name="id" value="<?= $l['id']; ?>">
+                                        <input type="hidden" name="is_show" value="<?= $l['is_show']; ?>">
+                                        <button type="submit" name="action" value="toggle"
+                                            class="btn btn-primary p-1 d-flex align-items-center"
+                                            <?= ($l['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
+                                            <img src="<?= ($l['is_show']) ? base_url('/img/icons/eye-slash.svg') : base_url('/img/icons/eye.svg'); ?>" width="16" height="16">
+                                        </button>
+                                    </form>
+
+                                    <a class="btn btn-warning p-1 d-flex justify-content-center a-butt" href="<?= base_url('/manajemen-anomali/edit/' . $l['id']); ?>">
+                                        <img src="<?= base_url("/img/icons/edit.svg"); ?>" width="16" height="16">
+                                    </a>
+
                                     <button type="button"
-                                        name="action" value="delete"
-                                        data-bs-toggle="modal" data-bs-target="#konfirHapus"
+                                        class="btn btn-danger p-1 d-flex align-items-center btn-trigger-delete"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#konfirHapus"
                                         data-id="<?= $l['id']; ?>"
-                                        data-kode="<?= $l['kode_anomali']; ?>"
-                                        class="btn btn-danger p-1 d-flex align-items-center"><img src='<?= base_url("/img/icons/trash.svg"); ?>' alt="Ikon Simpan" width="16" height="16"></button>
-                                </form>
+                                        data-kode="<?= $l['kode_anomali']; ?>">
+                                        <img src='<?= base_url("/img/icons/trash.svg"); ?>' style="pointer-events: none;" width="16" height="16">
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -187,7 +191,7 @@
                 </svg>
                 <h3>Apakah anda yakin?</h3>
                 <div class="text-secondary">
-                    Menghapus Kategori Anomali maka akan menghapus seluruh anomali dengan kategori tersebut pada Rumah Tangga.
+                    Menghapus Kategori Anomali (<strong id="anomali-id-display"></strong>) maka akan menghapus seluruh anomali dengan kategori tersebut pada Rumah Tangga.
                 </div>
             </div>
             <div class="modal-footer">
@@ -202,7 +206,8 @@
                             <form id="deleteFormModal" action="<?= base_url('/manajemen-anomali/action'); ?>" method="POST">
                                 <input type="hidden" name="id" id="delete_id_input">
                                 <input type="hidden" name="action" value="delete">
-                                <button type="submit" class="btn btn-danger w-100" data-bs-dismiss="modal">Ya, Hapus</button>
+
+                                <button type="submit" class="btn btn-danger w-100">Ya, Hapus</button>
                             </form>
                         </div>
                     </div>
@@ -211,5 +216,5 @@
         </div>
     </div>
 </div>
-
+<script src="<?= base_url('js/scriptManajemenAnomali.js'); ?>"></script>
 <?= $this->endSection(); ?>

@@ -157,7 +157,7 @@ class Anom extends BaseController
                 } elseif ($countParts === 3) {
                     // Format: [kdwilayah]_[kdAssigment]_[kdRoster] -> MENAMPILKAN DETAIL DAFTAR ANOMALI INDIVIDU
                     $data['jenis'] = 'Anom';
-                    return $this->listAnom($id, $isEdit);
+                    return $this->listAnom($id, $isEdit, $filterKategori, $filterFlag, $filterLevel);
                 }
             }
         } else {
@@ -187,7 +187,7 @@ class Anom extends BaseController
                 // Jika non-RT memiliki underscore (Format: [kdwilayah]_[kdAssigment])
                 // Berarti sudah klik pada entitas usaha tersebut, langsung tampilkan rincian kesalahan/anomali
                 $data['jenis'] = 'Anom';
-                return $this->listAnom($id, $isEdit);
+                return $this->listAnom($id, $isEdit, $filterKategori, $filterFlag, $filterLevel);
             }
         }
 
@@ -209,24 +209,10 @@ class Anom extends BaseController
         return view('anomali/listAnomaliPart', $data);
     }
 
-    public function listAnom($idArt, $isEdit)
+    public function listAnom($idArt, $isEdit, $filterKategori, $filterFlag, $filterLevel)
     {
-        // $data = [
-        //     'listAnom' => [
-        //         [
-        //             'id' => '131104000100010000102',
-        //             'kdAnom' => 'AN21',
-        //             'detilAnom' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni voluptate sed similique. Architecto non eius ut, beatae iste eveniet laboriosam nihil voluptate magnam aspernatur praesentium cum, veniam corrupti libero asperiores!',
-        //         ],
-        //         [
-        //             'id' => '131104000100010000102',
-        //             'kdAnom' => 'AN22',
-        //             'detilAnom' => 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Magni voluptate sed similique. Architecto non eius ut, beatae iste eveniet laboriosam nihil voluptate magnam aspernatur praesentium cum',
-        //         ]
-        //     ]
-        // ];
 
-        $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt, $isEdit);
+        $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt, $isEdit, $filterKategori, $filterFlag, $filterLevel);
         // dd($data['list_anom']);
 
 
@@ -268,7 +254,7 @@ class Anom extends BaseController
         if (!$this->validation->run($datum)) {
             return $this->response->setJSON([
                 'status' => 'error',
-                'message' => 'Validasi gagal: ' . $this->validator->getError('konfirmasi') // Kirim pesan error spesifik
+                'message' => 'Validasi gagal: ' . $this->validation->getError('konfirmasi') // Kirim pesan error spesifik
             ]);
         }
         $id = $datum['id'];

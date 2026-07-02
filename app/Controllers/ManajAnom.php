@@ -108,13 +108,17 @@ class ManajAnom extends BaseController
 
     public function manajemenAction()
     {
-        $id = $this->request->getVar('id');
+        $id = $this->request->getVar('id') ?? null;
         $action = $this->request->getVar('action');
 
         // cek apakah user punya hak update
         $kategoriAnom = $this->katAnomaliModel->find($id);
+        // dd('id:', $id);
+        if (!$action) {
+            return redirect()->back()->with('error', 'Aksi Kosong');
+        }
         if (!$kategoriAnom) {
-            return redirect()->back()->with('error', 'Data Kategori Anomali tidak ditemukan.');
+            return redirect()->back()->with('error', 'Data Kategori Anomali Null');
         }
 
         // PENGAMAN 2: Cek hak akses wilayah kerja (Gunakan substr jika panjang kode wilayah berbeda)
