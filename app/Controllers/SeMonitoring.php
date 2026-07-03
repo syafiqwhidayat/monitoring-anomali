@@ -1297,18 +1297,29 @@ class SeMonitoring extends BaseController
         $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
         $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
 
+        // Cari tanggal valid terakhir SEBELUM targetTanggal
+        $prevTanggalRow = $this->db->table('se_progres_subsls')
+            ->select('tanggal')
+            ->where('tanggal <', $targetTanggal)
+            ->orderBy('tanggal', 'DESC')
+            ->limit(1)
+            ->get()
+            ->getRow();
+
+        $tanggalSebelumnya = $prevTanggalRow->tanggal ?? null;
+
         // 2. QUERY KARTU RINGKASAN (TOTAL & PERSENTASE)
         $builderCards = $this->db->table('se_progres_subsls')->where('tanggal', $targetTanggal);
         if ($selectedKab !== 'SUMBAR') {
             $builderCards->like('id_subsls', $selectedKab, 'after');
         }
         $cardsData = $builderCards->select('
-            SUM(total) as total,
-            SUM(open) as open,
-            SUM(draft + rejected_by_pengawas) as draft,
-            SUM(approved_by_pengawas) as approved,
-            SUM(submitted_by_pencacah + submitted_respondent + revoked_by_pengawas + rejected_by_admin_kabupaten) as submitted
-        ')->get()->getRowArray();
+        SUM(total) as total,
+        SUM(open) as open,
+        SUM(draft + rejected_by_pengawas) as draft,
+        SUM(approved_by_pengawas) as approved,
+        SUM(submitted_by_pencacah + submitted_respondent + revoked_by_pengawas + rejected_by_admin_kabupaten) as submitted
+    ')->get()->getRowArray();
 
         // 3. QUERY PROGRESS BAR (1 Level Wilayah di Bawahnya - Detail Status)
         $lenGroup = ($selectedKab === 'SUMBAR') ? 4 : 7;
@@ -1317,25 +1328,23 @@ class SeMonitoring extends BaseController
             $builderProgress->like('id_subsls', $selectedKab, 'after');
         }
         $progressRows = $builderProgress->select("
-        LEFT(id_subsls, {$lenGroup}) as kode_wilayah,
-        SUM(total) as total,
-        SUM(open) as open,
-        SUM(draft + rejected_by_pengawas) as draft,
-        SUM(approved_by_pengawas) as approved,
-        SUM(COALESCE(submitted_by_pencacah, 0) + COALESCE(submitted_respondent, 0) + COALESCE(revoked_by_pengawas, 0) + COALESCE(rejected_by_admin_kabupaten, 0)) as submitted")
+    LEFT(id_subsls, {$lenGroup}) as kode_wilayah,
+    SUM(total) as total,
+    SUM(open) as open,
+    SUM(draft + rejected_by_pengawas) as draft,
+    SUM(approved_by_pengawas) as approved,
+    SUM(COALESCE(submitted_by_pencacah, 0) + COALESCE(submitted_respondent, 0) + COALESCE(revoked_by_pengawas, 0) + COALESCE(rejected_by_admin_kabupaten, 0)) as submitted")
             ->groupBy("LEFT(id_subsls, {$lenGroup})")
             ->get()
             ->getResultArray();
 
         // 4. QUERY HISTORIS (Maksimal 7 Hari ke Belakang dengan Navigasi Offset)
-        // Menghitung ketersediaan tanggal unik di database untuk kontrol tombol disable
         $allDates = $this->db->table('se_progres_subsls')->select('tanggal')->distinct()->orderBy('tanggal', 'DESC')->get()->getResultArray();
         $totalHariTersedia = count($allDates);
 
-        // Ambil potongan 7 hari sesuai offset berjalan
         $startChunk = $offsetHari * 7;
         $activeDatesChunk = array_slice(array_column($allDates, 'tanggal'), $startChunk, 7);
-        $activeDatesChunk = array_reverse($activeDatesChunk); // Urutkan dari tanggal terlama ke terbaru untuk grafik
+        $activeDatesChunk = array_reverse($activeDatesChunk);
 
         $historicalData = [];
         if (!empty($activeDatesChunk)) {
@@ -1344,14 +1353,13 @@ class SeMonitoring extends BaseController
                 $builderHist->like('id_subsls', $selectedKab, 'after');
             }
             $histRows = $builderHist->select('
-                tanggal,
-                SUM(open) as open,
-                SUM(draft + rejected_by_pengawas) as draft,
-                SUM(approved_by_pengawas) as approved,
-                SUM(submitted_by_pencacah + submitted_respondent + revoked_by_pengawas + rejected_by_admin_kabupaten) as submitted
-            ')->groupBy('tanggal')->orderBy('tanggal', 'ASC')->get()->getResultArray();
+            tanggal,
+            SUM(open) as open,
+            SUM(draft + rejected_by_pengawas) as draft,
+            SUM(approved_by_pengawas) as approved,
+            SUM(submitted_by_pencacah + submitted_respondent + revoked_by_pengawas + rejected_by_admin_kabupaten) as submitted
+        ')->groupBy('tanggal')->orderBy('tanggal', 'ASC')->get()->getResultArray();
 
-            // Format ulang agar siap dikonsumsi Chart JSON
             foreach ($histRows as $r) {
                 $historicalData['categories'][] = date('d M', strtotime($r['tanggal']));
                 $historicalData['open'][]       = (int)$r['open'];
@@ -1361,7 +1369,7 @@ class SeMonitoring extends BaseController
             }
         }
 
-        // 5. QUERY PAGINATION UNTUK TABEL SUB-SLS (Hanya ambil 50 data per halaman)
+        // 5. QUERY PAGINATION UNTUK TABEL SUB-SLS
         $pager = \Config\Services::pager();
         $page  = (int)($this->request->getGet('page') ?? 1);
         $perPage = 50;
@@ -1371,27 +1379,25 @@ class SeMonitoring extends BaseController
             $builderTable->like('id_subsls', $selectedKab, 'after');
         }
 
-        // Kloning builder untuk menghitung total baris sebelum di-limit
         $totalRowsForPager = $builderTable->countAllResults(false);
 
         $tableData = $builderTable->select('
-            id_subsls, total, open, draft, approved_by_pengawas,
-            (submitted_by_pencacah + submitted_respondent) as submitted,
-            rejected_by_pengawas, revoked_by_pengawas
-        ')
+        id_subsls, total, open, draft, approved_by_pengawas,
+        (submitted_by_pencacah + submitted_respondent) as submitted,
+        rejected_by_pengawas, revoked_by_pengawas
+    ')
             ->limit($perPage, ($page - 1) * $perPage)
             ->get()
             ->getResultArray();
 
-        // Buat HTML pagination khas Tabler/Bootstrap
         $pagerLinks = $pager->makeLinks($page, $perPage, $totalRowsForPager, 'default_full');
 
         // ==========================================
-        // ADDON: QUERY TOP & BOTTOM 5 PETUGAS (PPL)
+        // PERBAIKAN: QUERY TOP & BOTTOM 10 TOTAL KESELURUHAN
         // ==========================================
-        $baseChampions = $this->db->table('se_progres_subsls' . ' s')
+        $baseChampions = $this->db->table('se_progres_subsls s')
             ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'inner')
-            ->join('users u', 'w.id_ppl = u.id', 'inner') // Sesuaikan nama tabel user Anda
+            ->join('users u', 'w.id_ppl = u.id', 'inner')
             ->where('s.tanggal', $targetTanggal)
             ->where('w.id_kegiatan', $this->idKegiatanPetugas);
 
@@ -1399,34 +1405,100 @@ class SeMonitoring extends BaseController
             $baseChampions->like('s.id_subsls', $selectedKab, 'after');
         }
 
-        // Kloning builder untuk Top 5 (Urutan Terbanyak Approved + Submitted)
-        $builderTop = clone $baseChampions;
-        $topPetugas = $builderTop->select('u.name as nama_petugas, u.wilayah_kerja as wilayah,
-            SUM(s.approved_by_pengawas) as approved,
-            SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+        $builderTop10 = clone $baseChampions;
+        $topPetugas = $builderTop10->select('u.name as nama_petugas, u.wilayah_kerja as wilayah,
+        SUM(s.approved_by_pengawas) as approved,
+        SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
             ->groupBy('w.id_ppl')
-            // ->orderBy('SUM(s.approved_by_pengawas)', 'DESC')
-            ->orderBy('SUM(s.approved_by_pengawas + s.submitted_by_pencacah + s.submitted_respondent)', 'DESC')
-            ->limit(5)->get()->getResultArray();
+            ->orderBy('SUM(s.approved_by_pengawas + s.submitted_by_pencacah + s.submitted_respondent) DESC') // Dijadikan satu string murni
+            ->limit(10)->get()->getResultArray();
 
-        // Kloning builder untuk Bottom 5 (Urutan Terendah Approved + Submitted)
-        $builderBottom = clone $baseChampions;
-        $bottomPetugas = $builderBottom->select('u.name as nama_petugas, u.wilayah_kerja as wilayah, 
-            SUM(s.approved_by_pengawas) as approved,
-            SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+        $builderBottom10 = clone $baseChampions;
+        $bottomPetugas = $builderBottom10->select('u.name as nama_petugas, u.wilayah_kerja as wilayah, 
+        SUM(s.approved_by_pengawas) as approved,
+        SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
             ->groupBy('w.id_ppl')
-            // ->orderBy('SUM(s.approved_by_pengawas)', 'ASC')
-            ->orderBy('SUM(s.approved_by_pengawas + s.submitted_by_pencacah + s.submitted_respondent)', 'ASC')
-            ->limit(5)->get()->getResultArray();
+            ->orderBy('SUM(s.approved_by_pengawas + s.submitted_by_pencacah + s.submitted_respondent) ASC') // Dijadikan satu string murni
+            ->limit(10)->get()->getResultArray();
 
         // ==========================================
-        // ADDON: ROOT KOSEKA UNTUK AKORDION AWAL
+        // PERBAIKAN: QUERY TOP 5 & BOTTOM 5 PROGRES HARIAN (MENGGUNAKAN INSTANCE SEGAR)
+        // ==========================================
+        if ($tanggalSebelumnya) {
+            $approvedDelta  = "SUM(s.approved_by_pengawas) - SUM(COALESCE(prev.approved_by_pengawas, 0))";
+            $submittedDelta = "SUM(s.submitted_by_pencacah + s.submitted_respondent) - SUM(COALESCE(prev.submitted_by_pencacah + prev.submitted_respondent, 0))";
+            $rejectedDelta = "SUM(s.rejected_by_pengawas + s.rejected_by_admin_kabupaten) - SUM(COALESCE(prev.rejected_by_pengawas + prev.rejected_by_admin_kabupaten, 0))";
+        } else {
+            $approvedDelta  = "SUM(s.approved_by_pengawas)";
+            $submittedDelta = "SUM(s.submitted_by_pencacah + s.submitted_respondent)";
+            $rejectedDelta = "SUM(s.rejected_by_pengawas + s.rejected_by_admin_kabupaten)";
+        }
+
+        // 1. TOP 5 PROGRES HARIAN
+        $builderDailyTop = $this->db->table('se_progres_subsls s')
+            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'inner')
+            ->join('users u', 'w.id_ppl = u.id', 'inner')
+            ->where('s.tanggal', $targetTanggal)
+            ->where('w.id_kegiatan', $this->idKegiatanPetugas);
+
+        if ($tanggalSebelumnya) {
+            $builderDailyTop->join('se_progres_subsls prev', "s.id_subsls = prev.id_subsls AND prev.tanggal = '{$tanggalSebelumnya}'", 'left');
+        }
+        if ($selectedKab !== 'SUMBAR') {
+            $builderDailyTop->like('s.id_subsls', $selectedKab, 'after');
+        }
+
+        $topProgresPetugas = $builderDailyTop->select("
+        u.name as nama_petugas, u.wilayah_kerja as wilayah,
+        ($approvedDelta) as approved_delta,
+        ($submittedDelta) as submitted_delta,
+        ($rejectedDelta) as rejected_delta
+    ")
+            ->groupBy('w.id_ppl')
+            ->orderBy("(($approvedDelta) + ($submittedDelta) + ($rejectedDelta)) DESC") // Evaluasi string matematika murni
+            ->limit(10)
+            ->get()
+            ->getResultArray();
+
+        // 2. BOTTOM 5 PROGRES HARIAN
+        $builderDailyBottom = $this->db->table('se_progres_subsls s')
+            ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'inner')
+            ->join('users u', 'w.id_ppl = u.id', 'inner')
+            ->where('s.tanggal', $targetTanggal)
+            ->where('w.id_kegiatan', $this->idKegiatanPetugas);
+
+        if ($tanggalSebelumnya) {
+            $builderDailyBottom->join('se_progres_subsls prev', "s.id_subsls = prev.id_subsls AND prev.tanggal = '{$tanggalSebelumnya}'", 'left');
+        }
+        if ($selectedKab !== 'SUMBAR') {
+            $builderDailyBottom->like('s.id_subsls', $selectedKab, 'after');
+        }
+
+        $bottomProgresPetugas = $builderDailyBottom->select("
+        u.name as nama_petugas, u.wilayah_kerja as wilayah, 
+        ($approvedDelta) as approved_delta,
+        ($submittedDelta) as submitted_delta,
+        ($rejectedDelta) as rejected_delta
+    ")
+            ->groupBy('w.id_ppl')
+            ->orderBy("(($approvedDelta) + ($submittedDelta) + ($rejectedDelta)) ASC") // Evaluasi string matematika murni
+            ->limit(10)
+            ->get()
+            ->getResultArray();
+
+        // ==========================================
+        // 6. ROOT KOSEKA UNTUK AKORDION AWAL
         // ==========================================
         if ($selectedKab !== "SUMBAR") {
-            $builderKoseka = $this->db->table('se_progres_subsls' . ' s')
+            $builderKoseka = $this->db->table('se_progres_subsls s')
                 ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'left')
                 ->join('users u', 'w.id_koseka = u.id', 'left')
                 ->where('s.tanggal', $targetTanggal);
+
+            // Join ke tanggal sebelumnya jika tersedia untuk menghitung delta
+            if ($tanggalSebelumnya) {
+                $builderKoseka->join('se_progres_subsls prev', "s.id_subsls = prev.id_subsls AND prev.tanggal = '{$tanggalSebelumnya}'", 'left');
+            }
 
             // Filter kegiatan hanya berlaku jika baris wilayah_tugas ditemukan
             $builderKoseka->groupStart()
@@ -1437,14 +1509,45 @@ class SeMonitoring extends BaseController
             if ($selectedKab !== 'SUMBAR') {
                 $builderKoseka->like('s.id_subsls', $selectedKab, 'after');
             }
-            $kosekaData = $builderKoseka->select('
+
+            // Siapkan formula select untuk nilai absolut dan nilai delta
+            if ($tanggalSebelumnya) {
+                $selectFormula = '
                 IFNULL(w.id_koseka, 0) as id_koseka, 
                 IFNULL(u.name, "Belum Ada Koseka") as nama_koseka,
-                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft+s.rejected_by_pengawas) as draft,
+                
+                -- Nilai Aktual Hari Ini
+                SUM(s.total) as total, 
+                SUM(s.open) as open, 
+                SUM(s.draft + s.rejected_by_pengawas) as draft,
                 SUM(s.approved_by_pengawas) as approved,
-                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted
-            ')
-                ->groupBy('IFNULL(w.id_koseka, 0)')->get()->getResultArray();
+                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted,
+
+                -- Nilai Delta (Selisih dari Hari Sebelumnya)
+                (SUM(s.total) - SUM(COALESCE(prev.total, 0))) as total_delta,
+                (SUM(s.open) - SUM(COALESCE(prev.open, 0))) as open_delta,
+                (SUM(s.draft + s.rejected_by_pengawas) - SUM(COALESCE(prev.draft + prev.rejected_by_pengawas, 0))) as draft_delta,
+                (SUM(s.approved_by_pengawas) - SUM(COALESCE(prev.approved_by_pengawas, 0))) as approved_delta,
+                (SUM(s.submitted_by_pencacah + s.submitted_respondent) - SUM(COALESCE(prev.submitted_by_pencacah + prev.submitted_respondent, 0))) as submitted_delta
+            ';
+            } else {
+                // Jika tidak ada hari sebelumnya, delta dihitung 0 atau disamakan dengan nilai hari ini
+                $selectFormula = '
+                IFNULL(w.id_koseka, 0) as id_koseka, 
+                IFNULL(u.name, "Belum Ada Koseka") as nama_koseka,
+                
+                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft + s.rejected_by_pengawas) as draft,
+                SUM(s.approved_by_pengawas) as approved,
+                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted,
+
+                0 as total_delta, 0 as open_delta, 0 as draft_delta, 0 as approved_delta, 0 as submitted_delta
+            ';
+            }
+
+            $kosekaData = $builderKoseka->select($selectFormula)
+                ->groupBy('IFNULL(w.id_koseka, 0)')
+                ->get()
+                ->getResultArray();
         } else {
             $kosekaData = null;
         }
@@ -1458,13 +1561,12 @@ class SeMonitoring extends BaseController
             'chartData'     => json_encode($historicalData),
             'targetTanggal' => $targetTanggal,
             'totalHari'      => $totalHariTersedia,
-
-            // Data Tambahan untuk Tabel Baru
             'tableData'     => $tableData,
             'pagerLinks'    => $pagerLinks,
-
             'topPetugas'    => $topPetugas,
             'bottomPetugas' => $bottomPetugas,
+            'topProgresPetugas' => $topProgresPetugas,
+            'bottomProgresPetugas' => $bottomProgresPetugas,
             'kosekaData'    => $kosekaData,
         ]);
     }
@@ -1581,14 +1683,31 @@ class SeMonitoring extends BaseController
         $idKoseka = $this->request->getGet('id_koseka');
         $kdKab = $this->request->getGet('kd_kab');
 
+        // Ambil tanggal terbaru
         $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
         $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
+
+        // Cari tanggal valid terakhir SEBELUM targetTanggal untuk hitung Delta
+        $prevTanggalRow = $this->db->table('se_progres_subsls')
+            ->select('tanggal')
+            ->where('tanggal <', $targetTanggal)
+            ->orderBy('tanggal', 'DESC')
+            ->limit(1)
+            ->get()
+            ->getRow();
+
+        $tanggalSebelumnya = $prevTanggalRow->tanggal ?? null;
 
         $builder = $this->db->table('se_progres_subsls' . ' s')
             ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'left')
             ->join('users u', 'w.id_pml = u.id', 'left')
             ->where('s.tanggal', $targetTanggal)
             ->where('IFNULL(w.id_koseka, 0)', $idKoseka);
+
+        // Join ke tanggal sebelumnya jika tersedia
+        if ($tanggalSebelumnya) {
+            $builder->join('se_progres_subsls prev', "s.id_subsls = prev.id_subsls AND prev.tanggal = '{$tanggalSebelumnya}'", 'left');
+        }
 
         // KUNCI 1: Batasi hanya untuk kabupaten yang sedang dibuka agar tidak bocor ke kab lain
         if ($kdKab) {
@@ -1601,12 +1720,35 @@ class SeMonitoring extends BaseController
             ->orWhere('w.id_kegiatan IS NULL')
             ->groupEnd();
 
-        $pmlRows = $builder->select('
-            IFNULL(w.id_pml, 0) as id_pml, 
-            IFNULL(u.name, "Belum Ada PML") as nama_pml,
-            SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft + s.rejected_by_pengawas) as draft,
-            SUM(s.approved_by_pengawas) as approved,
-            SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+        // Formula Select dengan Delta bertingkat
+        if ($tanggalSebelumnya) {
+            $selectFormula = '
+                IFNULL(w.id_pml, 0) as id_pml, 
+                IFNULL(u.name, "Belum Ada PML") as nama_pml,
+                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft + s.rejected_by_pengawas) as draft,
+                SUM(s.approved_by_pengawas) as approved,
+                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted,
+                
+                -- Formula Delta
+                (SUM(s.total) - SUM(COALESCE(prev.total, 0))) as total_delta,
+                (SUM(s.open) - SUM(COALESCE(prev.open, 0))) as open_delta,
+                (SUM(s.draft + s.rejected_by_pengawas) - SUM(COALESCE(prev.draft + prev.rejected_by_pengawas, 0))) as draft_delta,
+                (SUM(s.approved_by_pengawas) - SUM(COALESCE(prev.approved_by_pengawas, 0))) as approved_delta,
+                (SUM(s.submitted_by_pencacah + s.submitted_respondent) - SUM(COALESCE(prev.submitted_by_pencacah + prev.submitted_respondent, 0))) as submitted_delta
+            ';
+        } else {
+            $selectFormula = '
+                IFNULL(w.id_pml, 0) as id_pml, 
+                IFNULL(u.name, "Belum Ada PML") as nama_pml,
+                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft + s.rejected_by_pengawas) as draft,
+                SUM(s.approved_by_pengawas) as approved,
+                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted,
+                
+                0 as total_delta, 0 as open_delta, 0 as draft_delta, 0 as approved_delta, 0 as submitted_delta
+            ';
+        }
+
+        $pmlRows = $builder->select($selectFormula)
             ->groupBy('IFNULL(w.id_pml, 0)')->get()->getResultArray();
 
         return $this->response->setJSON($pmlRows);
@@ -1623,12 +1765,32 @@ class SeMonitoring extends BaseController
         $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
         $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
 
+        // Ambil tanggal terbaru
+        $maxTanggalRow = $this->db->table('se_progres_subsls')->selectMax('tanggal')->get()->getRow();
+        $targetTanggal = $maxTanggalRow->tanggal ?? date('Y-m-d');
+
+        // Cari tanggal valid terakhir SEBELUM targetTanggal untuk hitung Delta
+        $prevTanggalRow = $this->db->table('se_progres_subsls')
+            ->select('tanggal')
+            ->where('tanggal <', $targetTanggal)
+            ->orderBy('tanggal', 'DESC')
+            ->limit(1)
+            ->get()
+            ->getRow();
+
+        $tanggalSebelumnya = $prevTanggalRow->tanggal ?? null;
+
         $builder = $this->db->table('se_progres_subsls' . ' s')
             ->join('wilayah_tugas w', 's.id_subsls = w.id_wilayah', 'left')
             ->join('users u', 'w.id_ppl = u.id', 'left')
             ->where('s.tanggal', $targetTanggal)
             // HAPUS ->where('w.id_pml', $idPml) karena bikin mentok saat NULL
             ->where('IFNULL(w.id_pml, 0)', $idPml);
+
+        // Join ke tanggal sebelumnya jika tersedia
+        if ($tanggalSebelumnya) {
+            $builder->join('se_progres_subsls prev', "s.id_subsls = prev.id_subsls AND prev.tanggal = '{$tanggalSebelumnya}'", 'left');
+        }
 
         // KUNCI 1: Batasi wilayah kabupaten
         if ($kdKab) {
@@ -1641,12 +1803,35 @@ class SeMonitoring extends BaseController
             ->orWhere('w.id_kegiatan IS NULL')
             ->groupEnd();
 
-        $pplRows = $builder->select('
-            IFNULL(w.id_ppl, 0) as id_ppl, 
-            IFNULL(u.name, "Belum Ada PPL") as nama_ppl,
-            SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft + s.rejected_by_pengawas) as draft,
-            SUM(s.approved_by_pengawas) as approved,
-            SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted')
+        // Formula Select dengan Delta bertingkat
+        if ($tanggalSebelumnya) {
+            $selectFormula = '
+                IFNULL(w.id_ppl, 0) as id_ppl, 
+                IFNULL(u.name, "Belum Ada PPL") as nama_ppl,
+                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft + s.rejected_by_pengawas) as draft,
+                SUM(s.approved_by_pengawas) as approved,
+                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted,
+                
+                -- Formula Delta
+                (SUM(s.total) - SUM(COALESCE(prev.total, 0))) as total_delta,
+                (SUM(s.open) - SUM(COALESCE(prev.open, 0))) as open_delta,
+                (SUM(s.draft + s.rejected_by_pengawas) - SUM(COALESCE(prev.draft + prev.rejected_by_pengawas, 0))) as draft_delta,
+                (SUM(s.approved_by_pengawas) - SUM(COALESCE(prev.approved_by_pengawas, 0))) as approved_delta,
+                (SUM(s.submitted_by_pencacah + s.submitted_respondent) - SUM(COALESCE(prev.submitted_by_pencacah + prev.submitted_respondent, 0))) as submitted_delta
+            ';
+        } else {
+            $selectFormula = '
+                IFNULL(w.id_ppl, 0) as id_ppl, 
+                IFNULL(u.name, "Belum Ada PPL") as nama_ppl,
+                SUM(s.total) as total, SUM(s.open) as open, SUM(s.draft + s.rejected_by_pengawas) as draft,
+                SUM(s.approved_by_pengawas) as approved,
+                SUM(s.submitted_by_pencacah + s.submitted_respondent) as submitted,
+                
+                0 as total_delta, 0 as open_delta, 0 as draft_delta, 0 as approved_delta, 0 as submitted_delta
+            ';
+        }
+
+        $pplRows = $builder->select($selectFormula)
             ->groupBy('IFNULL(w.id_ppl, 0)')->get()->getResultArray();
 
         return $this->response->setJSON($pplRows);

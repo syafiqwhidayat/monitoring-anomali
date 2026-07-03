@@ -270,7 +270,7 @@
                 <div class="card card-md h-100">
                     <div class="card-status-top bg-success"></div>
                     <div class="card-header py-3">
-                        <h3 class="card-title">🏆 Top 5 Petugas Lapangan (PPL)</h3>
+                        <h3 class="card-title">🏆 Top 10 Petugas Lapangan (PPL)</h3>
                     </div>
                     <div class="list-group list-group-flush">
                         <?php foreach ($topPetugas as $index => $p):
@@ -317,7 +317,7 @@
                 <div class="card card-md h-100">
                     <div class="card-status-top bg-danger"></div>
                     <div class="card-header py-3">
-                        <h3 class="card-title">⚠️ 5 Terbawah Progres Petugas</h3>
+                        <h3 class="card-title">⚠️ 10 Terbawah Progres Petugas</h3>
                     </div>
                     <div class="list-group list-group-flush">
                         <?php foreach ($bottomPetugas as $index => $p): ?>
@@ -348,6 +348,93 @@
             </div>
         </div>
 
+        <!-- Row Tambahan: Top 5 & Bottom 5 Progres Harian -->
+        <div class="row row-cards mt-3">
+            <!-- Top 5 Progres Harian -->
+            <div class="col-md-6">
+                <div class="card card-md h-100">
+                    <div class="card-status-top bg-teal"></div>
+                    <div class="card-header py-3">
+                        <h3 class="card-title">⚡ Top 5 Progres Harian Petugas</h3>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <?php if (empty($topProgresPetugas)): ?>
+                            <div class="list-group-item text-muted text-center py-3">Belum ada data progres harian</div>
+                        <?php else: ?>
+                            <?php foreach ($topProgresPetugas as $index => $p): ?>
+                                <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-3">
+                                    <div class="d-flex align-items-center me-2" style="min-width: 0;">
+                                        <span class="text-teal me-3 fw-bold fs-3 text-center" style="width: 25px; flex-shrink: 0;">#<?= $index + 1 ?></span>
+                                        <div style="min-width: 0;">
+                                            <div class="text-reset fw-bold text-truncate" title="<?= esc($p['nama_petugas']) ?>">
+                                                <?= esc($p['nama_petugas']) ?>
+                                            </div>
+                                            <div class="text-muted small text-truncate">
+                                                📍 Wilayah: <span class="badge bg-light text-dark font-monospace px-1 py-0"><?= esc($p['wilayah'] ?? '-') ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-end d-flex flex-column flex-sm-row gap-1 align-items-end align-items-sm-center" style="flex-shrink: 0;">
+                                        <span class="badge bg-teal-lt px-2 py-1" style="font-size: 0.75rem; min-width: 85px;">
+                                            Δ Appv: <?= number_format($p['approved_delta']) ?>
+                                        </span>
+                                        <span class="badge bg-purple-lt px-2 py-1" style="font-size: 0.75rem; min-width: 85px;">
+                                            Δ Subm: <?= number_format($p['submitted_delta']) ?>
+                                        </span>
+                                        <span class="badge bg-purple-lt px-2 py-1" style="font-size: 0.75rem; min-width: 85px;">
+                                            Δ Rjct: <?= number_format($p['rejected_delta']) ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom 5 Progres Harian -->
+            <div class="col-md-6">
+                <div class="card card-md h-100">
+                    <div class="card-status-top bg-warning"></div>
+                    <div class="card-header py-3">
+                        <h3 class="card-title">💤 5 Terbawah Progres Harian (Stagnan)</h3>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        <?php if (empty($bottomProgresPetugas)): ?>
+                            <div class="list-group-item text-muted text-center py-3">Belum ada data progres harian</div>
+                        <?php else: ?>
+                            <?php foreach ($bottomProgresPetugas as $index => $p): ?>
+                                <div class="list-group-item d-flex align-items-center justify-content-between py-2 px-3">
+                                    <div class="d-flex align-items-center me-2" style="min-width: 0;">
+                                        <span class="text-warning me-3 fw-bold fs-3 text-center" style="width: 25px; flex-shrink: 0;">#<?= $index + 1 ?></span>
+                                        <div style="min-width: 0;">
+                                            <div class="text-reset fw-semibold text-truncate" title="<?= esc($p['nama_petugas']) ?>">
+                                                <?= esc($p['nama_petugas']) ?>
+                                            </div>
+                                            <div class="text-muted small text-truncate">
+                                                📍 Wilayah: <span class="badge bg-light text-dark font-monospace px-1 py-0"><?= esc($p['wilayah'] ?? '-') ?></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-end d-flex flex-column flex-sm-row gap-1 align-items-end align-items-sm-center" style="flex-shrink: 0;">
+                                        <span class="badge bg-light text-secondary px-2 py-1" style="font-size: 0.75rem; min-width: 85px;">
+                                            Δ Appv: <?= number_format($p['approved_delta']) ?>
+                                        </span>
+                                        <span class="badge bg-light text-secondary px-2 py-1" style="font-size: 0.75rem; min-width: 85px;">
+                                            Δ Subm: <?= number_format($p['submitted_delta']) ?>
+                                        </span>
+                                        <span class="badge bg-light text-secondary px-2 py-1" style="font-size: 0.75rem; min-width: 85px;">
+                                            Δ Rjct: <?= number_format($p['rejected_delta']) ?>
+                                        </span>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="row row-cards mt-3">
             <div class="col-12">
                 <div class="card">
@@ -356,28 +443,77 @@
                     </div>
                     <div class="card-body">
                         <div class="accordion" id="accordion-koseka-root">
+                            <?php
+                            // Fungsi pembantu kecil untuk memformat warna delta di blade/view PHP
+                            $renderPhpDelta = function ($val) {
+                                $num = (int)$val;
+                                if ($num > 0) return '<span class="text-success ms-1" style="font-size: 10px; font-weight: 600;">(+' . number_format($num) . ')</span>';
+                                if ($num < 0) return '<span class="text-danger ms-1" style="font-size: 10px; font-weight: 600;">(' . number_format($num) . ')</span>';
+                                return '<span class="text-muted ms-1" style="font-size: 10px; opacity: 0.5;">(0)</span>';
+                            };
+                            ?>
                             <?php if (!empty($kosekaData)): ?>
                                 <?php foreach ($kosekaData as $k): ?>
-                                    <div class="accordion-item border mb-2">
+                                    <div class="accordion-item border mb-2 rounded shadow-sm">
                                         <h2 class="accordion-header" id="heading-kos-<?= $k['id_koseka'] ?>">
-                                            <button class="accordion-button collapsed d-flex justify-content-between align-items-center"
+                                            <button class="accordion-button collapsed bg-white text-dark py-2 px-3"
                                                 type="button" data-bs-toggle="collapse"
                                                 data-bs-target="#collapse-kos-<?= $k['id_koseka'] ?>"
-                                                onclick="loadPmlData('<?= $k['id_koseka'] ?>')">
-                                                <div class="w-100 d-flex justify-content-between pe-3">
-                                                    <span>👔 Koseka: <strong><?= esc($k['nama_koseka']) ?></strong></span>
-                                                    <span class="text-muted small">
-                                                        [ Target: <?= number_format($k['total']) ?> |
-                                                        Appv: <span class="text-success"><?= number_format($k['approved']) ?></span> |
-                                                        Subm: <span class="text-blue"><?= number_format($k['submitted']) ?></span> |
-                                                        Draft: <span class="text-success"><?= number_format($k['draft']) ?></span> ]
-                                                    </span>
+                                                onclick="loadPmlData('<?= $k['id_koseka'] ?>')"
+                                                style="box-shadow: none;">
+
+                                                <!-- Wrapper Utama Konten Header Koseka -->
+                                                <div class="row align-items-center w-100 g-2 pe-2" style="font-size: 12px; margin: 0;">
+
+                                                    <!-- Sisi Kiri: Nama Koseka -->
+                                                    <div class="col-12 col-md-4 p-0 text-truncate font-weight-medium">
+                                                        👔 Koseka: <strong class="text-dark"><?= esc($k['nama_koseka']) ?></strong>
+                                                    </div>
+
+                                                    <!-- Sisi Kanan: Baris Status Fleksibel Berjejer -->
+                                                    <div class="col-12 col-md-8 p-0 d-flex flex-wrap align-items-center justify-content-md-end text-muted gap-2 gap-md-3">
+
+                                                        <!-- Target Standalone -->
+                                                        <div class="me-1">
+                                                            <span class="text-muted-mini small" style="font-size: 10px;">Tgt:</span>
+                                                            <strong class="text-dark"><?= number_format($k['total']) ?></strong>
+                                                        </div>
+
+                                                        <!-- Open Status -->
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="text-muted-mini small me-1" style="font-size: 10px;">Open:</span>
+                                                            <span class="font-weight-medium text-secondary"><?= number_format($k['open']) ?></span>
+                                                            <?= $renderPhpDelta($k['open_delta']) ?>
+                                                        </div>
+
+                                                        <!-- Draft Status -->
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="text-muted-mini small me-1" style="font-size: 10px;">Draft:</span>
+                                                            <span class="font-weight-medium text-warning"><?= number_format($k['draft']) ?></span>
+                                                            <?= $renderPhpDelta($k['draft_delta']) ?>
+                                                        </div>
+
+                                                        <!-- Submitted Status -->
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="text-muted-mini small me-1" style="font-size: 10px;">Subm:</span>
+                                                            <span class="font-weight-medium text-blue"><?= number_format($k['submitted']) ?></span>
+                                                            <?= $renderPhpDelta($k['submitted_delta']) ?>
+                                                        </div>
+
+                                                        <!-- Approved Status -->
+                                                        <div class="d-flex align-items-center">
+                                                            <span class="text-muted-mini small me-1" style="font-size: 10px;">Appv:</span>
+                                                            <span class="font-weight-medium text-success"><?= number_format($k['approved']) ?></span>
+                                                            <?= $renderPhpDelta($k['approved_delta']) ?>
+                                                        </div>
+
+                                                    </div>
                                                 </div>
                                             </button>
                                         </h2>
                                         <div id="collapse-kos-<?= $k['id_koseka'] ?>" class="accordion-collapse collapse" data-bs-parent="#accordion-koseka-root">
-                                            <div class="accordion-body bg-light-lt py-2 ps-4" id="body-koseka-<?= $k['id_koseka'] ?>">
-                                                <div class="text-muted text-center py-2"><span class="spinner-border spinner-border-sm"></span> Menarik data PML...</div>
+                                            <div class="accordion-body bg-light-lt p-2 ps-4" id="body-koseka-<?= $k['id_koseka'] ?>">
+                                                <div class="text-muted text-center py-2 small"><span class="spinner-border spinner-border-sm me-1"></span> Menarik data PML...</div>
                                             </div>
                                         </div>
                                     </div>
@@ -801,29 +937,80 @@
                 return;
             }
 
+            // Fungsi pembantu pembentuk badge delta inline untuk header
+            const inlineDelta = (val) => {
+                const num = parseInt(val) || 0;
+                if (num > 0) return `<span class="text-success ms-1" style="font-size: 10px; font-weight: 600;">(+${formatNum(num)})</span>`;
+                if (num < 0) return `<span class="text-danger ms-1" style="font-size: 10px; font-weight: 600;">(${formatNum(num)})</span>`;
+                return `<span class="text-muted ms-1" style="font-size: 10px; opacity: 0.5;">(0)</span>`;
+            };
+
             let html = `<div class="accordion" id="accordion-pml-root-${idKoseka}">`;
             data.forEach(pml => {
                 html += `
-                <div class="accordion-item border my-1">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button collapsed bg-white text-dark py-2" type="button" 
-                                data-bs-toggle="collapse" data-bs-target="#collapse-pml-${pml.id_pml}" 
-                                onclick="loadPplData('${pml.id_pml}', '${idKoseka}')">
-                            <div class="w-100 d-flex justify-content-between pe-3 small">
-                                <span>🔍 PML: <strong>${pml.nama_pml}</strong></span>
-                                <span class="text-muted">
-                                    [ Tgt: ${formatNum(pml.total)} | Appv: <span class="text-success">${formatNum(pml.approved)}</span> | Subm: <span class="text-blue">${formatNum(pml.submitted)}</span> | Draft: <span class="text-blue">${formatNum(pml.draft)}</span> ]
-                                </span>
+                    <div class="accordion-item border my-1 rounded shadow-sm">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed bg-white text-dark py-2 px-3" type="button" 
+                                    data-bs-toggle="collapse" data-bs-target="#collapse-pml-${pml.id_pml}" 
+                                    onclick="loadPplData('${pml.id_pml}', '${idKoseka}')"
+                                    style="box-shadow: none;">
+                                
+                                <!-- Wrapper Utama Konten Header -->
+                                <div class="row align-items-center w-100 g-2 pe-2" style="font-size: 12px; margin: 0;">
+                                    
+                                    <!-- Sisi Kiri: Nama PML -->
+                                    <div class="col-12 col-md-4 p-0 text-truncate font-weight-medium">
+                                        🔍 PML: <strong class="text-dark">${pml.nama_pml}</strong>
+                                    </div>
+                                    
+                                    <!-- Sisi Kanan: Baris Status Fleksibel -->
+                                    <div class="col-12 col-md-8 p-0 d-flex flex-wrap align-items-center justify-content-md-end text-muted gap-2 gap-md-3">
+                                        
+                                        <!-- Target Standalone -->
+                                        <div class="me-1">
+                                            <span class="text-muted-mini small" style="font-size: 10px;">Tgt:</span>
+                                            <strong class="text-dark">${formatNum(pml.total)}</strong>
+                                        </div>
+                                        
+                                        <!-- Open Status -->
+                                        <div class="d-flex align-items-center">
+                                            <span class="text-muted-mini small me-1" style="font-size: 10px;">Open:</span>
+                                            <span class="font-weight-medium text-secondary">${formatNum(pml.open)}</span>
+                                            ${inlineDelta(pml.open_delta)}
+                                        </div>
+                                        
+                                        <!-- Draft Status -->
+                                        <div class="d-flex align-items-center">
+                                            <span class="text-muted-mini small me-1" style="font-size: 10px;">Draft:</span>
+                                            <span class="font-weight-medium text-warning">${formatNum(pml.draft)}</span>
+                                            ${inlineDelta(pml.draft_delta)}
+                                        </div>
+                                        
+                                        <!-- Submitted Status -->
+                                        <div class="d-flex align-items-center">
+                                            <span class="text-muted-mini small me-1" style="font-size: 10px;">Subm:</span>
+                                            <span class="font-weight-medium text-blue">${formatNum(pml.submitted)}</span>
+                                            ${inlineDelta(pml.submitted_delta)}
+                                        </div>
+                                        
+                                        <!-- Approved Status -->
+                                        <div class="d-flex align-items-center">
+                                            <span class="text-muted-mini small me-1" style="font-size: 10px;">Appv:</span>
+                                            <span class="font-weight-medium text-success">${formatNum(pml.approved)}</span>
+                                            ${inlineDelta(pml.approved_delta)}
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="collapse-pml-${pml.id_pml}" class="accordion-collapse collapse" data-bs-parent="#accordion-pml-root-${idKoseka}">
+                            <div class="accordion-body bg-light-lt p-1" id="body-pml-${pml.id_pml}">
+                                <div class="text-muted text-center py-2 small"><span class="spinner-border spinner-border-sm me-1"></span> Menarik data PPL...</div>
                             </div>
-                        </button>
-                    </h2>
-                    <div id="collapse-pml-${pml.id_pml}" class="accordion-collapse collapse" data-bs-parent="#accordion-pml-root-${idKoseka}">
-                        <div class="accordion-body bg-white py-2 ps-4" id="body-pml-${pml.id_pml}">
-                            <div class="text-muted text-center py-2"><span class="spinner-border spinner-border-sm"></span> Menarik data PPL...</div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
             });
             html += `</div>`;
             container.innerHTML = html;
@@ -849,20 +1036,62 @@
                 return;
             }
 
-            let html = '<div class="list-group list-group-flush small">';
+            const fmtDelta = (val) => {
+                const num = parseInt(val) || 0;
+                if (num > 0) return `<div class="text-success" style="font-size: 10px; font-weight: 600; margin-top: -2px;">+${formatNum(num)}</div>`;
+                if (num < 0) return `<div class="text-danger" style="font-size: 10px; font-weight: 600; margin-top: -2px;">${formatNum(num)}</div>`;
+                return `<div class="text-muted-mini text-dark" style="font-size: 10px; opacity: 0.5; margin-top: -2px;">0</div>`;
+            };
+
+            let html = `
+            <div class="p-2 bg-base">
+                <div class="table-responsive" style="margin: 0; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <table class="table table-sm table-borderless table-vcenter m-0" style="font-size: 11px; min-width: 320px;">
+                        <thead>
+                            <tr class="text-muted" style="font-size: 10px; text-transform: uppercase; border-bottom: 1px solid rgba(101,109,119,0.16);">
+                                <th class="p-1" style="width: 35%;">🏃 PPL</th>
+                                <th class="p-1 text-center" style="width: 13%;">Target</th>
+                                <th class="p-1 text-center" style="width: 13%;">Open</th>
+                                <th class="p-1 text-center" style="width: 13%;">Draft</th>
+                                <th class="p-1 text-center" style="width: 13%;">Subm</th>
+                                <th class="p-1 text-center" style="width: 13%;">Appv</th>
+                            </tr>
+                        </thead>
+                        <tbody>;
+            `;
             data.forEach(ppl => {
                 html += `
-                <div class="list-group-item d-flex justify-content-between align-items-center py-1 px-2 border-bottom">
-                    <span>🏃 PPL: <strong>${ppl.nama_ppl}</strong></span>
-                    <span class="text-muted">
-                        Target: <strong>${formatNum(ppl.total)}</strong> | 
-                        <span class="badge bg-secondary-lt">Open: ${formatNum(ppl.open)}</span> | 
-                        <span class="badge bg-warning-lt">Draft: ${formatNum(ppl.draft)}</span> | 
-                        <span class="badge bg-blue-lt">Subm: ${formatNum(ppl.submitted)}</span> | 
-                        <span class="badge bg-success-lt">Appv: ${formatNum(ppl.approved)}</span>
-                    </span>
-                </div>
-            `;
+                    <tr style="border-bottom: 1px dashed rgba(101,109,119,0.1); vertical-align: top;">
+                        <!-- Nama Petugas -->
+                        <td class="p-1 font-weight-medium text-dark text-truncate" style="max-width: 110px;">
+                            ${ppl.nama_ppl}
+                        </td>
+                        <!-- Target (Sendirian & Tegas) -->
+                        <td class="p-1 text-center font-weight-bold text-azure" style="font-size: 11.5px; padding-top: 3px !important;">
+                            ${formatNum(ppl.total)}
+                        </td>
+                        <!-- Open + Delta di bawahnya -->
+                        <td class="p-1 text-center">
+                            <span class="font-weight-medium text-dark">${formatNum(ppl.open)}</span>
+                            ${fmtDelta(ppl.open_delta)}
+                        </td>
+                        <!-- Draft + Delta di bawahnya -->
+                        <td class="p-1 text-center">
+                            <span class="font-weight-medium text-warning">${formatNum(ppl.draft)}</span>
+                            ${fmtDelta(ppl.draft_delta)}
+                        </td>
+                        <!-- Submitted + Delta di bawahnya -->
+                        <td class="p-1 text-center">
+                            <span class="font-weight-medium text-blue">${formatNum(ppl.submitted)}</span>
+                            ${fmtDelta(ppl.submitted_delta)}
+                        </td>
+                        <!-- Approved + Delta di bawahnya -->
+                        <td class="p-1 text-center">
+                            <span class="font-weight-medium text-success">${formatNum(ppl.approved)}</span>
+                            ${fmtDelta(ppl.approved_delta)}
+                        </td>
+                    </tr>
+                `;
             });
             html += '</div>';
             container.innerHTML = html;
