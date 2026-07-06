@@ -54,7 +54,7 @@ $routes->get('monitoring-sel', 'Monitoring::view', ['filter' => 'activeRole:supe
 
 $routes->group('identifikasi', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
     $routes->get('anades', 'Identifikasi::anades'); //untuk konfirmasi secara bulk
-
+    $routes->post('anades/update', 'Identifikasi::update'); //untuk konfirmasi secara bulk
 });
 
 $routes->group('se', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
@@ -143,6 +143,8 @@ $routes->group('api', ['filter' => 'apiKeyAuth'], function ($routes) {
     // Endpoint untuk upload progres CSV dari Python
     $routes->post('se/upload-progres', 'Api\SeProgresController::uploadProgres');
     $routes->post('se/upload-list-ub', 'Api\SeListUbController::uploadListUb');
+    $routes->post('anades/upload', 'Api\AnadesController::uploadCsv');
+    $routes->post('anomali/store-individu', 'Api\AnomaliController::storeFromApi');
 
     // 2. Rencana API baru Anda di masa depan tinggal ditaruh di bawah sini:
     // $routes->get('anomali/rekap', 'Api\Anomali::getRekap');
