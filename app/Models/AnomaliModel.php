@@ -110,9 +110,15 @@ class AnomaliModel extends Model
 
         // --- Sisa Filter Modul Tetap Dipertahankan ---
         if ($isEdit) {
-            $data = $data->where('LENGTH(konfirmasi) > 0');
+            $data = $data->groupStart()
+                ->where('anomali.konfirmasi IS NOT NULL')
+                ->where('LENGTH(anomali.konfirmasi) > 0')
+                ->groupEnd();
         } else {
-            $data = $data->where('LENGTH(konfirmasi) = 0');
+            $data = $data->groupStart()
+                ->where('konfirmasi', null)
+                ->orWhere('LENGTH(konfirmasi) = 0')
+                ->groupEnd();
         }
 
         if ($kode_anomali) {
@@ -156,9 +162,15 @@ class AnomaliModel extends Model
 
         // Filter status konfirmasi (Sudah diedit / Belum)
         if ($isEdit) {
-            $query->where('LENGTH(konfirmasi) > 0');
+            $query->groupStart()
+                ->where('anomali.konfirmasi IS NOT NULL')
+                ->where('LENGTH(anomali.konfirmasi) > 0')
+                ->groupEnd();
         } else {
-            $query->where('LENGTH(konfirmasi) = 0');
+            $query->groupStart()
+                ->where('konfirmasi', null)
+                ->orWhere('LENGTH(konfirmasi) > 0')
+                ->groupEnd();
         };
 
         // Filter berdasarkan sub-kegiatan sensus ekonomi yang aktif

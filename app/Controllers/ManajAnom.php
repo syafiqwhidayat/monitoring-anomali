@@ -274,6 +274,8 @@ class ManajAnom extends BaseController
             $levelAnom = auth()->user()->wilayah_kerja;
             $idUser = auth()->id();
 
+            // dd($jenis);
+
             // 2. Buat catatan awal di tabel upload_logs (status: pending)
             $logId = $this->logModel->insert([
                 'nama_file' => $newName,
@@ -294,13 +296,17 @@ class ManajAnom extends BaseController
             // shell_exec($command);
             switch ($jenis) {
                 case 'anomali_individu':
+                    // dd('anomali individu dijalankan');
                     $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:anomali_individu ' . $newName . ' ' . $logId . ' ' . $idKegiatan . ' ' . $levelAnom . ' ' . $idUser . ' > NUL 2>&1"';
+                    break;
                 case 'anomali_individu_forced':
                     $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:anomali_individu ' . $newName . ' ' . $logId . ' ' . $idKegiatan . ' ' . $levelAnom . ' ' . $idUser . ' 1 > NUL 2>&1"';
+                    break;
                 default:
                     $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:anomali ' . $newName . ' ' . $logId . ' ' . $idKegiatan . ' ' . $levelAnom . ' > NUL 2>&1"';
+                    break;
             }
-            $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:anomali ' . $newName . ' ' . $logId . ' ' . $idKegiatan . ' ' . $levelAnom . ' > NUL 2>&1"';
+            // $command = 'cmd /C "start /B php ' . FCPATH . '../spark proses:anomali ' . $newName . ' ' . $logId . ' ' . $idKegiatan . ' ' . $levelAnom . ' > NUL 2>&1"';
             // 2. Gunakan blok try-catch untuk menangkap jika fungsi dilarang
             try {
                 if (function_exists('popen')) {

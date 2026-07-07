@@ -118,7 +118,8 @@ class Anom extends BaseController
         $id             = $this->request->getGet('id-anomali') ?? '';
         $filterKategori = $this->request->getGet('fil-kategori') ?? '';
         $filterFlag     = $this->request->getGet('fil-flag') ?? '';
-        $isEdit         = $this->request->getGet('is-edit') ?? '';
+        $getEdit         = $this->request->getGet('is-edit') ?? '';
+        $isEdit  = ($getEdit === 'true' || $getEdit === '1') ? true : false;
 
         // Deteksi keberadaan separator '_' untuk mengenali entitas jeroan ruta/art
         $parts = explode('_', $id);

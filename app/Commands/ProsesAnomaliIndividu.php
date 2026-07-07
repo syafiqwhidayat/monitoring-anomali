@@ -384,6 +384,9 @@ class ProsesAnomaliIndividu extends BaseCommand
                     // Inisialisasi nilai konfirmasi akhir dengan data database saat ini
                     $finalKonfirmasi = $isDbKosong ? null : $konfirmasiDb;
 
+                    // CLI::write('is db kosogn: ' . $isDbKosong);
+                    // CLI::write('konfirmasi excel: ' . $konfirmasi);
+
                     if ($forcedKonfirmasi == 1) {
                         // Jika forced = 1, ganti dengan excel KECUALI jika excel-nya kosong/strip
                         if ($konfirmasi !== '' && $konfirmasi !== '-') {
@@ -453,8 +456,8 @@ class ProsesAnomaliIndividu extends BaseCommand
                     ->whereIn('id_kategori_anomali', $involvedKategoriIds);
 
                 // Amankan data yang baru saja diproses agar tidak ikut terubah
-                if (!empty($uniqueAssigments)) {
-                    $sweeper->whereNotIn('id_assigment', $uniqueAssigments);
+                if (!empty($uniqueAssigmentIds)) {
+                    $sweeper->whereNotIn('id_assigment', $uniqueAssigmentIds);
                 }
 
                 $sweeper->groupStart()
