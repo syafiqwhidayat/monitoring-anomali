@@ -37,6 +37,7 @@ class Anom extends BaseController
         $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
         $data['filterKategori'] = $this->request->getGet('fil-kategori') ?? '';
         $data['filterFlag'] = $this->request->getGet('fil-flag') ?? '';
+        $data['filterStatus'] = $this->request->getGet('fil-stat') ?? 1;
         $data['message'] = null;
         $isRT = (session()->get('is_rt') == 1);
 
@@ -60,6 +61,16 @@ class Anom extends BaseController
                 'nama' => 'Semua Anomali',
             ],
         ];
+        $data['listStatus'] = [
+            [
+                'value' => 1,
+                'nama' => "Aktif"
+            ],
+            [
+                'value' => 0,
+                'nama' => "Clean"
+            ],
+        ];
 
         $listSelKdAnom = $this->anomaliModel->getKdAnomaliByUser() ?? [];
         $listSelFlag = $this->anomaliModel->getFlagByUser() ?? [];
@@ -80,7 +91,8 @@ class Anom extends BaseController
                     $data['filterKategori'],
                     $data['filterFlag'],
                     $data['filterLevel'],
-                    $isRT
+                    $isRT,
+                    $data['filterStatus']
                 );
             } catch (\Throwable $th) {
                 $data['listAnom'] = [];
@@ -214,7 +226,6 @@ class Anom extends BaseController
     {
 
         $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt, $isEdit, $filterKategori, $filterFlag, $filterLevel);
-        // dd($data['list_anom']);
 
 
         return view('anomali/listAnomaliDetil', $data);
@@ -552,7 +563,7 @@ class Anom extends BaseController
 
             // SELECT dengan tambahan nama PPL dan PML dari tabel master user/petugas Anda
             $builder->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.is_lap, anomali.is_insert, anomali.date_updated,
-                              art.id AS id_assignment_obj, art.kd_assigment, art.nm_krt, art.nm_art, art.nm_nrt,
+                              art.id AS id_assignment_obj, art.kd_assigment, art.kd_krt,art.nm_krt, art.nm_art, art.nm_nrt,
                               k.kode_anomali, k.detil_anomali, k.level_anomali, k.flag,
                               u_ppl.username as nama_ppl, u_pml.username as nama_pml') // Sesuaikan field nama di tabel user Anda (misal: 'nama' atau 'username')
                 ->join('assigment art', 'art.id = anomali.id_assigment', 'left')

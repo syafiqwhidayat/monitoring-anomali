@@ -9,7 +9,7 @@
             <div class="hr-text hr-text-left fs-5 mb-3">Filter Anomali</div>
             <div class="mb-3">
                 <div class="row g-3">
-                    <div class="col-md-5">
+                    <div class="col-sm-6 col-md-3">
                         <label class="form-label">Pilih Kode Anomali</label>
                         <select name="fil-anomali" class="form-select" id="filter-anomali" placeholder="Cari kode anomali...">
                             <?php foreach ($listKodeAnom as $l): ?>
@@ -17,13 +17,22 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-sm-6 col-md-3">
                         <label class="form-label">Kabupaten</label>
                         <select name="sel-kab" class="form-select">
                             <option value="">Semua Kabupaten</option>
                             <?php foreach ($list_kab ?? [] as $kab): ?>
                                 <option value="<?= $kab['id']; ?>" <?= ($sel_kab == $kab['id']) ? 'selected' : ''; ?>><?= $kab['nama']; ?></option>
                             <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <label class="form-label">Status Anomali</label>
+                        <select name="fil-stat" class="form-select" id="filter-stat">
+                            <option value=''>Semua Status</option>
+                            <?php foreach ($listStatus as $l): ?>
+                                <option value="<?= $l['value']; ?>" <?= ($l['value'] == $filterStatus) ? 'selected' : ''; ?>><?= $l['nama']; ?></option>
+                            <?php endforeach ?>
                         </select>
                     </div>
                     <div class="col-md-3 d-flex align-items-end">

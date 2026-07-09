@@ -25,7 +25,7 @@ class AnomaliModel extends Model
         'isi_fasih',
     ];
 
-    public function getAnomaliByWilayah($wilayah = null, $isEdit = null, $kode_anomali = null, $flag = null, $levelAnomali = null, $isRT = true)
+    public function getAnomaliByWilayah($wilayah = null, $isEdit = null, $kode_anomali = null, $flag = null, $levelAnomali = null, $isRT = true, $status = null)
     {
         $id_kegiatan = session()->get('aktif_kegiatan') ?? null;
         $level_wilayah = session()->get('level_wilayah') ?? null;
@@ -133,6 +133,10 @@ class AnomaliModel extends Model
             $data = $data->where('k.level_anomali', $levelAnomali);
         }
 
+        if ($status !== '' && $status !== null) {
+            $data = $data->where('anomali.is_insert', $status);
+        }
+
         $data = $data->where('k.id_kegiatan', $id_kegiatan);
 
         if ($isRoleMitra) {
@@ -162,14 +166,15 @@ class AnomaliModel extends Model
 
         // Filter status konfirmasi (Sudah diedit / Belum)
         if ($isEdit) {
+
             $query->groupStart()
                 ->where('anomali.konfirmasi IS NOT NULL')
                 ->where('LENGTH(anomali.konfirmasi) > 0')
                 ->groupEnd();
         } else {
             $query->groupStart()
-                ->where('konfirmasi', null)
-                ->orWhere('LENGTH(konfirmasi) > 0')
+                ->where('anomali.konfirmasi', null)
+                ->orWhere('LENGTH(anomali.konfirmasi) = 0')
                 ->groupEnd();
         };
 
@@ -212,23 +217,27 @@ class AnomaliModel extends Model
         // ]);
     }
 
-    public function jumlahKonfirmasiByAnoamli($id_kegiatan)
+    public function jumlahKonfirmasiByAnoamli($status = null, $level = null)
     {
+        $id_kegiatan = session('aktif_kegiatan');
         $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
         $joinKatAnomali->select('kategori_anomali.kode_anomali,COUNT(*) as jumlah_total')
             ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi")
             ->where('id_kegiatan', $id_kegiatan)
             ->groupBy('kategori_anomali.kode_anomali');
+        if ($level) {
+            $joinKatAnomali->where('kategori_anomali.level_anomali', $level);
+        }
+        if ($status !== '' && $status !== null) {
+            $joinKatAnomali->where('anomali.is_insert', $status);
+        }
         $hasil = $joinKatAnomali->findAll();
         // dd($hasil);
         return ($hasil);
     }
 
-    public function jumlahKonfirmasiByWiayah($idKat = 1, $idkab = null, $level = null, $levelOuput = 4)
+    public function jumlahKonfirmasiByWiayah($idKat = 1, $idkab = null, $level = null, $levelOuput = 4, $status = null)
     {
-        $id_kegiatan = session()->get('aktif_kegiatan');
-        $level_wilayah = session()->get('aktif_kegiatan');
-
         $hasil = $this
             ->select("LEFT(id_wilayah,$levelOuput) as 'id_wil'")
             ->select('COUNT(*) as jumlah_total')
@@ -240,13 +249,16 @@ class AnomaliModel extends Model
             $hasil->where('LEFT(anomali.id_wilayah,4)', $idkab);
         }
         if ($level) {
-            $hasil->where('kategori_anomali', $level);
+            $hasil->where('kategori_anomali.level_anomali', $level);
+        }
+        if ($status !== '' && $status !== null) {
+            $hasil = $hasil->where('anomali.is_insert', $status);
         }
 
         $hasil = $hasil->findAll();
         return ($hasil);
     }
-    public function jumlahKonfirmasiByPublik($idKat = null)
+    public function jumlahKonfirmasiByPublik($idKat = null, $status = null, $levelAnomali = null)
     {
         $idKegiatan = session()->get('aktif_kegiatan') ?? null;
 
@@ -258,12 +270,19 @@ class AnomaliModel extends Model
         if ($idKat) {
             $joinKatAnomali->where('anomali.id_kategori_anomali', $idKat);
         }
+        if ($status !== '' && $status !== null) {
+            $joinKatAnomali = $joinKatAnomali->where('anomali.is_insert', $status);
+        }
+
+        if ($levelAnomali) {
+            $joinKatAnomali = $joinKatAnomali->where('kategori_anomali.level_anomali', $levelAnomali);
+        }
 
         $joinKatAnomali->where('kategori_anomali.id_kegiatan', $idKegiatan);
         $hasil = $joinKatAnomali->findAll();
         return ($hasil);
     }
-    public function jumlahProses($jenis = "all", $idKat = null, $idWilayah = null)
+    public function jumlahProses($jenis = "all", $idKat = null, $idWilayah = null, $status = null, $levelAnomali = null)
     {
         $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
         $idKegiatan = session('aktif_kegiatan');
@@ -299,6 +318,14 @@ class AnomaliModel extends Model
         }
         if ($idKegiatan) {
             $joinKatAnomali->where('kategori_anomali.id_kegiatan', $idKegiatan);
+        }
+
+        if ($status !== '' && $status !== null) {
+            $joinKatAnomali->where('anomali.is_insert', $status);
+        }
+
+        if ($levelAnomali) {
+            $joinKatAnomali->where('kategori_anomali.level_anomali', $levelAnomali);
         }
 
         $hasil = $joinKatAnomali->findAll();
@@ -344,6 +371,7 @@ class AnomaliModel extends Model
     public function getTop5($id_kat = '')
     {
         $idKegiatan = session()->get('aktif_kegiatan');
+
         $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
         $joinKatAnomali
             ->select('id_wilayah,kategori_anomali.kode_anomali,detil_anomali,konfirmasi')
@@ -356,17 +384,21 @@ class AnomaliModel extends Model
         if ($idKegiatan) {
             $joinKatAnomali->where('id_kegiatan', $idKegiatan);
         }
+        $joinKatAnomali->where('is_sistem', 0);
 
         $hasil = $joinKatAnomali->findAll();
         return ($hasil);
     }
 
-    public function wordCloudKonfirmasi($idKat = '', $limit = 30)
+    public function wordCloudKonfirmasi($idKat = '', $limit = 30, $status = null)
     {
         // Ambil semua teks dari kolom konfirmasi
         $data = $this->select('konfirmasi');
         if ($idKat) {
             $data->where('id_kategori_anomali', $idKat);
+        };
+        if ($status) {
+            $data->where('is_insert', $status);
         };
         $data = $data->findAll();
 

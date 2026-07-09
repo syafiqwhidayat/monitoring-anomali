@@ -152,12 +152,12 @@
 
                                                 <span>`<?= esc($row['id_wilayah']); ?></span>
 
-                                                <a href="https://fasih-sm.bps.go.id/app/assignment-detail/<?= esc($row['id_wilayah']); ?>"
+                                                <a href="https://fasih-sm.bps.go.id/app/assignment-detail/<?= esc($row['kd_krt']); ?>"
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     class="badge bg-blue-lt text-blue px-1-5 py-0-5 rounded text-decoration-none"
                                                     style="font-size: 0.65rem; max-width: 80px; font-family: var(--bs-font-sans-serif);"
-                                                    title="Buka Fasih untuk wilayah <?= esc($row['id_wilayah']); ?>">
+                                                    title="Buka Fasih untuk wilayah <?= esc($row['kd_krt']); ?>">
                                                     ke Fasih-SM
                                                 </a>
 

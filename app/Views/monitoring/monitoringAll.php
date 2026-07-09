@@ -11,6 +11,36 @@
             </div>
         </div>
     </div>
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 10px;">
+        <div class="card-body p-3">
+            <form action="<?= base_url('/monitoring') ?>" method="get">
+                <div class="row g-2 align-items-end">
+                    <div class="col-sm-6 col-md-3">
+                        <label class="form-label small text-muted fw-medium mb-1">Level Anomali</label>
+                        <select name="fil-level" class="form-select bg-light border-0" id="filter-level">
+                            <?php foreach ($listLevel as $l): ?>
+                                <option value="<?= $l['id']; ?>" <?= ($l['id'] == $filterLevel) ? 'selected' : ''; ?>>Anomali <?= ($l['id'] == null) ? "Semua" : $l['id']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-sm-6 col-md-3">
+                        <label class="form-label small text-muted fw-medium mb-1">Status Anomali</label>
+                        <select name="fil-stat" class="form-select bg-light border-0" id="filter-stat">
+                            <option value=''>Semua Status</option>
+                            <?php foreach ($listStatus as $l): ?>
+                                <option value="<?= $l['value']; ?>" <?= ($l['value'] == $filterStatus) ? 'selected' : ''; ?>><?= $l['nama']; ?></option>
+                            <?php endforeach ?>
+                        </select>
+                    </div>
+                    <div class="col-12 text-end mt-2">
+                        <button type="submit" class="btn btn-primary px-3 shadow-sm" id="tombolFilterEdit">
+                            Terapkan Filter
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
     <div class="card card-body">
         <div class="row">
             <div class="col-12 col-md-6">
