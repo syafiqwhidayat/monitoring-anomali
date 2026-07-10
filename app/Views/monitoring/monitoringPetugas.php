@@ -123,6 +123,11 @@
                 <span class="text-muted small">Menampilkan <?= count($hierarchy) ?> Koseka Record</span>
             </div>
             <div class="card-body p-0">
+                <div class="d-flex justify-content-center text-muted small p-3">
+                    <div class="me-2"><span class="badge bg-success me-1"></span> Konfrimasi dengan Kondisi Lapangan </div>
+                    <div class="me-2"><span class="badge bg-blue me-1"></span> Konfirmasi bukan Kondisi Lapangan </div>
+                    <div class="me-2"><span class="badge bg-secondary me-1"></span> Belum Konfirmasi </div>
+                </div>
                 <div class="accordion accordion-flush" id="accordion-petugas">
 
                     <?php if (empty($hierarchy)): ?>
