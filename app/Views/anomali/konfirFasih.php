@@ -67,9 +67,9 @@
                         <tr>
                             <th width="4%">No</th>
                             <th width="10%">Wilayah</th>
+                            <th>Identitas Objek (KRT/ART)</th>
                             <th width="10%">Kode Anom</th>
                             <th>Deskripsi Aturan / Rules</th>
-                            <th>Identitas Objek (KRT/ART)</th>
                             <th width="25%" class="bg-warning text-dark">Konfirmasi Petugas Sebelumnya</th>
                             <th width="10%">Waktu Masuk</th>
                         </tr>
@@ -83,14 +83,27 @@
                             ?>
                                 <tr>
                                     <td class="text-center"><?= $no++; ?></td>
-                                    <td class="text-center" style="font-family: monospace; font-size: 13px;">`<?= $row['id_wilayah']; ?></td>
+                                    <td class="text-center" style="font-family: monospace; font-size: 13px;">
+                                        `<?= $row['id_wilayah']; ?>
+                                        <?php if (session('isOrganik')): ?>
+                                            <a href="https://fasih-sm.bps.go.id/app/assignment-detail/<?= esc($row['kd_krt']); ?>"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                class="badge bg-blue-lt text-blue px-1-5 py-0-5 rounded text-decoration-none"
+                                                style="font-size: 0.65rem; max-width: 80px; font-family: var(--bs-font-sans-serif);"
+                                                title="Buka Fasih untuk wilayah <?= esc($row['kd_krt']); ?>">
+                                                ke Fasih-SM
+                                            </a>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <!-- <small class="text-muted d-block" style="font-size: 10px;">ID: <?= $row['kd_assigment']; ?></small> -->
+                                        <strong><?= $row['nm_krt'] ?? $row['nm_art'] ?? $row['nm_nrt'] ?? '-'; ?></strong>/
+                                        <strong><?= $row['nm_art'] ?? $row['nm_art'] ?? $row['nm_art'] ?? '-'; ?></strong>
+                                    </td>
                                     <td class="text-center fw-bold text-danger"><?= $row['kode_anomali']; ?></td>
                                     <td><small><?= $row['detil_anomali']; ?></small></td>
-                                    <td>
-                                        <small class="text-muted d-block" style="font-size: 10px;">ID: <?= $row['kd_assigment']; ?></small>
-                                        <strong><?= $row['nm_krt'] ?? $row['nm_art'] ?? $row['nm_nrt'] ?? '-'; ?></strong>
-                                    </td>
-                                    <td class="bg-light text-danger" style="font-style: italic; font-weight: 500; font-size: 13px;">
+                                    <td class="bg-light text-green" style="font-style: italic; font-weight: 500; font-size: 13px;">
                                         <?= esc($row['konfirmasi']); ?>
                                     </td>
                                     <td class="text-center"><small><?= date('d/m H:i', strtotime($row['date_updated'])); ?></small></td>
@@ -109,8 +122,8 @@
             </div>
 
             <?php if (!empty($pager)): ?>
-                <div class="d-flex justify-content-end mt-3">
-                    <?= $pager->links('group_catatan', 'default_full') ?>
+                <div class="d-flex justify-content-center mt-3">
+                    <?= $pager; ?>
                 </div>
             <?php endif; ?>
         </div>

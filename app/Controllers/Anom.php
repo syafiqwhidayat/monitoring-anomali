@@ -132,6 +132,8 @@ class Anom extends BaseController
         $filterFlag     = $this->request->getGet('fil-flag') ?? '';
         $getEdit         = $this->request->getGet('is-edit') ?? '';
         $isEdit  = ($getEdit === 'true' || $getEdit === '1') ? true : false;
+        $filterStatus = $this->request->getGet('fil-stat') ?? '';
+        dd($filterStatus);
 
         // Deteksi keberadaan separator '_' untuk mengenali entitas jeroan ruta/art
         $parts = explode('_', $id);
@@ -170,7 +172,7 @@ class Anom extends BaseController
                 } elseif ($countParts === 3) {
                     // Format: [kdwilayah]_[kdAssigment]_[kdRoster] -> MENAMPILKAN DETAIL DAFTAR ANOMALI INDIVIDU
                     $data['jenis'] = 'Anom';
-                    return $this->listAnom($id, $isEdit, $filterKategori, $filterFlag, $filterLevel);
+                    return $this->listAnom($id, $isEdit, $filterKategori, $filterFlag, $filterLevel, $filterStatus);
                 }
             }
         } else {
@@ -212,7 +214,8 @@ class Anom extends BaseController
                 $filterKategori,
                 $filterFlag,
                 $filterLevel,
-                $isRT
+                $isRT,
+                $filterStatus
             );
         } catch (\Throwable $e) {
             $data['listAnom'] = null;
@@ -222,10 +225,10 @@ class Anom extends BaseController
         return view('anomali/listAnomaliPart', $data);
     }
 
-    public function listAnom($idArt, $isEdit, $filterKategori, $filterFlag, $filterLevel)
+    public function listAnom($idArt, $isEdit, $filterKategori, $filterFlag, $filterLevel, $filterStatus = null)
     {
 
-        $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt, $isEdit, $filterKategori, $filterFlag, $filterLevel);
+        $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt, $isEdit, $filterKategori, $filterFlag, $filterLevel, $filterStatus);
 
 
         return view('anomali/listAnomaliDetil', $data);
@@ -464,54 +467,72 @@ class Anom extends BaseController
 
         try {
             // Menggunakan cara aman: Panggil builder langsung dari instance model
-            $builder = $this->anomaliModel->builder();
-
-            $builder->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.date_updated, 
-                                  art.kd_assigment, art.nm_krt, art.nm_art, art.nm_nrt,
-                                  k.kode_anomali, k.detil_anomali, k.level_anomali')
+            $this->anomaliModel->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.date_updated, 
+                                     art.kd_assigment, art.nm_krt, art.nm_art, art.nm_nrt,
+                                     k.kode_anomali, k.detil_anomali, k.level_anomali,anomali.isi_fasih, art.kd_krt as kd_krt')
                 ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
                 ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                 ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left');
 
             // LOGIKA UTAMA EVALUASI:
             // Konfirmasi terisi, is_lap = 0, tetapi masih muncul di update terbaru (is_insert = 1)
-            $builder->where('anomali.konfirmasi IS NOT NULL')
-                ->where('anomali.konfirmasi !=', '')
+            $this->anomaliModel
+                ->where('LENGTH (anomali.konfirmasi) > 0')
+                // ->where('anomali.konfirmasi IS NOT NULL')
+                // ->where('anomali.konfirmasi !=', '')
                 ->where('anomali.is_lap', 0)
                 ->where('anomali.is_insert', 1);
 
+            // filter hanya yg aktif
+            $this->anomaliModel->where('k.is_show = 1');
+
+
             // Filter Level Anomali jika dipilih
             if (!empty($data['filterLevel'])) {
-                $builder->where('k.level_anomali', $data['filterLevel']);
+                $this->anomaliModel->where('k.level_anomali', $data['filterLevel']);
             }
 
             // Filter Wilayah Kerja tingkat Kab/Kota (dari filter harian atau lock akun organik)
             if (!empty($data['filterWilayah'])) {
-                $builder->like('anomali.id_wilayah', $data['filterWilayah'], 'after');
+                $this->anomaliModel->like('anomali.id_wilayah', $data['filterWilayah'], 'after');
             }
 
             // Menyesuaikan dengan standar pengecekan role/group di aplikasi Anda
             $currentUser = auth()->user();
-            if ($currentUser->inGroup('mitra') || session('aktif_role') === 'mitra') {
+            if (session('aktif_role') === 'mitra') {
                 $idUser = $currentUser->id;
 
-                $builder->groupStart()
+                $this->anomaliModel->groupStart()
                     ->where('wt.id_ppl', $idUser)
                     ->orWhere('wt.id_pml', $idUser)
+                    ->orWhere('wt.id_koseka', $idUser)
                     ->groupEnd();
             }
 
-            $builder->orderBy('anomali.id_wilayah', 'ASC')
+            // DD($this->anomaliModel->findAll());
+
+            $this->anomaliModel->orderBy('anomali.id_wilayah', 'ASC')
                 ->orderBy('k.kode_anomali', 'ASC');
 
             if ($isExport) {
                 // Ambil semua data tanpa limit halaman untuk dilempar ke Excel
-                $data['listAnom'] = $builder->get()->getResultArray();
+                $data['listAnom'] = $this->anomaliModel->findAll();
                 return view('anomali/excelKonfirFasih', $data);
             } else {
+                $totalRows = $this->anomaliModel->countAllResults(false);
+                $page = $this->request->getVar('page_group_assignment') ?? 1;
+                $perPage = 25;
+                $offset = ($page - 1) * $perPage;
+
+                $data['listAnom'] = $this->anomaliModel->get($perPage, $offset)->getResultArray();
+
+                // makeLinks() ini menghasilkan STRING HTML dari template 'my_pager'
+                $pager = \Config\Services::pager();
+                $data['pager'] = $pager->makeLinks($page, $perPage, $totalRows, 'my_pager', 0, 'group_assignment');
+
                 // Cara native CI4 mendistribusikan custom query ke pagination bawaan model
-                $data['listAnom'] = $this->anomaliModel->paginate(15, 'group_catatan');
-                $data['pager'] = $this->anomaliModel->pager;
+                // $data['listAnom'] = $this->anomaliModel->paginate(15, 'group_catatan');
+                // $data['pager'] = $this->anomaliModel->pager;
             }
         } catch (\Throwable $th) {
             $data['listAnom'] = [];

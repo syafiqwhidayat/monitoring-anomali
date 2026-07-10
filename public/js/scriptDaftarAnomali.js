@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const filterLevel = document.getElementById("filter-level");
   const filterKode = document.getElementById("filter-kategori");
   const filterFlag = document.getElementById("filter-flag");
+  const filterStatus = document.getElementById("filter-status");
 
   const loadingContent =
     '<div class="d-flex justify-content-center py-2 text-muted small"><div class="spinner-border spinner-border-sm me-2"></div><span>Memuat data...</span></div>';
@@ -47,6 +48,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "fil-flag": filterFlag ? filterFlag.value : "",
         "is-edit": isEdit ? isEdit.value : "",
         "is-completed": isCompleted || "",
+        "fil-stat": filterStatus.value || "",
       });
 
       fetch(`${BASE_URL}/anomali/listDetil?${param}`)

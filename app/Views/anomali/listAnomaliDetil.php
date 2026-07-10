@@ -27,6 +27,15 @@
                         </div>
                     </div>
 
+                    <div class="col-12 col-lg-5 mb-1">
+                        <label class="text-muted fw-semibold mb-1-5 d-block" style="font-size: 0.75rem;">Isian Fasih</label>
+                        <div class="p-3 rounded-3 h-100" style="background-color: #f6fdfc; border-left: 4px solid #2b6af3; box-shadow: inset 0 0 4px rgba(0,0,0,0.01);">
+                            <p class="mb-0 text-dark" style="font-size: 0.825rem; text-align: justify; line-height: 1.5; word-break: break-word;">
+                                <?= esc($l['isi_fasih']); ?>
+                            </p>
+                        </div>
+                    </div>
+
                     <div class="col-12 col-md-8 col-lg-5">
                         <label class="text-muted fw-semibold mb-1-5 d-block" style="font-size: 0.75rem;" for="konfirmasi-<?= $l['id']; ?>">Catatan Konfirmasi</label>
                         <textarea

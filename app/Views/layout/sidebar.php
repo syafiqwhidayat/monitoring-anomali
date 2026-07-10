@@ -173,7 +173,7 @@
                                 <div class="dropdown-menu-column">
                                     <a class="dropdown-item" href="<?= base_url('/monitoring') ?>">Monitoring Anomali All</a>
                                     <a class="dropdown-item" href="<?= base_url('monitoring-sel') ?>">Monitoring Anomali Tertentu</a>
-                                    <a class="dropdown-item" href="<?= base_url('monitoring-petugas') ?>">Evaluasi Petugas <span class="badge bg-orange text-orange-fg mx-1">Soon</span></a>
+                                    <a class="dropdown-item" href="<?= base_url('monitoring-petugas') ?>">Evaluasi Petugas</a>
                                 </div>
                             </div>
                         </li>

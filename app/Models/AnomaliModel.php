@@ -151,13 +151,13 @@ class AnomaliModel extends Model
     }
 
     // mendapatkan daftar anomali.
-    public function getListAnomali($idArt = false, $isEdit = false, $kode_anomali = null, $flag = null, $levelAnomali = null)
+    public function getListAnomali($idArt = false, $isEdit = false, $kode_anomali = null, $flag = null, $levelAnomali = null, $status = null)
     {
         $query = $this->builder();
         $idKegiatan = session()->get('aktif_kegiatan') ?? null;
 
 
-        $query->select('anomali.id AS id, art.kd_assigment AS id_assigment, k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom, anomali.konfirmasi, anomali.is_lap AS is_lap')
+        $query->select('anomali.id AS id, art.kd_assigment AS id_assigment, k.kode_anomali AS kdAnom, k.detil_anomali AS detilAnom, anomali.konfirmasi, anomali.is_lap AS is_lap, anomali.isi_fasih AS isi_fasih')
             ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
             ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
             // ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left')
@@ -193,6 +193,10 @@ class AnomaliModel extends Model
 
         if ($levelAnomali) {
             $query = $query->where('k.level_anomali', $levelAnomali);
+        }
+
+        if ($status !== '' && $status !== null) {
+            $query = $query->where('anomali.is_insert', $status);
         }
 
         $data  = $query->get()->getResultArray();

@@ -113,8 +113,8 @@
                     </div>
                     <div class="col-sm-6 col-md-3">
                         <label class="form-label small text-muted fw-medium mb-1">Status Anomali</label>
-                        <select name="fil-stat" class="form-select bg-light border-0" id="filter-stat">
-                            <option value=''>Semua Status</option>
+                        <select name="fil-stat" class="form-select bg-light border-0" id="filter-status">
+                            <option value="">Semua Status</option>
                             <?php foreach ($listStatus as $l): ?>
                                 <option value="<?= $l['value']; ?>" <?= ($l['value'] == $filterStatus) ? 'selected' : ''; ?>><?= $l['nama']; ?></option>
                             <?php endforeach ?>
