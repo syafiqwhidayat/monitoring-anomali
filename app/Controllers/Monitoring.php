@@ -79,7 +79,7 @@ class Monitoring extends BaseController
             'label' => json_encode(['Selesai', 'Belum']),
             'nilai' => json_encode($this->dataChartProses('flag3', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0]),
         ];
-        $data['dataTimeline'] = $this->dataTimeline();
+        $data['dataTimeline'] = $this->dataTimeline(status: $data['filterStatus'], levelAnomali: $data['filterLevel']);
         $data['dataTop5'] = $this->anomaliModel->getTop5() ?? null;
 
         return view('monitoring/monitoringAll', $data);
@@ -87,6 +87,7 @@ class Monitoring extends BaseController
 
     public function view()
     {
+        $db = \Config\Database::connect();
         $userWilayah = auth()->user()->wilayah_kerja;
         $userWilayah = substr($userWilayah, -2);
 
@@ -144,10 +145,25 @@ class Monitoring extends BaseController
             'label' => json_encode(['Selesai', 'Belum']),
             'nilai' => json_encode($this->dataChartProses('proses', id_kat: $data['filterAnomali'], status: $data['filterStatus'])),
         ];
-        $data["dataTimeline"] = $this->dataTimeline($data['filterAnomali']);
+        $data["dataTimeline"] = $this->dataTimeline($data['filterAnomali'], status: $data['filterStatus']);
         $data["dataWordCloud"] = json_encode($this->dataWordCloud($data['filterAnomali'], status: $data['filterStatus']));
         // dd($data['dataWordCloud']);
         $data["dataTop5"] = $this->anomaliModel->getTop5($data['filterAnomali']);
+
+        $kodeWilayahDb = '1300';
+        if (!empty($data['sel_kab'])) {
+            $kodeWilayahDb = '13' . str_pad($data['sel_kab'], 2, '0', STR_PAD_LEFT);
+        }
+        $data['kodeWilayahDb'] = $kodeWilayahDb;
+
+        // Ambil data kesimpulan dari database (asumsi nama tabel: kesimpulan_anomali)
+        $kesimpulan = $db->table('kesimpulan_anomali') // sesuaikan nama tabel baru Anda di sini jika berbeda
+            ->where('id_kategori_anomali', $data['filterAnomali'])
+            ->where('kode_wilayah', $kodeWilayahDb)
+            ->get()->getRowArray();
+
+        $data['kesimpulan'] = $kesimpulan; // Berisi 'hasil_kesimpulan', 'is_request', dll atau null
+
         return view('monitoring/monitoringSelc', $data);
     }
 
@@ -314,9 +330,9 @@ class Monitoring extends BaseController
         return ($data);
     }
 
-    public function dataTimeline($id_kat = '')
+    public function dataTimeline($id_kat = null, $status = null, $levelAnomali = null)
     {
-        $hasil = $this->anomaliModel->jumlahByTanggal($id_kat);
+        $hasil = $this->anomaliModel->jumlahByTanggal($id_kat, status: $status, levelAnomali: $levelAnomali);
         $dataCreated = array_column($hasil['dataCreated'], 'jumlah', 'tanggal');
         $dataUpdated = array_column($hasil['dataUpdated'], 'jumlah', 'tanggal');
         $tanggalCreated = array_column($hasil['dataCreated'], 'tanggal');
@@ -572,5 +588,46 @@ class Monitoring extends BaseController
         ];
 
         return view('monitoring/monitoringPetugas', $data);
+    }
+
+    // METHOD BARU UNTUK HANDLE ACTION REQUEST/STOP KESIMPULAN (POST ACTION)
+    public function updateRequestKesimpulan()
+    {
+        $db = \Config\Database::connect();
+
+        $idKategori = $this->request->getPost('id_kategori_anomali');
+        $kdWilayah  = $this->request->getPost('kode_wilayah');
+        $isRequest  = $this->request->getPost('is_request'); // 1 atau 0
+
+        if (empty($idKategori)) {
+            return redirect()->back()->with('error', 'Kategori anomali tidak boleh kosong.');
+        }
+
+        // Cek apakah data sudah ada
+        $exist = $db->table('kesimpulan_anomali')
+            ->where('id_kategori_anomali', $idKategori)
+            ->where('kode_wilayah', $kdWilayah)
+            ->get()->getRowArray();
+
+        if ($exist) {
+            // Update jika sudah ada
+            $db->table('kesimpulan_anomali')
+                ->where('id', $exist['id'])
+                ->update([
+                    'is_request' => $isRequest,
+                    'date_updated' => date('Y-m-d H:i:s')
+                ]);
+        } else {
+            // Insert baru jika belum ada
+            $db->table('kesimpulan_anomali')->insert([
+                'id_kategori_anomali' => $idKategori,
+                'kode_wilayah'        => $kdWilayah,
+                'is_request'          => $isRequest,
+                'hasil_kesimpulan'    => null,
+                'date_created'        => date('Y-m-d H:i:s')
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Status request kesimpulan berhasil diperbarui!');
     }
 }

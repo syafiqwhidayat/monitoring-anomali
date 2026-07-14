@@ -140,45 +140,140 @@
             </div>
         </div>
     </div>
-    <div class="card card-body">
-        <div class="row mt-5">
-            <div class="col">
-                <h1>Top 5 Konfirmasi Anomali Terbaru</h1>
-                <div>
-                    <button class="btn btn-warning-bps rounded-pill">AN01</button>
-                    <h5>Definisi: Jenis Kelamin KK tidak sesuai dengan aturan sensus, Jenis Kelamin KK tidak sesuai dengan aturan sensus, Jenis Kelamin KK tidak sesuai dengan aturan sensus</h5>
+    <div class="card mb-3 position-relative">
+        <div class="card-status-top bg-purple"></div>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title text-purple">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brain me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                    <path d="M15.5 14h-.5v-.5a1.5 1.5 0 0 0 -1.5 -1.5h-3a1.5 1.5 0 0 0 -1.5 1.5v.5h-.5a1.5 1.5 0 0 0 0 3h.5v.5a1.5 1.5 0 0 0 1.5 1.5h3a1.5 1.5 0 0 0 1.5 -1.5v-.5h.5a1.5 1.5 0 0 0 0 -3z"></path>
+                    <path d="M12 9v-4"></path>
+                    <path d="M10 5a2 2 0 1 1 4 0"></path>
+                </svg>
+                Kesimpulan Konfirmasi Anomali (AI Insights)
+            </h3>
+
+            <?php if (session('aktif_role') === 'superadmin'): ?>
+                <div class="card-actions">
+                    <form action="<?= base_url('/monitoring-sel/update-request') ?>" method="POST" class="d-inline">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="id_kategori_anomali" value="<?= $filterAnomali; ?>">
+                        <input type="hidden" name="kode_wilayah" value="<?= $kodeWilayahDb; ?>">
+
+                        <?php if (isset($kesimpulan['is_request']) && $kesimpulan['is_request'] == 1): ?>
+                            <input type="hidden" name="is_request" value="0">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-player-stop-filled me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <path d="M17 4h-10a3 3 0 0 0 -3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3 -3v-10a3 3 0 0 0 -3 -3z" stroke-width="0" fill="currentColor"></path>
+                                </svg>
+                                Stop Kesimpulan
+                            </button>
+                        <?php else: ?>
+                            <input type="hidden" name="is_request" value="1">
+                            <button type="submit" class="btn btn-purple btn-sm text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-cpu me-1" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                    <path d="M5 5m0 1a1 1 0 0 1 1 -1h12a1 1 0 0 1 1 1v12a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1z"></path>
+                                    <path d="M9 9h6v6h-6z"></path>
+                                    <path d="M3 10h2"></path>
+                                    <path d="M3 14h2"></path>
+                                    <path d="M19 10h2"></path>
+                                    <path d="M19 14h2"></path>
+                                    <path d="M10 3v2"></path>
+                                    <path d="M14 3v2"></path>
+                                    <path d="M10 19v2"></path>
+                                    <path d="M14 19v2"></path>
+                                </svg>
+                                Request Kesimpulan AI
+                            </button>
+                        <?php endif; ?>
+                    </form>
                 </div>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Kode Wilayah</th>
-                            <th scope="col">Kode Anomali</th>
-                            <th scope="col">Detil Konfirmasi</th>
-                            <th scope="col">Jawaban Konfirmasi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?= $nomorBaris = 1; ?>
-                        <?php foreach ($dataTop5 as $dat): ?>
+            <?php endif; ?>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 mb-3">
+                <div class="col-6 col-md-4">
+                    <span class="text-muted d-block small">Kode Wilayah Analisis</span>
+                    <strong class="text-dark"><?= esc($kodeWilayahDb); ?></strong>
+                </div>
+                <div class="col-12 col-md-4">
+                    <span class="text-muted d-block small">Sumber Penarikan Data</span>
+                    <span class="badge bg-purple-lt font-weight-bold">Generative AI Engine</span>
+                </div>
+            </div>
+
+            <div class="hr-text hr-text-left mb-3 text-purple">Hasil Penarikan Kesimpulan AI</div>
+            <div class="bg-purple-minimal p-3 rounded border border-purple-subtle" style="background-color: #fdfcff;">
+                <?php if (!empty($kesimpulan['hasil_kesimpulan'])): ?>
+                    <div class="text-dark markdown-ai-output" style="line-height: 1.7; white-space: pre-line;">
+                        <?php
+                        // Jika teks AI digabung dalam satu baris panjang dengan pemisah ' * ', pecah manual agar menjadi enter asli
+                        $cleanText = str_replace(' * ', "\n* ", $kesimpulan['hasil_kesimpulan']);
+                        echo nl2br(esc($cleanText));
+                        ?>
+                    </div>
+                <?php else: ?>
+                    <div class="text-center py-3 text-muted">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-exclamation-circle text-warning mb-2" width="40" height="40" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                            <path d="M12 9v4"></path>
+                            <path d="M12 16v.01"></path>
+                        </svg>
+                        <p class="m-0 font-weight-medium text-secondary">
+                            Tidak ada kesimpulan untuk kategori anomali dan wilayah ini.
+                        </p>
+                        <?php if (isset($kesimpulan['is_request']) && $kesimpulan['is_request'] == 1): ?>
+                            <small class="text-purple d-block mt-1">
+                                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                Antrean sistem aktif: Model AI akan menghasilkan kesimpulan peda besok...
+                            </small>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <div class="card card-body">
+        <div class="row">
+            <div class="col">
+                <h1 class="mb-3">Top 5 Konfirmasi Anomali Terbaru</h1>
+
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
                             <tr>
-                                <th scope="row"><?= $nomorBaris++; ?></th>
-                                <th>
-                                    <div class="d-flex justify-content-center">
-                                        <button type=" button" class="btn btn-primary-bps rounded-pill"><?= $dat['id_wilayah']; ?></button>
-                                    </div>
-                                </th>
-                                <th>
-                                    <div class="d-flex justify-content-center">
-                                        <button type=" button" class="btn btn-warning-bps rounded-pill"><?= $dat['kode_anomali']; ?></button>
-                                    </div>
-                                </th>
-                                <td><?= $dat['detil_anomali']; ?></td>
-                                <td><?= $dat['konfirmasi']; ?></td>
+                                <th scope="col">#</th>
+                                <th scope="col" class="text-center">Kode Wilayah</th>
+                                <th scope="col" class="text-center">Kode Anomali</th>
+                                <th scope="col">Detil Konfirmasi</th>
+                                <th scope="col">Jawaban Konfirmasi</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php $nomorBaris = 1; ?>
+                            <?php foreach ($dataTop5 as $dat): ?>
+                                <tr>
+                                    <th scope="row"><?= $nomorBaris++; ?></th>
+                                    <td>
+                                        <div class="d-flex justify-content-center">
+                                            <button type="button" class="btn btn-primary-bps rounded-pill text-nowrap"><?= $dat['id_wilayah']; ?></button>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center">
+                                            <button type="button" class="btn btn-warning-bps rounded-pill text-nowrap"><?= $dat['kode_anomali']; ?></button>
+                                        </div>
+                                    </td>
+                                    <td><?= $dat['detil_anomali']; ?></td>
+                                    <td><?= $dat['konfirmasi']; ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

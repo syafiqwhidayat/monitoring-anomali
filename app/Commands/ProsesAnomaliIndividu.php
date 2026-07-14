@@ -361,6 +361,7 @@ class ProsesAnomaliIndividu extends BaseCommand
 
                     // Masukkan ke cache memori
                     $mappedAssigment[$id_assigment] = $newAssigmentId;
+                    $uniqueAssigmentIds[] = $newAssigmentId;
                 }
 
                 // -------------------------------------------------------------

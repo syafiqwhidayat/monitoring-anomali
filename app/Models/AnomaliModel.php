@@ -336,7 +336,7 @@ class AnomaliModel extends Model
 
         return ($hasil);
     }
-    public function jumlahByTanggal($idKat = '')
+    public function jumlahByTanggal($idKat = null, $status = null, $levelAnomali = null)
     {
         $idKegiatan = session()->get('aktif_kegiatan');
         $dataUpdate = $this
@@ -349,6 +349,12 @@ class AnomaliModel extends Model
         };
         if ($idKegiatan) {
             $dataUpdate->where('id_kegiatan', $idKegiatan);
+        }
+        if ($status !== '' && $status !== null) {
+            $dataUpdate->where('anomali.is_insert', $status);
+        }
+        if ($levelAnomali) {
+            $dataUpdate->where('kategori_anomali.level_anomali', $levelAnomali);
         }
         $dataUpdate = $dataUpdate->findAll();
 
@@ -398,6 +404,7 @@ class AnomaliModel extends Model
     {
         // Ambil semua teks dari kolom konfirmasi
         $data = $this->select('konfirmasi');
+        $data->where('is_sistem', 0);
         if ($idKat) {
             $data->where('id_kategori_anomali', $idKat);
         };
@@ -417,7 +424,7 @@ class AnomaliModel extends Model
         $words = str_word_count($text, 1);
 
         // Filter stopwords (kata yang tidak penting)
-        $stopWords = ['bulk', 'sistem', 'dan', 'yang', 'untuk', 'di', 'dari', 'ke', 'ini', 'itu', 'dengan', 'ada', 'telah', 'perlu', 'lagi', 'apakah', 'sudah', 'adalah', 'tidak', 'bukan', 'juga', 'saya', 'kami', 'dia', 'mereka', 'oleh', 'pada', 'serta', 'sebagai'];
+        $stopWords = ['bulk', 'sistem', 'dan', 'yang', 'untuk', 'di', 'dari', 'ke', 'ini', 'itu', 'dengan', 'ada', 'telah', 'perlu', 'lagi', 'apakah', 'sudah', 'adalah', 'bukan', 'juga', 'saya', 'kami', 'dia', 'mereka', 'oleh', 'pada', 'serta', 'sebagai'];
         $filteredWords = array_diff($words, $stopWords);
 
         $counts = array_count_values($filteredWords);

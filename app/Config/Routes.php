@@ -51,6 +51,7 @@ $routes->group('manajemen-anomali', ['filter' => 'activeRole:superadmin,admin'],
 
 $routes->get('monitoring/', 'Monitoring::index', ['filter' => 'activeRole:superadmin,admin,operator']); //menampilkan seluruh anomali
 $routes->get('monitoring-sel', 'Monitoring::view', ['filter' => 'activeRole:superadmin,admin,operator']); //menampilkan selected
+$routes->post('monitoring-sel/update-request', 'Monitoring::updateRequestKesimpulan', ['filter' => 'activeRole:superadmin']); // sesuaikan dengan nama controller Anda
 $routes->get('monitoring-petugas', 'Monitoring::viewPetugas', ['filter' => 'activeRole:superadmin,admin,operator']); //menampilkan Monitoring Petugas
 
 $routes->group('identifikasi', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
