@@ -56,28 +56,28 @@ class Monitoring extends BaseController
             'total non public' => $dataHead[0]['jumlah_non_public'] ?? 0
         ];
         $data['dataProses'] = [
-            'label' => json_encode(['Selesai', 'Belum']),
-            'nilai' => json_encode($this->dataChartProses('proses', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0]),
+            'label' => json_encode(['Konf Lap', 'Konfirmasi', 'Belum']),
+            'nilai' => json_encode($this->dataChartProses('proses', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0, 0]),
         ];
         $data['dataProsesPublic'] = [
-            'label' => json_encode(['Selesai', 'Belum']),
-            'nilai' => json_encode($this->dataChartProses('public', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0]),
+            'label' => json_encode(['Konf Lap', 'Konfirmasi', 'Belum']),
+            'nilai' => json_encode($this->dataChartProses('public', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0, 0]),
         ];
         $data['dataProsesNonPublic'] = [
-            'label' => json_encode(['Selesai', 'Belum']),
-            'nilai' => json_encode($this->dataChartProses('non_public', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0]),
+            'label' => json_encode(['Konf Lap', 'Konfirmasi', 'Belum']),
+            'nilai' => json_encode($this->dataChartProses('non_public', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0, 0]),
         ];
         $data['dataProsesFlag1'] = [
-            'label' => json_encode(['Selesai', 'Belum']),
-            'nilai' => json_encode($this->dataChartProses('flag1', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0]),
+            'label' => json_encode(['Konf Lap', 'Konfirmasi', 'Belum']),
+            'nilai' => json_encode($this->dataChartProses('flag1', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0, 0]),
         ];
         $data['dataProsesFlag2'] = [
-            'label' => json_encode(['Selesai', 'Belum']),
-            'nilai' => json_encode($this->dataChartProses('flag2', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0]),
+            'label' => json_encode(['Konf Lap', 'Konfirmasi', 'Belum']),
+            'nilai' => json_encode($this->dataChartProses('flag2', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0, 0]),
         ];
         $data['dataProsesFlag3'] = [
-            'label' => json_encode(['Selesai', 'Belum']),
-            'nilai' => json_encode($this->dataChartProses('flag3', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0]),
+            'label' => json_encode(['Konf Lap', 'Konfirmasi', 'Belum']),
+            'nilai' => json_encode($this->dataChartProses('flag3', status: $data['filterStatus'], levelAnomali: $data['filterLevel']) ?? [0, 0, 0]),
         ];
         $data['dataTimeline'] = $this->dataTimeline(status: $data['filterStatus'], levelAnomali: $data['filterLevel']);
         $data['dataTop5'] = $this->anomaliModel->getTop5() ?? null;
@@ -92,11 +92,7 @@ class Monitoring extends BaseController
         $userWilayah = substr($userWilayah, -2);
 
         //    Pilihan
-        $data['listKodeAnom'] = [[
-            'id' => '',
-            'nama' => "Pilih Kode Anomali",
-            'level' => ''
-        ]];
+        $data['listKodeAnom'] = [];
         $data['listStatus'] = [
             [
                 'value' => 1,
@@ -142,7 +138,7 @@ class Monitoring extends BaseController
             'total seluruh' => $dataHead[0]['jumlah_total'],
         ];
         $data["data_proses"] = [
-            'label' => json_encode(['Selesai', 'Belum']),
+            'label' => json_encode(['Konf Lap', 'Konfirmasi', 'Belum']),
             'nilai' => json_encode($this->dataChartProses('proses', id_kat: $data['filterAnomali'], status: $data['filterStatus'])),
         ];
         $data["dataTimeline"] = $this->dataTimeline($data['filterAnomali'], status: $data['filterStatus']);
@@ -273,16 +269,22 @@ class Monitoring extends BaseController
         };
 
         // map agar sesuai dengan format.
+        $jumlah_terisi_lap = array_column($dataModel, 'jumlah_terisi_lap');
         $jumlah_terisi = array_column($dataModel, 'jumlah_terisi');
         $jumlah_total = array_column($dataModel, 'jumlah_total');
 
-        $selisih = array_map(fn($a, $b) => $a - $b, $jumlah_total, $jumlah_terisi);
+        $selisih_terisi = array_map(fn($a, $b) => $a - $b, $jumlah_terisi, $jumlah_terisi_lap);
+        $selisih = array_map(fn($a, $b, $c) => $a - $b - $c, $jumlah_total, $jumlah_terisi, $jumlah_terisi_lap);
         $data =  [
             'labels' => json_encode($judulBaris),
             'datesets' => [
                 [
+                    'label' => json_encode(['Sudah Konfirmasi Lap']),
+                    'nilai' => json_encode($jumlah_terisi_lap),
+                ],
+                [
                     'label' => json_encode(['Sudah Konfirmasi']),
-                    'nilai' => json_encode($jumlah_terisi),
+                    'nilai' => json_encode($selisih_terisi),
                 ],
                 [
                     'label' => json_encode(['Belum Konfirmasi']),
@@ -322,7 +324,7 @@ class Monitoring extends BaseController
                 break;
         }
         // cek if na
-        $data = [$array[0]['jumlah_terisi'], $array[0]['jumlah_total'] - $array[0]['jumlah_terisi']];
+        $data = [$array[0]['jumlah_terisi_lap'], $array[0]['jumlah_terisi'] - $array[0]['jumlah_terisi_lap'], $array[0]['jumlah_total'] - $array[0]['jumlah_terisi']  - $array[0]['jumlah_terisi_lap']];
 
         $data = array_map(function ($val) {
             return ($val === null) ? 0 : $val;

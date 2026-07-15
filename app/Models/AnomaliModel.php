@@ -227,6 +227,7 @@ class AnomaliModel extends Model
         $joinKatAnomali = $this->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali');
         $joinKatAnomali->select('kategori_anomali.kode_anomali,COUNT(*) as jumlah_total')
             ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi")
+            ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' AND is_lap = 1 THEN 1 ELSE 0 END) as jumlah_terisi_lap")
             ->where('id_kegiatan', $id_kegiatan)
             ->groupBy('kategori_anomali.kode_anomali');
         if ($level) {
@@ -246,6 +247,7 @@ class AnomaliModel extends Model
             ->select("LEFT(id_wilayah,$levelOuput) as 'id_wil'")
             ->select('COUNT(*) as jumlah_total')
             ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi")
+            ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' AND is_lap = 1 THEN 1 ELSE 0 END) as jumlah_terisi_lap")
             ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
             ->where('id_kategori_anomali', $idKat)
             ->groupBy("id_wil");
@@ -278,7 +280,7 @@ class AnomaliModel extends Model
             $joinKatAnomali = $joinKatAnomali->where('anomali.is_insert', $status);
         }
 
-        if ($levelAnomali) {
+        if ($levelAnomali !== '' && $levelAnomali !== null) {
             $joinKatAnomali = $joinKatAnomali->where('kategori_anomali.level_anomali', $levelAnomali);
         }
 
@@ -292,7 +294,8 @@ class AnomaliModel extends Model
         $idKegiatan = session('aktif_kegiatan');
 
         $joinKatAnomali->select('COUNT(*) as jumlah_total')
-            ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi");
+            ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah_terisi")
+            ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' AND is_lap = 1 THEN 1 ELSE 0 END) as jumlah_terisi_lap");
 
         switch ($jenis) {
             case "public":
@@ -311,7 +314,7 @@ class AnomaliModel extends Model
                 $joinKatAnomali->where('kategori_anomali.flag', 3);
                 break;
             default:
-                $joinKatAnomali->where('kategori_anomali.is_show', 1);
+                // $joinKatAnomali->where('kategori_anomali.is_show', 1);
                 break;
         }
         if ($idKat) {
@@ -328,7 +331,7 @@ class AnomaliModel extends Model
             $joinKatAnomali->where('anomali.is_insert', $status);
         }
 
-        if ($levelAnomali) {
+        if ($levelAnomali !== '' && $levelAnomali !== null) {
             $joinKatAnomali->where('kategori_anomali.level_anomali', $levelAnomali);
         }
 
@@ -339,21 +342,22 @@ class AnomaliModel extends Model
     public function jumlahByTanggal($idKat = null, $status = null, $levelAnomali = null)
     {
         $idKegiatan = session()->get('aktif_kegiatan');
+
         $dataUpdate = $this
             ->select("DATE(anomali.date_updated) as 'tanggal'")
             ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah")
             ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
             ->groupBy("tanggal");
         if ($idKat) {
-            $dataUpdate->where('id_kategori_anomali', $idKat);
+            $dataUpdate->where('anomali.id_kategori_anomali', $idKat);
         };
         if ($idKegiatan) {
-            $dataUpdate->where('id_kegiatan', $idKegiatan);
+            $dataUpdate->where('kategori_anomali.id_kegiatan', $idKegiatan);
         }
         if ($status !== '' && $status !== null) {
             $dataUpdate->where('anomali.is_insert', $status);
         }
-        if ($levelAnomali) {
+        if ($levelAnomali !== '' && $levelAnomali !== null) {
             $dataUpdate->where('kategori_anomali.level_anomali', $levelAnomali);
         }
         $dataUpdate = $dataUpdate->findAll();
@@ -368,6 +372,12 @@ class AnomaliModel extends Model
         };
         if ($idKegiatan) {
             $dataCreated->where('id_kegiatan', $idKegiatan);
+        }
+        if ($status !== '' && $status !== null) {
+            $dataCreated->where('anomali.is_insert', $status);
+        }
+        if ($levelAnomali !== '' && $levelAnomali !== null) {
+            $dataCreated->where('kategori_anomali.level_anomali', $levelAnomali);
         }
         $dataCreated = $dataCreated->findAll();
 

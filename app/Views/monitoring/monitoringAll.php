@@ -178,7 +178,10 @@
             const getBaseOptions = (judul) => {
                 return {
                     legend: {
-                        position: 'bottom' // Standar legend Anda
+                        position: 'bottom', // Standar legend Anda
+                        labels: {
+                            boxWidth: 12,
+                        }
                     },
                     title: {
                         display: true,
@@ -206,6 +209,13 @@
                             label: <?= $dataCharJmlAnom['datesets'][1]['label'] ?>,
                             data: <?= $dataCharJmlAnom['datesets'][1]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
                             backgroundColor: '#0369A1',
+                            borderColor: 'rgba(255, 255, 255, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: <?= $dataCharJmlAnom['datesets'][2]['label'] ?>,
+                            data: <?= $dataCharJmlAnom['datesets'][2]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                            backgroundColor: '#EE8911',
                             borderColor: 'rgba(255, 255, 255, 1)',
                             borderWidth: 1
                         }
@@ -237,7 +247,7 @@
                     labels: <?= $dataProses['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                     datasets: [{
                         data: <?= $dataProses['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
-                        backgroundColor: ['#0369A1', '#B3B3B3'],
+                        backgroundColor: ['#94C11F', '#0369A1', '#B3B3B3'],
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     }]
@@ -255,7 +265,7 @@
                     labels: <?= $dataProsesPublic['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                     datasets: [{
                         data: <?= $dataProsesPublic['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
-                        backgroundColor: ['#94C11F', '#B3B3B3'],
+                        backgroundColor: ['#94C11F', '#0369A1', '#B3B3B3'],
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     }]
@@ -273,7 +283,7 @@
                     labels: <?= $dataProsesNonPublic['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                     datasets: [{
                         data: <?= $dataProsesNonPublic['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
-                        backgroundColor: ['#94C11F', '#B3B3B3'],
+                        backgroundColor: ['#94C11F', '#0369A1', '#B3B3B3'],
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     }]
@@ -291,7 +301,7 @@
                     labels: <?= $dataProsesFlag1['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                     datasets: [{
                         data: <?= $dataProsesFlag1['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
-                        backgroundColor: ['#EE8911', '#B3B3B3'],
+                        backgroundColor: ['#94C11F', '#0369A1', '#B3B3B3'],
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     }]
@@ -309,7 +319,7 @@
                     labels: <?= $dataProsesFlag2['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                     datasets: [{
                         data: <?= $dataProsesFlag2['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
-                        backgroundColor: ['#EE8911', '#B3B3B3'],
+                        backgroundColor: ['#94C11F', '#0369A1', '#B3B3B3'],
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     }]
@@ -327,7 +337,7 @@
                     labels: <?= $dataProsesFlag3['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                     datasets: [{
                         data: <?= $dataProsesFlag3['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
-                        backgroundColor: ['#EE8911', '#B3B3B3'],
+                        backgroundColor: ['#94C11F', '#0369A1', '#B3B3B3'],
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     }]

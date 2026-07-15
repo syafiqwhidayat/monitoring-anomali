@@ -60,6 +60,9 @@ class RangkumAnomali extends BaseCommand
         CLI::write("Ditemukan " . count($requests) . " antrean request kesimpulan. Memulai proses...", 'cyan');
 
         foreach ($requests as $req) {
+            // PERBAIKAN DI SINI: Memastikan koneksi MySQL selalu hidup di setiap iterasi baru
+            $db->reconnect();
+
             $idKategori   = $req['id_kategori_anomali'];
             $kodeWilayah  = $req['kode_wilayah'];
             $detilAnomali = $req['detil_anomali'] ?? $req['definisi_anomali'] ?? 'Tidak ada detail.';
@@ -147,7 +150,8 @@ class RangkumAnomali extends BaseCommand
                 . "Buatlah kesimpulan kualitatif ringkas berbentuk 2 sampai maksimal 5 poin inti mengenai:\n"
                 . "1. Mengapa data terkonfirmasi demikian (alasan mayoritas lapangan).\n"
                 . "2. Kondisi riil atau tindakan perbaikan konkret yang dilaporkan.\n"
-                . "3. Jika tidak ada teks jawaban baru maka return kesimpulan sebelumnya, jika belum ada kesimpulan sebelumnya, maka isikan (-).\n";
+                . "3. Jika tidak ada teks jawaban baru maka return kesimpulan sebelumnya, jika belum ada kesimpulan sebelumnya, maka isikan (-).\n"
+                . "4. Jika jawaban 'sudah ditindak lanjuti' atau 'sudah diperbaiki' atau sejenisnya, itu maksudnya melakukan perbaikan di aplikasi fasih pendataannya.\n";
         }
 
         $prompt .= "\n\nKetentuan:\n"
@@ -180,16 +184,60 @@ class RangkumAnomali extends BaseCommand
             "contents" => [["parts" => [["text" => $prompt]]]]
         ];
 
-        $ch = curl_init($url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        $maxAttempts = 3; // Coba ulang maksimal 3 kali jika server penuh/limit
+        $attempt = 0;
 
-        $response = curl_exec($ch);
-        curl_close($ch);
+        while ($attempt < $maxAttempts) {
+            $attempt++;
 
-        $result = json_decode($response, true);
-        return $result['candidates'][0]['content']['parts'][0]['text'] ?? null;
+            $ch = curl_init($url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 40);
+
+            $response = curl_exec($ch);
+
+            if (curl_errno($ch)) {
+                CLI::error("   [cURL Jaringan Error]: " . curl_error($ch));
+                curl_close($ch);
+                return null;
+            }
+
+            curl_close($ch);
+            $result = json_decode($response, true);
+
+            if (isset($result['error'])) {
+                $errorMessage = $result['error']['message'] ?? '';
+                $statusCode = $result['error']['code'] ?? 0;
+
+                // Cek jika terkena Quota Exceeded (429) atau Server High Demand (503 / 429)
+                if ($statusCode == 429 || strpos(strtolower($errorMessage), 'demand') !== false || strpos(strtolower($errorMessage), 'quota') !== false) {
+
+                    // Jika ini percobaan terakhir, tampilkan error dan keluar
+                    if ($attempt == $maxAttempts) {
+                        CLI::error("   [Google API Error]: " . $errorMessage . " (Sudah dicoba {$maxAttempts}x tetap gagal)");
+                        return null;
+                    }
+
+                    // Tentukan waktu tunggu (misal percobaan pertama tunggu 15 detik, kedua tunggu 30 detik)
+                    $waitTime = $attempt * 15;
+                    CLI::write("   [!] Server penuh / Limit kuota terdeteksi. Menunggu {$waitTime} detik sebelum mencoba kembali (Percobaan {$attempt}/{$maxAttempts})...", 'yellow');
+
+                    sleep($waitTime);
+                    continue; // Ulangi while loop untuk mencoba lagi
+                }
+
+                // Jika error jenis lain (misal API key salah, salah sintaks prompt), langsung hentikan
+                CLI::error("   [Google API Error]: " . $errorMessage);
+                return null;
+            }
+
+            // Jika sukses dapat teks, langsung return hasilnya
+            return $result['candidates'][0]['content']['parts'][0]['text'] ?? null;
+        }
+
+        return null;
     }
 }

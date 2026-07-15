@@ -346,6 +346,13 @@
                             backgroundColor: '#0369A1',
                             borderColor: 'rgba(255, 255, 255, 1)',
                             borderWidth: 1
+                        },
+                        {
+                            label: <?= $data_proses_wilayah['datesets'][2]['label'] ?>,
+                            data: <?= $data_proses_wilayah['datesets'][2]['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
+                            backgroundColor: '#EE8911',
+                            borderColor: 'rgba(255, 255, 255, 1)',
+                            borderWidth: 1
                         }
                     ]
                 },
@@ -375,7 +382,7 @@
                     labels: <?= $data_proses['label'] ?>, // Mengambil data Jan, Feb, Mar dari PHP
                     datasets: [{
                         data: <?= $data_proses['nilai'] ?>, // Mengambil data 10, 45, 30 dari PHP
-                        backgroundColor: ['#0369A1', '#B3B3B3'],
+                        backgroundColor: ['#94C11F', '#0369A1', '#B3B3B3'],
                         borderColor: 'rgba(255, 255, 255, 1)',
                         borderWidth: 1
                     }]
