@@ -4,7 +4,7 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class AnadesModel extends Model
+class IdenAnadesModel extends Model
 {
     protected $table            = 'identifikasi_anades';
     protected $primaryKey       = 'id';

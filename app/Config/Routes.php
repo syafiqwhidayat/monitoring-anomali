@@ -57,6 +57,8 @@ $routes->get('monitoring-petugas', 'Monitoring::viewPetugas', ['filter' => 'acti
 $routes->group('identifikasi', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
     $routes->get('anades', 'Identifikasi::anades'); //untuk konfirmasi secara bulk
     $routes->post('anades/update', 'Identifikasi::update'); //untuk konfirmasi secara bulk
+    $routes->get('kategorik', 'Identifikasi::kategorik'); //
+    $routes->post('kategorik/update', 'Identifikasi::update_kategorik'); //
 });
 
 $routes->group('se', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {

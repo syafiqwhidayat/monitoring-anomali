@@ -196,6 +196,9 @@
                                 <div class="dropdown-menu-column">
                                     <a class="dropdown-item" href="<?= base_url('identifikasi/anades') ?>">Analisis Deskriptif</a>
                                 </div>
+                                <div class="dropdown-menu-column">
+                                    <a class="dropdown-item" href="<?= base_url('identifikasi/kategorik') ?>">Analisis Kategorik</a>
+                                </div>
                             </div>
                         </li>
                     <?php endif; ?>
