@@ -788,8 +788,12 @@
         const sisaOpenTerakhir = rawChartData.open[rawChartData.open.length - 1];
         const sisaOpen2Terakhir = rawChartData.open[rawChartData.open.length - 2];
         const totalPenurunanOpen = sisaOpen2Terakhir - sisaOpenTerakhir;
-        const rataRataPenurunanPerHari = totalPenurunanOpen;
-        console.log(totalPenurunanOpen);
+        const tanggalTerakhir = new Date(rawChartData.categories[rawChartData.categories.length - 1] + " 2026");
+        const tanggal2Terakhir = new Date(rawChartData.categories[rawChartData.categories.length - 2] + " 2026");
+        const selisihMilidetik = tanggalTerakhir - tanggal2Terakhir
+        const jumlahHariPenurunan = Math.round(selisihMilidetik / (1000 * 60 * 60 * 24))
+        const rataRataPenurunanPerHari = Math.floor(totalPenurunanOpen / jumlahHariPenurunan);
+        // console.log(jumlahHariPenurunan);
 
         const proyeksiTglEl = document.getElementById('proyeksi-tanggal');
         const proyeksiDetailEl = document.getElementById('proyeksi-detail');

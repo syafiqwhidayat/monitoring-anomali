@@ -106,7 +106,7 @@
             <div class="card card-body mb-3 shadow-sm border-light">
                 <div class="hr-text hr-text-left fs-5 mb-3 fw-bold text-primary">Visualisasi Distribusi Struktur Kategori</div>
                 <div class="p-2 border rounded bg-white">
-                    <div style="position: relative; width: 100%;">
+                    <div style="position: relative; min-height: 50vh; width: 100%;">
                         <canvas id="kategorical_distribution_chart"></canvas>
                     </div>
                 </div>
@@ -317,7 +317,15 @@
                                 responsive: true,
                                 maintainAspectRatio: true,
                                 plugins: {
-                                    legend: false
+                                    legend: false,
+                                    tooltip: {
+                                        callbacks: {
+                                            label(context) {
+                                                const point = context.raw; // Mengambil objek {x, y, v}
+                                                return `x: ${point.x}, y: ${point.y}, nilai: ${point.v}`;
+                                            }
+                                        }
+                                    }
                                 },
                                 scales: {
                                     x: {

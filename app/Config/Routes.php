@@ -148,6 +148,7 @@ $routes->group('api', ['filter' => 'apiKeyAuth'], function ($routes) {
     $routes->post('se/upload-progres', 'Api\SeProgresController::uploadProgres');
     $routes->post('se/upload-list-ub', 'Api\SeListUbController::uploadListUb');
     $routes->post('anades/upload', 'Api\AnadesController::uploadCsv');
+    $routes->post('kategorik/upload', 'Api\KategorikController::uploadCsv');
     $routes->post('anomali/store-individu', 'Api\AnomaliController::storeFromApi');
 
     // 2. Rencana API baru Anda di masa depan tinggal ditaruh di bawah sini:
