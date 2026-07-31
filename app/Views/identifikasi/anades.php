@@ -284,14 +284,13 @@
                             {
                                 label: 'Titik Outlier',
                                 data: cleanOutliers.map(val => {
-                                    // Mencari kecocokan index label histogram
                                     const idx = histLabels.indexOf(val.toString());
                                     return idx !== -1 ? histValues[idx] : null;
                                 }),
                                 borderColor: '#e63946',
                                 backgroundColor: '#e63946',
                                 pointRadius: 5,
-                                showLine: false, // Hanya memunculkan dot merah tanpa garis penghubung
+                                showLine: false,
                                 type: 'line'
                             }
                         ]
@@ -302,14 +301,48 @@
                         plugins: {
                             legend: {
                                 display: false
+                            },
+                            // --- 1. CUSTOM TOOLTIP ---
+                            tooltip: {
+                                callbacks: {
+                                    // Custom Judul Tooltip (Rentang angka di Sumbu X, contoh: "25000000 - 30000000" -> "25.000.000 - 30.000.000")
+                                    title: function(context) {
+                                        let label = context[0].label || '';
+                                        // Mengganti setiap deretan angka pada string label dengan format ribuan bertitik
+                                        return label.replace(/\d+/g, function(number) {
+                                            return parseInt(number, 10).toLocaleString('id-ID');
+                                        });
+                                    },
+                                    // Custom Isi Nilai Tooltip (Frekuensi / Y-axis)
+                                    label: function(context) {
+                                        let datasetLabel = context.dataset.label || '';
+                                        let value = context.parsed.y;
+
+                                        if (value !== null && value !== undefined) {
+                                            return `${datasetLabel}: ${value.toLocaleString('id-ID')}`;
+                                        }
+                                        return datasetLabel;
+                                    }
+                                }
                             }
                         },
                         scales: {
+                            // --- 2. CUSTOM SUMBU X (FORMAT RIBUAN PADA LABEL DI BAWAH) ---
                             x: {
                                 grid: {
                                     display: false
+                                },
+                                ticks: {
+                                    callback: function(value, index, ticks) {
+                                        let label = this.getLabelForValue(value);
+                                        // Format semua angka pada label sumbu X menjadi bertitik
+                                        return label.replace(/\d+/g, function(number) {
+                                            return parseInt(number, 10).toLocaleString('id-ID');
+                                        });
+                                    }
                                 }
                             },
+                            // --- 3. CUSTOM SUMBU Y (FORMAT RIBUAN PADA ANGKA FREKUENSI) ---
                             y: {
                                 beginAtZero: true,
                                 title: {
@@ -317,6 +350,12 @@
                                     text: 'Frekuensi',
                                     font: {
                                         size: 10
+                                    }
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        // Memformat angka di sumbu Y (misal: 15000 menjadi 15.000)
+                                        return value.toLocaleString('id-ID');
                                     }
                                 }
                             }

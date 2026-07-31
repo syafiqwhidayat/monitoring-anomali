@@ -145,6 +145,7 @@ class ProsesAnomaliIndividu extends BaseCommand
 
             // Mulai Transaksi Database
             $this->db->transStart();
+            $involvedKategoriIds = [];
 
             // =================================================================
             // 4. RESET SEMUA IS_INSERT JADI 0 DI AWAL (Hanya yang terdampak di Excel)
@@ -456,6 +457,10 @@ class ProsesAnomaliIndividu extends BaseCommand
                 $sweeper = $this->db->table('anomali')
                     ->whereIn('id_kategori_anomali', $involvedKategoriIds);
 
+                if (!empty($detectedKab)) {
+                    $sweeper->like('id_wilayah', $detectedKab, 'after');
+                }
+
                 // Amankan data yang baru saja diproses agar tidak ikut terubah
                 if (!empty($uniqueAssigmentIds)) {
                     $sweeper->whereNotIn('id_assigment', $uniqueAssigmentIds);
@@ -463,7 +468,7 @@ class ProsesAnomaliIndividu extends BaseCommand
 
                 $sweeper->groupStart()
                     ->where('konfirmasi', '')
-                    ->orWhere('konfirmasi', null)
+                    ->orWhere('konfirmasi IS NULL', null, false)
                     ->groupEnd()
                     ->update([
                         'is_sistem'  => 1,

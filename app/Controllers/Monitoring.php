@@ -274,7 +274,7 @@ class Monitoring extends BaseController
         $jumlah_total = array_column($dataModel, 'jumlah_total');
 
         $selisih_terisi = array_map(fn($a, $b) => $a - $b, $jumlah_terisi, $jumlah_terisi_lap);
-        $selisih = array_map(fn($a, $b, $c) => $a - $b - $c, $jumlah_total, $jumlah_terisi, $jumlah_terisi_lap);
+        $selisih = array_map(fn($a, $b) => $a - $b, $jumlah_total, $jumlah_terisi);
         $data =  [
             'labels' => json_encode($judulBaris),
             'datesets' => [
@@ -324,7 +324,7 @@ class Monitoring extends BaseController
                 break;
         }
         // cek if na
-        $data = [$array[0]['jumlah_terisi_lap'], $array[0]['jumlah_terisi'] - $array[0]['jumlah_terisi_lap'], $array[0]['jumlah_total'] - $array[0]['jumlah_terisi']  - $array[0]['jumlah_terisi_lap']];
+        $data = [$array[0]['jumlah_terisi_lap'], $array[0]['jumlah_terisi'] - $array[0]['jumlah_terisi_lap'], $array[0]['jumlah_total'] - $array[0]['jumlah_terisi']];
 
         $data = array_map(function ($val) {
             return ($val === null) ? 0 : $val;

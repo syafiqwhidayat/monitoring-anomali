@@ -76,7 +76,9 @@ class Identifikasi extends BaseController
                         ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
                         ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                         // Ditambahkan prefix 'anomali.' untuk menghindari ambiguitas kolom di database
-                        ->where('anomali.id_kategori_anomali', $activeAnades['id_kategori_anomali']);
+                        ->where('anomali.id_kategori_anomali', $activeAnades['id_kategori_anomali'])
+                        ->where('is_sistem', 0)
+                        ->like('anomali.id_wilayah', $selectedWilayah, 'after');
 
                     // Jika ingin menyaring data sampel berdasarkan wilayah yang dipilih, silakan aktifkan baris ini:
                     // ->where('anomali.id_wilayah', $selectedWilayah);
@@ -187,7 +189,9 @@ class Identifikasi extends BaseController
                         art.id AS id_assignment_obj, art.kd_assigment, art.nm_krt, art.nm_art, art.kd_krt
                     ')
                     ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
-                    ->where('anomali.id_kategori_anomali', $activeKategori['id_kategori_anomali']);
+                    ->where('anomali.id_kategori_anomali', $activeKategori['id_kategori_anomali'])
+                    ->where('is_sistem', 0)
+                    ->like('anomali.id_wilayah', $selectedWilayah, 'after');
 
                 // Filter lingkup wilayah kerja
                 if (!empty($selectedWilayah)) {

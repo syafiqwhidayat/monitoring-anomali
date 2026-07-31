@@ -479,7 +479,7 @@
                     });
 
                     $.ajax({
-                        url: '<?= base_url('kategori/update_konfigurasi'); ?>',
+                        url: '<?= base_url('identifikasi/kategorik/update'); ?>',
                         type: 'POST',
                         data: $.param(serializeData),
                         dataType: 'JSON',

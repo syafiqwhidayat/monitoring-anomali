@@ -241,7 +241,7 @@ class AnomaliModel extends Model
         return ($hasil);
     }
 
-    public function jumlahKonfirmasiByWiayah($idKat = 1, $idkab = null, $level = null, $levelOuput = 4, $status = null)
+    public function jumlahKonfirmasiByWiayah($idKat = 1, $idkab = null, $level = null, $levelOuput = 7, $status = null)
     {
         $hasil = $this
             ->select("LEFT(id_wilayah,$levelOuput) as 'id_wil'")

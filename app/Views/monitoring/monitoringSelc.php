@@ -198,6 +198,12 @@
                     <span class="text-muted d-block small">Kode Wilayah Analisis</span>
                     <strong class="text-dark"><?= esc($kodeWilayahDb); ?></strong>
                 </div>
+                <?php if (!empty($kesimpulan['hasil_kesimpulan'])): ?>
+                    <div class="col-6 col-md-4">
+                        <span class="text-muted d-block small">Waktu Generate Kesimpulan</span>
+                        <strong class="text-dark"><?= esc(date('d-m-Y H:i', strtotime($kesimpulan['date_updated']))); ?></strong>
+                    </div>
+                <?php endif; ?>
                 <div class="col-12 col-md-4">
                     <span class="text-muted d-block small">Sumber Penarikan Data</span>
                     <span class="badge bg-purple-lt font-weight-bold">Generative AI Engine</span>

@@ -106,7 +106,10 @@ class AnadesController extends BaseController
             if (isset($colMap['n_outlier'])) {
                 $rawOutlier = trim($row[$colMap['n_outlier']]);
                 if (!empty($rawOutlier) && $rawOutlier !== 'NULL' && $rawOutlier !== '[]') {
-                    $outlierJson = str_replace("'", '"', $rawOutlier);
+                    $cleaned = str_replace("'", '"', $rawOutlier);
+                    $decoded = json_decode($cleaned, true);
+                    // Jika valid JSON, encode ulang; jika tidak, set null
+                    $outlierJson = ($decoded !== null) ? json_encode($decoded) : null;
                 }
             }
 
@@ -114,7 +117,9 @@ class AnadesController extends BaseController
             if (isset($colMap['n_histogram'])) {
                 $rawHistogram = trim($row[$colMap['n_histogram']]);
                 if (!empty($rawHistogram) && $rawHistogram !== 'NULL' && $rawHistogram !== '{}') {
-                    $histogramJson = str_replace("'", '"', $rawHistogram);
+                    $cleaned = str_replace("'", '"', $rawHistogram);
+                    $decoded = json_decode($cleaned, true);
+                    $histogramJson = ($decoded !== null) ? json_encode($decoded) : null;
                 }
             }
 
