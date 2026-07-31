@@ -153,10 +153,16 @@ class ProsesAnomaliIndividu extends BaseCommand
             if (!empty($uniqueAssigments) && !empty($uniqueKodes)) {
                 $involvedKategoriIds = !empty($mappedKategori) ? array_column($mappedKategori, 'id') : [0];
 
-                $this->db->table('anomali')
-                    // ->whereIn('id_assigment', $uniqueAssigments)
-                    ->whereIn('id_kategori_anomali', $involvedKategoriIds)
-                    ->update(['is_insert' => 0]);
+                $resetQuery = $this->db->table('anomali')
+                    ->whereIn('id_kategori_anomali', $involvedKategoriIds);
+
+                // Tambahkan filter kabupaten jika terdeteksi
+                if (!empty($detectedKab)) {
+                    $resetQuery->like('id_wilayah', $detectedKab, 'after');
+                }
+
+                // Eksekusi update
+                $resetQuery->update(['is_insert' => 0]);
             }
 
             // =================================================================

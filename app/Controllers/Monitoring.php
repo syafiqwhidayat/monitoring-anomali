@@ -122,6 +122,11 @@ class Monitoring extends BaseController
             $data['list_kab'] = $this->anomaliModel->getWilayah('kab', $data['filterAnomali'], $data['sel_prov'], $data['sel_kab']);
         }
 
+        $kodeWilayahDb = '1300';
+        if (!empty($data['sel_kab'])) {
+            $kodeWilayahDb = '13' . str_pad($data['sel_kab'], 2, '0', STR_PAD_LEFT);
+        }
+        $data['kodeWilayahDb'] = $kodeWilayahDb;
 
         $general = $this->katAnomaliModel->getDataUmum($data['filterAnomali'])[0] ?? [];
 
@@ -145,12 +150,6 @@ class Monitoring extends BaseController
         $data["dataWordCloud"] = json_encode($this->dataWordCloud($data['filterAnomali'], status: $data['filterStatus']));
         // dd($data['dataWordCloud']);
         $data["dataTop5"] = $this->anomaliModel->getTop5($data['filterAnomali']);
-
-        $kodeWilayahDb = '1300';
-        if (!empty($data['sel_kab'])) {
-            $kodeWilayahDb = '13' . str_pad($data['sel_kab'], 2, '0', STR_PAD_LEFT);
-        }
-        $data['kodeWilayahDb'] = $kodeWilayahDb;
 
         // Ambil data kesimpulan dari database (asumsi nama tabel: kesimpulan_anomali)
         $kesimpulan = $db->table('kesimpulan_anomali') // sesuaikan nama tabel baru Anda di sini jika berbeda
