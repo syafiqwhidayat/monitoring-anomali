@@ -38,8 +38,10 @@ $routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator'], 
 
 });
 
-$routes->group('manajemen-anomali', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
+$routes->group('manajemen-anomali', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
     $routes->get('list', 'ManajAnom::manajemenList');  //daftar kategori anomali
+});
+$routes->group('manajemen-anomali', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
     $routes->post('action', 'ManajAnom::manajemenAction'); //mati dan munculkan is public
     $routes->get('edit/(:any)', 'ManajAnom::edit/$1'); //edit kategori anomali
     $routes->post('updateKategori', 'ManajAnom::updateKategori'); //update kategori anomali
