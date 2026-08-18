@@ -30,7 +30,7 @@ class Identifikasi extends BaseController
 
         // 2. Ambal semua daftar variabel unik untuk dropdown filter
         // (Biar user bisa milih variabel apa saja yang tersedia untuk kegiatan ini)
-        $listVariabel = $this->anadesModel->where('id_kegiatan', $idKegiatan)->findAll();
+        $listVariabel = $this->anadesModel->where('id_kegiatan', $idKegiatan)->orderBy('id_kegiatan')->findAll();
 
         // 3. Ambil data spesifik berdasarkan filter wilayah & variabel yang dipilih
         $activeAnades = null;
@@ -159,7 +159,7 @@ class Identifikasi extends BaseController
         $selectedVariabel = $this->request->getGet('selected-variabel');
 
         // 2. Ambil semua daftar variabel kategori berdasarkan kegiatan aktif
-        $listVariabel = $this->kategorikModel->where('id_kegiatan', $idKegiatan)->findAll();
+        $listVariabel = $this->kategorikModel->where('id_kegiatan', $idKegiatan)->orderBy('id_kegiatan')->findAll();
 
         $activeKategori    = null;
         $listAnomaliSampel = [];

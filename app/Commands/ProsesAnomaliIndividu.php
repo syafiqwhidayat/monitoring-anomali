@@ -35,6 +35,8 @@ class ProsesAnomaliIndividu extends BaseCommand
             return 1;
         }
 
+        CLI::write('Forced Nilai: ' . $forcedKonfirmasi);
+
         $this->logModel     = new LogUploadModel();
         $this->anomaliModel = new AnomaliModel();
         $this->db           = \Config\Database::connect();
@@ -74,7 +76,8 @@ class ProsesAnomaliIndividu extends BaseCommand
             for ($i = 1; $i < count($sheetData); $i++) {
                 $row = $sheetData[$i];
 
-                $id_assigment = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . '_' . trim($row[6] ?? '');
+                // $id_assigment = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . '_' . trim($row[6] ?? '');
+                $id_assigment = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . (trim($row[6] ?? '') !== '' ? '_' . trim($row[6] ?? '') : '');
                 $kodeAnomali  = trim($row[9] ?? '');
 
                 if (empty($id_assigment) && empty($kodeAnomali)) {
@@ -224,7 +227,8 @@ class ProsesAnomaliIndividu extends BaseCommand
                 $row    = $sheetData[$i];
                 $rowNum = $i + 1;
 
-                $id_assigment = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . '_' . trim($row[6] ?? '');
+                // $id_assigment = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . '_' . trim($row[6] ?? '');
+                $id_assigment = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . (trim($row[6] ?? '') !== '' ? '_' . trim($row[6] ?? '') : '');
                 $kdKrt        = trim($row[5] ?? '');
                 $kdArt        = trim($row[6] ?? '');
                 $nmKrt        = trim($row[7] ?? '');
@@ -399,6 +403,9 @@ class ProsesAnomaliIndividu extends BaseCommand
                         // Jika forced = 1, ganti dengan excel KECUALI jika excel-nya kosong/strip
                         if ($konfirmasi !== '' && $konfirmasi !== '-') {
                             $finalKonfirmasi = $konfirmasi;
+                        } else {
+                            CLI::write('Force Kosong');
+                            $finalKonfirmasi = null;
                         }
                     } else {
                         // Jika forced = 0, pakai excel HANYA JIKA di database masih kosong/strip
