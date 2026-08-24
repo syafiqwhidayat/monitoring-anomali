@@ -23,6 +23,7 @@ class AnomaliModel extends Model
         'is_insert',
         'is_sistem',
         'isi_fasih',
+        'date_konfirmasi'
     ];
 
     public function getAnomaliByWilayah($wilayah = null, $isEdit = null, $kode_anomali = null, $flag = null, $levelAnomali = null, $isRT = true, $status = null)

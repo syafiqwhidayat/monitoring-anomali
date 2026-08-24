@@ -29,10 +29,33 @@
 
                     <div class="col-12 col-lg-5 mb-1">
                         <label class="text-muted fw-semibold mb-1-5 d-block" style="font-size: 0.75rem;">Isian Fasih</label>
-                        <div class="p-3 rounded-3 h-100" style="background-color: #f6fdfc; border-left: 4px solid #2b6af3; box-shadow: inset 0 0 4px rgba(0,0,0,0.01);">
-                            <p class="mb-0 text-dark" style="font-size: 0.825rem; text-align: justify; line-height: 1.5; word-break: break-word;">
-                                <?= esc($l['isi_fasih']); ?>
-                            </p>
+                        <div class="p-3 rounded-3 h-100" style="background-color: #f8fafc; border-left: 4px solid #2b6af3; box-shadow: inset 0 0 4px rgba(0,0,0,0.02);">
+                            <?php
+                            $jsonData = json_decode($l['isi_fasih'], true);
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)):
+                            ?>
+                                <div class="d-flex flex-column gap-2">
+                                    <?php foreach ($jsonData as $key => $val): ?>
+                                        <?php
+                                        // Cek apakah angka dan bukan kode KBLI (jika KBLI/kode tertentu biasanya berupa string angka yang tidak ingin diberi pemisah ribuan)
+                                        $isNumeric = is_numeric($val) && !preg_match('/kbli|kode|id/i', $key);
+                                        $displayVal = $isNumeric ? number_format((float)$val, 0, ',', '.') : $val;
+                                        ?>
+                                        <div class="d-flex align-items-center justify-content-between p-2 rounded-2 bg-white border border-light-subtle shadow-sm">
+                                            <span class="text-muted fw-medium" style="font-size: 0.775rem;">
+                                                <i class="bi bi-tag-fill me-1 text-primary opacity-50"></i><?= esc($key); ?>
+                                            </span>
+                                            <span class="<?= $isNumeric ? 'font-monospace fw-bold text-success bg-success-subtle' : 'fw-bold text-dark bg-light border' ?> px-2 py-1 rounded" style="font-size: 0.8rem; letter-spacing: 0.5px;">
+                                                <?= esc($displayVal); ?>
+                                            </span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <p class="mb-0 text-dark" style="font-size: 0.825rem; text-align: justify; line-height: 1.5; word-break: break-word;">
+                                    <?= esc($l['isi_fasih']); ?>
+                                </p>
+                            <?php endif; ?>
                         </div>
                     </div>
 

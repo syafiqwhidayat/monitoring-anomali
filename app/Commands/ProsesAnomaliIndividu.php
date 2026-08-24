@@ -176,7 +176,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                 $chunks = array_chunk($uniqueAssigmentIds, 2000);
                 foreach ($chunks as $chunkIds) {
                     $getDb = $this->db->table('anomali')
-                        ->select('anomali.id, anomali.id_assigment, anomali.isi_fasih, kategori_anomali.kode_anomali, anomali.konfirmasi, anomali.is_sistem')
+                        ->select('anomali.id, anomali.id_assigment, anomali.isi_fasih, kategori_anomali.kode_anomali, anomali.konfirmasi, anomali.is_sistem, anomali.date_konfirmasi')
                         ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
                         ->where('kategori_anomali.id_kegiatan', $idKegiatan)
                         ->whereIn('anomali.id_assigment', $chunkIds) // Gunakan potongan chunk
@@ -414,12 +414,16 @@ class ProsesAnomaliIndividu extends BaseCommand
                         }
                     }
 
+                    // Tentukan tanggal konfirmasi
+                    $dateKonfirmasi = (!empty($finalKonfirmasi) && $finalKonfirmasi !== '-' && strtolower($finalKonfirmasi) !== 'none') ? date('Y-m-d H:i:s') : null;
+
                     // Jika ID masih null (berarti buatan instan dari loop baris sebelumnya), lakukan update via object key alternatif nanti
                     if ($existingData['id'] === null) {
                         // Untuk mencegah duplikasi batch insert, baris duplikat di excel dimanipulasi langsung di array insert
                         foreach ($batchInsertAnomali as $bKey => $bInsert) {
                             if ($bInsert['id_assigment'] == $currentAssignmentId && $bInsert['id_kategori_anomali'] == $idKategoriAnomali) {
                                 $batchInsertAnomali[$bKey]['konfirmasi'] = $finalKonfirmasi;
+                                $batchInsertAnomali[$bKey]['date_konfirmasi'] = $dateKonfirmasi;
                                 $batchInsertAnomali[$bKey]['isi_fasih']  = $isiFasih;
                                 $batchInsertAnomali[$bKey]['id_user']    = $idUser;
                             }
@@ -432,6 +436,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                             'is_insert'    => 1,
                             'is_sistem'    => 0,
                             'konfirmasi'    => $finalKonfirmasi,
+                            'date_konfirmasi' => $dateKonfirmasi,
                             'date_updated' => date('Y-m-d H:i:s')
                         ];
                     }
@@ -445,6 +450,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                         'id_assigment'        => $currentAssignmentId,
                         'isi_fasih'           => $isiFasih,
                         'konfirmasi'           => $konfirmasi,
+                        'date_konfirmasi'     => $dateKonfirmasi,
                         'is_insert'           => 1,
                         'id_user'           => $idUser,
                         'date_created'        => date('Y-m-d H:i:s'),
@@ -485,7 +491,8 @@ class ProsesAnomaliIndividu extends BaseCommand
                     ->groupEnd()
                     ->update([
                         'is_sistem'  => 1,
-                        'konfirmasi' => 'System: Sudah diperbaiki di fasih'
+                        'konfirmasi' => 'System: Sudah diperbaiki di fasih',
+                        'date_konfirmasi' => date('Y-m-d H:i:s')
                     ]);
             }
 

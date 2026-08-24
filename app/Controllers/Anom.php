@@ -133,7 +133,7 @@ class Anom extends BaseController
         $getEdit         = $this->request->getGet('is-edit') ?? '';
         $isEdit  = ($getEdit === 'true' || $getEdit === '1') ? true : false;
         $filterStatus = $this->request->getGet('fil-stat') ?? '';
-        dd($filterStatus);
+        // dd($filterStatus);
 
         // Deteksi keberadaan separator '_' untuk mengenali entitas jeroan ruta/art
         $parts = explode('_', $id);
@@ -255,6 +255,7 @@ class Anom extends BaseController
         $datum['id'] = $this->request->getPost('id');
         $datum['konfirmasi'] = $this->request->getVar('konfirmasi');
         $datum['is_lap'] = $this->request->getVar('kondisi_lapangan') ?? 0;
+        $datum['date_konfirmasi'] = date('Y-m-d H:i:s');
         $rules = [
             'id'           => 'required|is_natural_no_zero',
             'konfirmasi' => [
@@ -314,7 +315,11 @@ class Anom extends BaseController
             ->where('konfirmasi', '')
             ->where('id_kategori_anomali', $data['id_kode_anomali']);
         $hasil
-            ->set(['konfirmasi' => $data['konfirmasi'], 'is_lap' => $data['is_lap']])
+            ->set([
+                'konfirmasi' => $data['konfirmasi'],
+                'is_lap' => $data['is_lap'],
+                'date_konfirmasi' => date('Y-m-d H:i:s')
+            ])
             ->update();
         if ($hasil) {
             $jumlah = $this->anomaliModel->db->affectedRows();

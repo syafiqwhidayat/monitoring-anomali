@@ -89,6 +89,23 @@ $routes->group('se', ['filter' => 'activeRole:superadmin,admin,operator'], stati
     $routes->post('monitoring-ub/upload', 'SeMonitoring::uploadSEUB', ['filter' => 'activeRole:superadmin,admin']);
     $routes->post('monitoring-ub/updateTimPj', 'SeMonitoring::updatePJSEUB', ['filter' => 'activeRole:superadmin,admin']);
 });
+
+$routes->group('peta', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
+
+    // 1. Tampilan Utama Peta & Dropdown Data
+    $routes->get('/', 'PetaController::index');
+    $routes->get('get-kabupaten', 'PetaController::getKabupaten');
+    $routes->get('get-kecamatan', 'PetaController::getKecamatan');
+    $routes->get('get-desa', 'PetaController::getDesa');
+    $routes->get('get-sls', 'PetaController::getSls');
+    $routes->get('get-subsls', 'PetaController::getSubSls');
+    $routes->get('get-data-map/(:segment)', 'PetaController::getDataMap/$1');
+
+    // 2. Rute Khusus Upload (Hanya Superadmin & Admin)
+    $routes->get('upload', 'PetaController::uploadView');
+    $routes->post('upload-csv', 'PetaController::uploadCsv', ['filter' => 'activeRole:superadmin,admin']);
+    $routes->post('upload-geojson', 'PetaController::uploadGeojson', ['filter' => 'activeRole:superadmin,admin']);
+});
 // $routes->group('se', ['filter' => 'activeRole:superadmin,admin'], static function ($routes) {
 //     $routes->get('upload', 'SeMonitoring::logs');
 //     $routes->get('upload-ngibar', 'SeMonitoring::logs');
