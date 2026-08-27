@@ -13,7 +13,7 @@ class ProsesAnomaliIndividu extends BaseCommand
     protected $group       = 'App';
     protected $name        = 'proses:anomali_individu';
     protected $description = 'Memproses unggahan Excel anomali individu dengan auto-create kategori_anomali dan assigment jika belum ada.';
-    protected $usage       = 'proses:anomali_individu [namaFile] [logId] [idKegiatan] [kodeKabOtoritas]';
+    protected $usage       = 'proses:anomali_individu [namaFile] [logId] [idKegiatan] [kodeKabOtoritas] [idUser] [forcedKonfirmasi]';
 
     protected $logModel;
     protected $anomaliModel;
@@ -21,14 +21,12 @@ class ProsesAnomaliIndividu extends BaseCommand
 
     public function run(array $params)
     {
-        $fileName              = $params[0] ?? null;
-        $logId                 = $params[1] ?? null;
-        $idKegiatan            = $params[2] ?? null;
-        $idKab                 = $params[3] ?? null;
-        $idUser                = $params[4] ?? null;
-        $forcedKonfirmasi      = $params[5] ?? 0;
-
-        // $levelWilayah       = $kegiatan['level_wilayah'] ?? 4;
+        $fileName        = $params[0] ?? null;
+        $logId           = $params[1] ?? null;
+        $idKegiatan      = $params[2] ?? null;
+        $idKab           = $params[3] ?? null;
+        $idUser          = $params[4] ?? null;
+        $forcedKonfirmasi = $params[5] ?? 0;
 
         if (!$fileName || !$logId || !$idKegiatan || !$idKab) {
             CLI::error("Parameter kurang lengkap! Dibutuhkan: namaFile, logId, idKegiatan, dan kodeKabOtoritas.");
@@ -76,7 +74,6 @@ class ProsesAnomaliIndividu extends BaseCommand
             for ($i = 1; $i < count($sheetData); $i++) {
                 $row = $sheetData[$i];
 
-                // $id_assigment = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . '_' . trim($row[6] ?? '');
                 $id_assigment = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . (trim($row[6] ?? '') !== '' ? '_' . trim($row[6] ?? '') : '');
                 $kodeAnomali  = trim($row[9] ?? '');
 
@@ -113,7 +110,7 @@ class ProsesAnomaliIndividu extends BaseCommand
             $mappedKategori = [];
             if (!empty($uniqueKodes)) {
                 $kategoriData = $this->db->table('kategori_anomali')
-                    ->select('id, kode_anomali,level_anomali')
+                    ->select('id, kode_anomali, level_anomali')
                     ->where('id_kegiatan', $idKegiatan)
                     ->whereIn('kode_anomali', $uniqueKodes)
                     ->get()
@@ -123,7 +120,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                     $mappedKategori[$kat['kode_anomali']] = [
                         'id'            => $kat['id'],
                         'level_anomali' => $kat['level_anomali']
-                    ];;
+                    ];
                 }
             }
 
@@ -179,7 +176,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                         ->select('anomali.id, anomali.id_assigment, anomali.isi_fasih, kategori_anomali.kode_anomali, anomali.konfirmasi, anomali.is_sistem, anomali.date_konfirmasi')
                         ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
                         ->where('kategori_anomali.id_kegiatan', $idKegiatan)
-                        ->whereIn('anomali.id_assigment', $chunkIds) // Gunakan potongan chunk
+                        ->whereIn('anomali.id_assigment', $chunkIds)
                         ->whereIn('kategori_anomali.kode_anomali', $uniqueKodes)
                         ->get();
 
@@ -194,27 +191,6 @@ class ProsesAnomaliIndividu extends BaseCommand
                         throw new \Exception("Gagal mengambil data existing di hosting. Pesan MySQL: " . $error['message']);
                     }
                 }
-                // $getDb = $this->db->table('anomali')
-                //     ->select('anomali.id, anomali.id_assigment, anomali.isi_fasih, kategori_anomali.kode_anomali,anomali.konfirmasi,anomali.is_sistem')
-                //     ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
-                //     ->where('kategori_anomali.id_kegiatan', $idKegiatan)
-                //     ->whereIn('anomali.id_assigment', $uniqueAssigmentIds)
-                //     ->whereIn('kategori_anomali.kode_anomali', $uniqueKodes)
-                //     ->get()
-                //     ->getResultArray();
-
-                // // Pastikan hasil get() valid dan merupakan sebuah Object sebelum memanggil getResultArray()
-                // if ($getDb && is_object($getDb)) {
-                //     $dbData = $getDb->getResultArray();
-                //     foreach ($dbData as $rowDb) {
-                //         $uniqueKey = $rowDb['id_assigment'] . '_' . $rowDb['kode_anomali'];
-                //         $mappedExisting[$uniqueKey] = $rowDb;
-                //     }
-                // } else {
-                //     // Jika gagal karena query error/terlalu panjang, lemparkan ke Log/Exception agar tahu error SQL-nya
-                //     $error = $this->db->error();
-                //     throw new \Exception("Gagal mengambil data existing dari database. SQL Error: " . $error['message']);
-                // }
             }
 
             // =================================================================
@@ -227,7 +203,6 @@ class ProsesAnomaliIndividu extends BaseCommand
                 $row    = $sheetData[$i];
                 $rowNum = $i + 1;
 
-                // $id_assigment = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . '_' . trim($row[6] ?? '');
                 $id_assigment = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . (trim($row[6] ?? '') !== '' ? '_' . trim($row[6] ?? '') : '');
                 $kdKrt        = trim($row[5] ?? '');
                 $kdArt        = trim($row[6] ?? '');
@@ -236,7 +211,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                 $idWilayah    = trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? ''));
                 $kodeAnomali  = trim($row[9] ?? '');
                 $isiFasih     = trim($row[10] ?? '');
-                $konfirmasi     = trim($row[11] ?? '');
+                $konfirmasi   = trim($row[11] ?? '');
 
                 if (empty($id_assigment) && empty($kodeAnomali)) {
                     $gagal++;
@@ -269,52 +244,46 @@ class ProsesAnomaliIndividu extends BaseCommand
                     'kode_kec'   => trim($row[2] ?? ''),
                     'kode_desa'  => trim($row[3] ?? ''),
                     'kode_sls'   => trim($row[4] ?? ''),
-                    'kode_krt'   => $kdKrt,       // Disesuaikan dengan kebutuhan kolom 'kode_nrt' Anda
-                    'nama_krt'   => $nmKrt,       // Disesuaikan dengan kebutuhan kolom 'nama_nrt' Anda
-                    'kode_art'   => $kdArt,       // Disesuaikan dengan kebutuhan kolom 'kode_nrt' Anda
-                    'nama_art'   => $nmArt,       // Disesuaikan dengan kebutuhan kolom 'nama_nrt' Anda
+                    'kode_krt'   => $kdKrt,
+                    'nama_krt'   => $nmKrt,
+                    'kode_art'   => $kdArt,
+                    'nama_art'   => $nmArt,
                     'anomali'    => $kodeAnomali,
                     'id_wilayah' => $idWilayah,
                 ];
 
                 $rule = [
-                    'kode_prov' => 'required|exact_length[2]',
-                    'kode_kab'  => 'required|exact_length[2]',
-                    'kode_kec'  => 'permit_empty|exact_length[3]',
-                    'kode_desa' => 'permit_empty|exact_length[3]',
-                    'kode_sls'  => 'permit_empty|exact_length[6]',
-                    'kode_krt'      => 'required|max_length[255]',
-                    'nama_krt'     => 'required|max_length[255]',
-                    'kode_art'      => 'max_length[255]',
-                    'nama_art'     => 'max_length[255]',
-                    'anomali'   => 'required',
+                    'kode_prov'  => 'required|exact_length[2]',
+                    'kode_kab'   => 'required|exact_length[2]',
+                    'kode_kec'   => 'permit_empty|exact_length[3]',
+                    'kode_desa'  => 'permit_empty|exact_length[3]',
+                    'kode_sls'   => 'permit_empty|exact_length[6]',
+                    'kode_krt'   => 'required|max_length[255]',
+                    'nama_krt'   => 'required|max_length[255]',
+                    'kode_art'   => 'max_length[255]',
+                    'nama_art'   => 'max_length[255]',
+                    'anomali'    => 'required',
                     'id_wilayah' => 'is_not_unique[wilayah.id]',
-                    // 'id_wilayah' => 'required|exact_length[' . $levelWilayah . ']|is_not_unique[wilayah.id]',
                 ];
                 $message = [
                     'id_wilayah' => [
                         'is_not_unique' => 'id wilayah tidak ditemukan di master wilayah',
-                        'exact_length' => 'id wilayah tidak sama dengan yang didefinisikan di kegiatan'
+                        'exact_length'  => 'id wilayah tidak sama dengan yang didefinisikan di kegiatan'
                     ],
                 ];
 
                 $validation = \Config\Services::validation();
                 $validation->setRules($rule, $message);
                 if (!$validation->run($dataToValidate)) {
-                    // Jika gagal, ambil semua pesan error yang terjadi pada baris ini
                     $errorsBaris = $validation->getErrors();
-
-                    // Gabungkan pesan error menjadi satu string kalimat
                     $gabunganPesanError = implode(', ', $errorsBaris);
 
-                    // Masukkan ke array log error_details Anda
                     $errorDetails[] = [
                         'baris'    => $rowNum,
                         'data'     => "ID Assigment: " . ($id_assigment ?: '-'),
                         'messages' => "Validasi Gagal: " . $gabunganPesanError
                     ];
 
-                    // Skip baris ini dan lanjutkan ke baris excel berikutnya karena data tidak valid
                     $gagal++;
                     continue;
                 }
@@ -325,7 +294,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                 if (!isset($mappedKategori[$kodeAnomali])) {
                     $this->db->table('kategori_anomali')->insert([
                         'id_kegiatan'   => $idKegiatan,
-                        'level_anomali' => $idKab, // Default diisi kode kabupaten otoritas
+                        'level_anomali' => $idKab,
                         'kode_anomali'  => $kodeAnomali,
                         'flag'          => '3',
                         'is_show'       => 0,
@@ -333,13 +302,11 @@ class ProsesAnomaliIndividu extends BaseCommand
                     ]);
                     $newKategoriId = $this->db->insertID();
 
-                    // Masukkan ke cache memori agar baris berikutnya tidak buat duplikat lagi
                     $mappedKategori[$kodeAnomali] = [
                         'id'            => $newKategoriId,
                         'level_anomali' => $idKab
                     ];
                 } else {
-                    // JIKA SUDAH ADA -> Cek Kewenangan Level Wilayahnya
                     $existingKategori = $mappedKategori[$kodeAnomali];
                     $levelAnomaliDb   = $existingKategori['level_anomali'];
 
@@ -350,7 +317,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                             'messages' => ["Gagal! User tidak punya akses untuk menambahkan anomali ini"]
                         ];
                         $gagal++;
-                        continue; // Lewati baris Excel ini dan lanjut ke baris berikutnya
+                        continue;
                     }
                 }
                 $idKategoriAnomali = $mappedKategori[$kodeAnomali]['id'];
@@ -370,7 +337,6 @@ class ProsesAnomaliIndividu extends BaseCommand
                     ]);
                     $newAssigmentId = $this->db->insertID();
 
-                    // Masukkan ke cache memori
                     $mappedAssigment[$id_assigment] = $newAssigmentId;
                     $uniqueAssigmentIds[] = $newAssigmentId;
                 }
@@ -380,6 +346,7 @@ class ProsesAnomaliIndividu extends BaseCommand
                 // -------------------------------------------------------------
                 $currentAssignmentId = $mappedAssigment[$id_assigment];
                 $checkKey = $mappedAssigment[$id_assigment] . '_' . $kodeAnomali;
+
                 if (isset($mappedExisting[$checkKey])) {
                     // KONDISI A: DATA SUDAH ADA -> UPDATE
                     $existingData = $mappedExisting[$checkKey];
@@ -393,14 +360,9 @@ class ProsesAnomaliIndividu extends BaseCommand
                         $isDbKosong   = ($konfirmasiDb === null || $konfirmasiDb === '' || strtolower($konfirmasiDb) === 'none' || $konfirmasiDb === '-');
                     }
 
-                    // Inisialisasi nilai konfirmasi akhir dengan data database saat ini
                     $finalKonfirmasi = $isDbKosong ? null : $konfirmasiDb;
 
-                    // CLI::write('is db kosogn: ' . $isDbKosong);
-                    // CLI::write('konfirmasi excel: ' . $konfirmasi);
-
                     if ($forcedKonfirmasi == 1) {
-                        // Jika forced = 1, ganti dengan excel KECUALI jika excel-nya kosong/strip
                         if ($konfirmasi !== '' && $konfirmasi !== '-') {
                             $finalKonfirmasi = $konfirmasi;
                         } else {
@@ -408,57 +370,60 @@ class ProsesAnomaliIndividu extends BaseCommand
                             $finalKonfirmasi = null;
                         }
                     } else {
-                        // Jika forced = 0, pakai excel HANYA JIKA di database masih kosong/strip
                         if ($isDbKosong) {
                             $finalKonfirmasi = $konfirmasi;
                         }
                     }
 
-                    // Tentukan tanggal konfirmasi
                     $dateKonfirmasi = (!empty($finalKonfirmasi) && $finalKonfirmasi !== '-' && strtolower($finalKonfirmasi) !== 'none') ? date('Y-m-d H:i:s') : null;
 
-                    // Jika ID masih null (berarti buatan instan dari loop baris sebelumnya), lakukan update via object key alternatif nanti
                     if ($existingData['id'] === null) {
-                        // Untuk mencegah duplikasi batch insert, baris duplikat di excel dimanipulasi langsung di array insert
                         foreach ($batchInsertAnomali as $bKey => $bInsert) {
                             if ($bInsert['id_assigment'] == $currentAssignmentId && $bInsert['id_kategori_anomali'] == $idKategoriAnomali) {
-                                $batchInsertAnomali[$bKey]['konfirmasi'] = $finalKonfirmasi;
+                                $batchInsertAnomali[$bKey]['konfirmasi']      = $finalKonfirmasi;
                                 $batchInsertAnomali[$bKey]['date_konfirmasi'] = $dateKonfirmasi;
-                                $batchInsertAnomali[$bKey]['isi_fasih']  = $isiFasih;
-                                $batchInsertAnomali[$bKey]['id_user']    = $idUser;
+                                $batchInsertAnomali[$bKey]['isi_fasih']       = $isiFasih;
+                                $batchInsertAnomali[$bKey]['id_user']         = $idUser;
                             }
                         }
                     } else {
                         $batchUpdateAnomali[] = [
-                            'id'           => $existingData['id'],
-                            'id_user'    => $idUser,
-                            'isi_fasih'    => $isiFasih,
-                            'is_insert'    => 1,
-                            'is_sistem'    => 0,
-                            'konfirmasi'    => $finalKonfirmasi,
+                            'id'              => $existingData['id'],
+                            'id_user'         => $idUser,
+                            'isi_fasih'       => $isiFasih,
+                            'is_insert'       => 1,
+                            'is_sistem'       => 0,
+                            'konfirmasi'      => $finalKonfirmasi,
                             'date_konfirmasi' => $dateKonfirmasi,
-                            'date_updated' => date('Y-m-d H:i:s')
+                            'date_updated'    => date('Y-m-d H:i:s')
                         ];
                     }
-                    CLI::write("final knfirmasi: $finalKonfirmasi");
+                    CLI::write("final konfirmasi: $finalKonfirmasi");
                 } else {
                     // KONDISI B: DATA BELUM ADA -> INSERT
-                    CLI::write("knfirmasi: $konfirmasi");
+                    CLI::write("konfirmasi: $konfirmasi");
+                    $dateKonfirmasi = (!empty($konfirmasi) && $konfirmasi !== '-' && strtolower($konfirmasi) !== 'none') ? date('Y-m-d H:i:s') : null;
+
                     $batchInsertAnomali[] = [
                         'id_kategori_anomali' => $idKategoriAnomali,
                         'id_wilayah'          => $idWilayah ?: substr($id_assigment, 0, 10),
                         'id_assigment'        => $currentAssignmentId,
                         'isi_fasih'           => $isiFasih,
-                        'konfirmasi'           => $konfirmasi,
+                        'konfirmasi'          => $konfirmasi,
                         'date_konfirmasi'     => $dateKonfirmasi,
                         'is_insert'           => 1,
-                        'id_user'           => $idUser,
+                        'id_user'             => $idUser,
                         'date_created'        => date('Y-m-d H:i:s'),
                         'date_updated'        => date('Y-m-d H:i:s')
                     ];
 
-                    // Daftarkan ke cache temporary agar jika ada baris duplikat di Excel, ia masuk antrean Update berikutnya
-                    $mappedExisting[$checkKey] = ['id' => null, 'id_assigment' => $id_assigment, 'isi_fasih' => $isiFasih, 'kode_anomali' => $kodeAnomali, 'konfirmasi' => $konfirmasi];
+                    $mappedExisting[$checkKey] = [
+                        'id'           => null,
+                        'id_assigment' => $id_assigment,
+                        'isi_fasih'    => $isiFasih,
+                        'kode_anomali' => $kodeAnomali,
+                        'konfirmasi'   => $konfirmasi
+                    ];
                 }
 
                 $berhasil++;
@@ -471,7 +436,8 @@ class ProsesAnomaliIndividu extends BaseCommand
             if (!empty($batchUpdateAnomali)) {
                 $this->db->table('anomali')->updateBatch($batchUpdateAnomali, 'id');
             }
-            // membuat yg tidak muncul sebagai konfirmasi by sistem
+
+            // Membuat yang tidak muncul sebagai konfirmasi by sistem
             if (!empty($involvedKategoriIds)) {
                 $sweeper = $this->db->table('anomali')
                     ->whereIn('id_kategori_anomali', $involvedKategoriIds);
@@ -480,7 +446,6 @@ class ProsesAnomaliIndividu extends BaseCommand
                     $sweeper->like('id_wilayah', $detectedKab, 'after');
                 }
 
-                // Amankan data yang baru saja diproses agar tidak ikut terubah
                 if (!empty($uniqueAssigmentIds)) {
                     $sweeper->whereNotIn('id_assigment', $uniqueAssigmentIds);
                 }
@@ -490,8 +455,8 @@ class ProsesAnomaliIndividu extends BaseCommand
                     ->orWhere('konfirmasi IS NULL', null, false)
                     ->groupEnd()
                     ->update([
-                        'is_sistem'  => 1,
-                        'konfirmasi' => 'System: Sudah diperbaiki di fasih',
+                        'is_sistem'       => 1,
+                        'konfirmasi'      => 'System: Sudah diperbaiki di fasih',
                         'date_konfirmasi' => date('Y-m-d H:i:s')
                     ]);
             }

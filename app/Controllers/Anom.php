@@ -230,7 +230,6 @@ class Anom extends BaseController
 
         $data['listAnom'] = $this->anomaliModel->getListAnomali($idArt, $isEdit, $filterKategori, $filterFlag, $filterLevel, $filterStatus);
 
-
         return view('anomali/listAnomaliDetil', $data);
     }
 

@@ -22,10 +22,12 @@
     <div class="card card-body">
         <div class="row">
             <div class="col">
-                <form
-                    action="<?= base_url('/manajemen-anomali/updateKategori'); ?>"
-                    method="post">
+                <form action="<?= base_url('/manajemen-anomali/updateKategori'); ?>" method="post">
                     <input type="hidden" name="id" value="<?= $data['id']; ?>">
+
+                    <!-- Simpan URL asal (filter + pagination) -->
+                    <input type="hidden" name="back_url" value="<?= esc($backUrl); ?>">
+
                     <div class="mb-3">
                         <label for="kdAnom" class="form-label">Kode Anomali</label>
                         <input type="text" name="kode_anomali" class="form-control <?= (session()->getFlashdata('kode_anomali')) ? 'is-invalid' : ''; ?>"
@@ -56,7 +58,7 @@
                                 role="switch" id="is_show_checkbox" name="is_show"
                                 value="show_id_<?= $data['id']; ?>" <?= ($data['is_show']) ? 'checked' : ''; ?>
                                 <?= ($data['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>
-                            <label class="form-check-label" for="UpdateAll">
+                            <label class="form-check-label" for="is_show_checkbox">
                                 <i class="bi <?= ($data['is_show']) ? 'bi-eye-fill text-success' : 'bi-eye-slash-fill text-warning'; ?>"></i> Is <?= ($data['is_show']) ? '' : 'Not'; ?> Show
                             </label>
                         </div>
@@ -81,8 +83,12 @@
                             <?= ($data['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>><?= $data['detil_anomali']; ?></textarea>
                         <div id="detAnomHelp" class="form-text"></div>
                     </div>
+
                     <button type="submit" class="btn btn-primary"
                         <?= ($data['level_anomali'] != auth()->user()->wilayah_kerja) ? 'disabled' : ''; ?>>Submit</button>
+
+                    <!-- Tombol Batal/Kembali ke Halaman Filter Asal -->
+                    <a href="<?= esc($backUrl); ?>" class="btn btn-secondary ms-2">Batal</a>
                 </form>
             </div>
         </div>

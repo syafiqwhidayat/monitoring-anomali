@@ -111,21 +111,19 @@ class ManajAnom extends BaseController
         $id = $this->request->getVar('id') ?? null;
         $action = $this->request->getVar('action');
 
-        // cek apakah user punya hak update
         $kategoriAnom = $this->katAnomaliModel->find($id);
-        // dd('id:', $id);
+
         if (!$action) {
-            return redirect()->back()->with('error', 'Aksi Kosong');
+            return redirect()->to(previous_url())->with('error', 'Aksi Kosong');
         }
         if (!$kategoriAnom) {
-            return redirect()->back()->with('error', 'Data Kategori Anomali Null');
+            return redirect()->to(previous_url())->with('error', 'Data Kategori Anomali Null');
         }
 
-        // PENGAMAN 2: Cek hak akses wilayah kerja (Gunakan substr jika panjang kode wilayah berbeda)
-        $userWilayah = auth()->user()->wilayah_kerja; // Misal: 1311
+        $userWilayah = auth()->user()->wilayah_kerja;
 
         if ($kategoriAnom['level_anomali'] !== $userWilayah) {
-            return redirect()->back()->with('error', 'User tidak punya akses edit Kategori Anomali');
+            return redirect()->to(previous_url())->with('error', 'User tidak punya akses edit Kategori Anomali');
         }
 
         if ($action === "toggle") {
@@ -133,25 +131,25 @@ class ManajAnom extends BaseController
             $data        = ['is_show' => $currentShow === 1 ? 0 : 1];
 
             $this->katAnomaliModel->update($id, $data);
-            return redirect()->back()->with('message', 'Status keterlihatan anomali berhasil diubah.');
+
+            // Menggunakan previous_url() untuk mempertahankan query string (page, fil-level, fil-flag)
+            return redirect()->to(previous_url())->with('message', 'Status keterlihatan anomali berhasil diubah.');
         } elseif ($action === "delete") {
             $db = \Config\Database::connect();
             $db->transStart();
 
-            // Hapus relasi anak
             $this->anomaliModel->where('id_kategori_anomali', $id)->delete();
-            // Hapus master induk
             $this->katAnomaliModel->delete($id);
 
             $db->transComplete();
 
             if ($db->transStatus() === false) {
-                return redirect()->back()->with('error', 'Gagal menghapus data anomali terkait.');
+                return redirect()->to(previous_url())->with('error', 'Gagal menghapus data anomali terkait.');
             }
 
-            return redirect()->back()->with('message', 'Kategori dan seluruh data anomali terkait berhasil dihapus');
+            return redirect()->to(previous_url())->with('message', 'Kategori dan seluruh data anomali terkait berhasil dihapus');
         } else {
-            return redirect()->back()->with('error', 'aksi tidak valid');
+            return redirect()->to(previous_url())->with('error', 'Aksi tidak valid');
         }
     }
 
@@ -162,47 +160,45 @@ class ManajAnom extends BaseController
         ];
 
         $data['data'] = $this->katAnomaliModel->find($id);
-        // dd($data['data']);
+
+        // Simpan URL asal (beserta query string filter & pagination)
+        $data['backUrl'] = previous_url() ?: base_url('/manajemen-anomali/list');
 
         return view('manajAnom/edit', $data);
     }
 
     public function updateKategori()
     {
-        $data = [
-            "title" => "Upload Anomali",
-        ];
+        $postData = $this->request->getPost();
+        $id = $postData['id'];
 
-        // data yg akan diupdate
-        $data = $this->request->getPost();
-        $id = $data['id'];
-        unset($data['id']);
-        unset($data['kode_anomali']);
+        // Ambil backUrl yang dikirim dari form
+        $backUrl = $postData['back_url'] ?? base_url('/manajemen-anomali/list');
 
-        // cek apakah user punya hak update
+        unset($postData['id']);
+        unset($postData['kode_anomali']);
+        unset($postData['back_url']);
+
         $kategoriAnom = $this->katAnomaliModel->find($id);
         if ($kategoriAnom['level_anomali'] !== auth()->user()->wilayah_kerja) {
-            return redirect()->to(base_url('/manajemen-anomali/list'))->with('error', 'User tidak punya akses edit Kategori Anomali');
+            return redirect()->to($backUrl)->with('error', 'User tidak punya akses edit Kategori Anomali');
         }
 
-
-
-        // memastikan show untuk id yg sama
-        if ($data['is_show'] == "show_id_" . $id) {
-            $data['is_show'] = true;
+        if ($postData['is_show'] == "show_id_" . $id) {
+            $postData['is_show'] = true;
         } else {
-            $data['is_show'] = false;
+            $postData['is_show'] = false;
         }
 
-
-        if ($this->katAnomaliModel->update($id, $data) === false) {
+        if ($this->katAnomaliModel->update($id, $postData) === false) {
             session()->setFlashdata($this->katAnomaliModel->errors());
             return redirect()->back()
                 ->withInput()
                 ->with('message_errors', 'Gagal Simpan Data');
         }
 
-        return redirect()->to(base_url('/manajemen-anomali/list'))->with('message', 'data berhasil di update');
+        // Redirect kembali ke halaman list dengan filter & page semula
+        return redirect()->to($backUrl)->with('message', 'Data berhasil di-update');
     }
 
     public function downloadTemplate($jenis = 'anomali')

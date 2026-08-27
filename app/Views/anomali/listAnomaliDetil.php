@@ -31,7 +31,7 @@
                         <label class="text-muted fw-semibold mb-1-5 d-block" style="font-size: 0.75rem;">Isian Fasih</label>
                         <div class="p-3 rounded-3 h-100" style="background-color: #f8fafc; border-left: 4px solid #2b6af3; box-shadow: inset 0 0 4px rgba(0,0,0,0.02);">
                             <?php
-                            $jsonData = json_decode($l['isi_fasih'], true);
+                            $jsonData = json_decode($l['isi_fasih'] ?? '', true);
                             if (json_last_error() === JSON_ERROR_NONE && is_array($jsonData)):
                             ?>
                                 <div class="d-flex flex-column gap-2">

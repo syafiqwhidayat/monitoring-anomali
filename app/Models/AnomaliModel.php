@@ -345,7 +345,7 @@ class AnomaliModel extends Model
         $idKegiatan = session()->get('aktif_kegiatan');
 
         $dataUpdate = $this
-            ->select("DATE(anomali.date_updated) as 'tanggal'")
+            ->select("DATE(anomali.date_konfirmasi) as 'tanggal'")
             ->select("SUM(CASE WHEN konfirmasi IS NOT NULL AND konfirmasi != '' THEN 1 ELSE 0 END) as jumlah")
             ->join('kategori_anomali', 'kategori_anomali.id = anomali.id_kategori_anomali')
             ->groupBy("tanggal");
