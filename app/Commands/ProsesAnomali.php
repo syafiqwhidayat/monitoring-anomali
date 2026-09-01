@@ -1,200 +1,265 @@
 <?php
 
-namespace App\Services;
+namespace App\Commands;
 
-use App\Models\AnomaliModel;
+use CodeIgniter\CLI\BaseCommand;
+use CodeIgniter\CLI\CLI;
+use App\Models\LogUploadModel;
 use App\Models\AssigmentModel;
-use App\Models\KategoriAnomaliModel;
+use App\Models\AnomaliModel;
+use App\Models\KatAnomaliModel;
 use App\Models\KegiatanModel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
-class ImportService
+class ProsesAnomali extends BaseCommand
 {
-    protected $idKegiatan;
-    protected $kegiatanModel;
+    protected $group       = 'App';
+    protected $name        = 'proses:anomali';
+    protected $description = 'Memproses data anomali dari file Excel upload secara efisien dan akurat.';
+    protected $usage       = 'proses:anomali [namaFile] [logId] [idKegiatan] [level_anomali]';
+
+    protected $logModel;
     protected $assigmentModel;
     protected $anomaliModel;
-    protected $kategoriAnomaliModel;
-    protected $db;
+    protected $kategoriModel;
+    protected $kegiatanModel;
 
+    protected $idKegiatan;
+    protected $levelAnomali;
     protected $mappedKategori = [];
     protected $mappedAssigment = [];
+    protected $validation;
+    protected $db;
 
-    public function __construct($idKegiatan)
+    public function run(array $params)
     {
-        $this->idKegiatan = $idKegiatan;
-        $this->kegiatanModel = new KegiatanModel();
+        $fileName           = $params[0] ?? null;
+        $logId              = $params[1] ?? null;
+        $this->idKegiatan   = $params[2] ?? null;
+        $this->levelAnomali = $params[3] ?? null;
+
+        if (!$fileName || !$logId || !$this->idKegiatan || !$this->levelAnomali) {
+            throw new \InvalidArgumentException("Parameter tidak lengkap: namaFile, logId, idKegiatan, dan level_anomali wajib diisi.");
+        }
+
+        // Inisialisasi Model & Service
+        $this->logModel       = new LogUploadModel();
         $this->assigmentModel = new AssigmentModel();
-        $this->anomaliModel = new AnomaliModel();
-        $this->kategoriAnomaliModel = new KategoriAnomaliModel();
-        $this->db = \Config\Database::connect();
+        $this->anomaliModel   = new AnomaliModel();
+        $this->kategoriModel  = new KatAnomaliModel();
+        $this->kegiatanModel  = new KegiatanModel();
+        $this->validation     = \Config\Services::validation();
+        $this->db             = \Config\Database::connect();
 
-        // Pre-load master kategori anomali sekali di awal (In-Memory Lookup)
-        $this->loadKategoriToMap();
-    }
+        $kegiatan     = $this->kegiatanModel->find($this->idKegiatan);
+        $isRT         = (bool)($kegiatan['is_rt'] ?? false);
+        $levelWilayah = $kegiatan['level_wilayah'] ?? 4;
 
-    private function loadKategoriToMap()
-    {
-        $kategoriList = $this->kategoriAnomaliModel
-            ->where('id_kegiatan', $this->idKegiatan)
-            ->findAll();
+        // Cache Master Kategori Anomali Awal
+        $this->mappedKategori = $this->loadKategoriToMap($this->idKegiatan);
 
-        foreach ($kategoriList as $kat) {
-            $this->mappedKategori[trim($kat['kode_anomali'])] = $kat;
-        }
-    }
+        // Update status log
+        $this->logModel->update($logId, ['status' => 'proses']);
 
-    private function loadAssigmentByKabToMap($kdKab)
-    {
-        $assigmentList = $this->assigmentModel
-            ->where('id_kegiatan', $this->idKegiatan)
-            ->like('id_wilayah', $kdKab, 'after')
-            ->findAll();
-
-        $this->mappedAssigment = [];
-        foreach ($assigmentList as $ass) {
-            $this->mappedAssigment[$ass['kd_assigment']] = $ass;
-        }
-    }
-
-    public function processUpload($dataSheet, $levelKegiatan, $levelWilayah)
-    {
-        // 1. Grouping Data Berdasarkan Kabupaten (Optimasi per Kabupaten)
-        $groupedData = [];
-        foreach ($dataSheet as $rowNum => $row) {
-            if ($rowNum === 1 || empty(array_filter($row))) {
-                continue; // Skip header & baris kosong
+        try {
+            $filePath = WRITEPATH . 'uploads/' . $fileName;
+            if (!file_exists($filePath)) {
+                throw new \Exception("File tidak ditemukan: $filePath");
             }
 
-            $kdProv = sprintf("%02d", (int)($row[0] ?? 0));
-            $kdKab  = sprintf("%02d", (int)($row[1] ?? 0));
-            $kdKabFull = $kdProv . $kdKab;
+            // Membaca spreadsheet secara efisien
+            $reader      = IOFactory::createReaderForFile($filePath);
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($filePath);
+            $sheetData   = $spreadsheet->getActiveSheet()->toArray();
 
-            $groupedData[$kdKabFull][] = [
-                'rowNum' => $rowNum,
-                'row'    => $row
+            // Aturan Validasi
+            $ruleRT = [
+                'kode_prov'  => 'required|exact_length[2]',
+                'kode_kab'   => 'required|exact_length[2]',
+                'kode_kec'   => 'required|exact_length[3]',
+                'kode_desa'  => 'required|exact_length[3]',
+                'kode_sls'   => 'required|exact_length[6]',
+                'nurt'       => 'required|max_length[244]',
+                'nuart'      => 'required|max_length[244]',
+                'anomali'    => 'required',
+                'id_wilayah' => "required|exact_length[{$levelWilayah}]|is_not_unique[wilayah.id]",
             ];
-        }
 
-        $berhasil = 0;
-        $gagal = 0;
-        $errorDetails = [];
+            $ruleNRT = [
+                'kode_prov'  => 'required|exact_length[2]',
+                'kode_kab'   => 'required|exact_length[2]',
+                'kode_kec'   => 'permit_empty|exact_length[3]',
+                'kode_desa'  => 'permit_empty|exact_length[3]',
+                'kode_sls'   => 'permit_empty|exact_length[6]',
+                'kode_nurt'  => 'required|max_length[255]',
+                'nama_nrt'   => 'required',
+                'anomali'    => 'required',
+                'id_wilayah' => "required|exact_length[{$levelWilayah}]|is_not_unique[wilayah.id]",
+            ];
 
-        // 2. Transaksi Utama per Kabupaten
-        foreach ($groupedData as $kdKab => $items) {
-            $this->db->transBegin();
+            $rule    = $isRT ? $ruleRT : $ruleNRT;
+            $message = [
+                'id_wilayah' => [
+                    'is_not_unique' => 'ID Wilayah tidak ditemukan di master wilayah',
+                    'exact_length'  => 'ID Wilayah tidak sesuai dengan panjang level wilayah kegiatan'
+                ],
+            ];
 
-            try {
-                // A. Reset Flag Status Anomali Existing di Kabupaten ini (Single Query)
-                $this->db->table('anomali')
-                    ->join('assignment a', 'a.id = anomali.id_assigment')
-                    ->where('a.id_kegiatan', $this->idKegiatan)
-                    ->where('LEFT(anomali.id_wilayah, 4)', $kdKab)
-                    ->update(['is_insert' => 0]);
+            $totalBaris   = count($sheetData) - 1;
+            $berhasil     = 0;
+            $gagal        = 0;
+            $errorDetails = [];
 
-                // B. Load Master Wilayah Kabupaten ke In-Memory Array (O(1) Lookup)
-                $validWilayahList = $this->db->table('wilayah')
-                    ->select('id')
-                    ->where('LEFT(id, 4)', $kdKab)
-                    ->get()
-                    ->getResultArray();
-                $mapValidWilayah = array_flip(array_column($validWilayahList, 'id'));
+            // Grouping data berdasarkan Kabupaten
+            $groupedData = [];
+            for ($i = 1; $i < count($sheetData); $i++) {
+                $row = $sheetData[$i];
+                if (empty($row[1])) continue;
 
-                // C. Load Master Assignment Existing Kabupaten ke Memory
-                $this->loadAssigmentByKabToMap($kdKab);
+                $kdKab = $row[0] . $row[1];
+                $groupedData[$kdKab][] = [
+                    'line' => $i + 1,
+                    'row'  => $row
+                ];
+            }
 
-                // D. Load Master Anomali Existing Kabupaten ke Memory: [id_assigment][id_kategori] = id_anomali
-                $existingAnomali = $this->db->table('anomali')
-                    ->select('anomali.id, anomali.id_assigment, anomali.id_kategori_anomali')
-                    ->join('assignment a', 'a.id = anomali.id_assigment')
-                    ->where('a.id_kegiatan', $this->idKegiatan)
-                    ->where('LEFT(anomali.id_wilayah, 4)', $kdKab)
-                    ->get()
-                    ->getResultArray();
+            $isInteractive = stream_isatty(STDOUT);
 
-                $mapExistingAnomali = [];
-                foreach ($existingAnomali as $ea) {
-                    $mapExistingAnomali[$ea['id_assigment']][$ea['id_kategori_anomali']] = $ea['id'];
+            // Iterasi per Kabupaten
+            foreach ($groupedData as $kdKab => $items) {
+                $totalItems = count($items);
+                CLI::write("Memproses Kabupaten: {$kdKab} (Total: {$totalItems} baris)", 'cyan');
+
+                // Load assignment per kabupaten
+                $this->loadAssigmentByKabToMap($this->idKegiatan, $kdKab);
+
+                // 1. Dapatkan/Buat Kategori Baru sebelum reset is_insert
+                $uniqueKodesInExcel = [];
+                foreach ($items as $item) {
+                    $row        = $item['row'];
+                    $anomaliStr = $isRT ? ($row[9] ?? '') : ($row[7] ?? '');
+                    $arrAnomali = explode(',', rtrim($anomaliStr, ','));
+
+                    foreach ($arrAnomali as $kode) {
+                        $cleanKode = strtoupper(trim($kode));
+                        if (!empty($cleanKode)) {
+                            $uniqueKodesInExcel[$cleanKode] = true;
+                        }
+                    }
                 }
 
-                $batchNewAssignment = [];
-                $validItems = [];
+                // Auto-register kode anomali baru ke master agar ID terpetakan penuh
+                foreach (array_keys($uniqueKodesInExcel) as $kodeAnom) {
+                    if (!isset($this->mappedKategori[$kodeAnom])) {
+                        $idKat = $this->kategoriModel->insert([
+                            'id_kegiatan'   => $this->idKegiatan,
+                            'kode_anomali'  => $kodeAnom,
+                            'is_show'       => 0,
+                            'level_anomali' => $this->levelAnomali,
+                        ]);
+                        if (!$idKat) {
+                            $existing = $this->kategoriModel
+                                ->where('id_kegiatan', $this->idKegiatan)
+                                ->where('kode_anomali', $kodeAnom)
+                                ->first();
+                            $idKat = $existing['id'] ?? null;
+                        }
 
-                // E. Validasi Cepat & Parsing Data di Memory
-                foreach ($items as $entry) {
-                    $rowNum = $entry['rowNum'];
-                    $row    = $entry['row'];
+                        if ($idKat) {
+                            $this->mappedKategori[$kodeAnom] = [
+                                'id'            => $idKat,
+                                'level_wilayah' => $this->levelAnomali
+                            ];
+                        }
+                    }
+                }
 
-                    // Extraction
-                    $kdProv = sprintf("%02d", (int)($row[0] ?? 0));
-                    $kdKab  = sprintf("%02d", (int)($row[1] ?? 0));
-                    $kdKec  = sprintf("%03d", (int)($row[2] ?? 0));
-                    $kdDesa = sprintf("%03d", (int)($row[3] ?? 0));
-                    $kdSls  = sprintf("%06d", (int)($row[4] ?? 0));
+                $targetKategoriIds = [];
+                foreach (array_keys($uniqueKodesInExcel) as $kodeAnom) {
+                    if (isset($this->mappedKategori[$kodeAnom]['id'])) {
+                        $targetKategoriIds[] = $this->mappedKategori[$kodeAnom]['id'];
+                    }
+                }
 
-                    if ($levelKegiatan === 'RT') {
-                        $nurt   = sprintf("%04d", (int)($row[5] ?? 0));
-                        $nuart  = sprintf("%03d", (int)($row[6] ?? 0));
-                        $idAss  = $kdProv . $kdKab . $kdKec . $kdDesa . $kdSls . $nurt . $nuart;
-                        $idWil  = substr($idAss, 0, $levelWilayah);
+                // Mulai Transaksi Per Kabupaten
+                $this->db->transStart();
 
+                // Set Flag awal is_insert = 0 untuk scope kabupaten & kategori terkait
+                if (!empty($targetKategoriIds)) {
+                    $this->db->table('anomali')
+                        ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali')
+                        ->where('k.id_kegiatan', $this->idKegiatan)
+                        ->where('LEFT(anomali.id_wilayah, 4)', $kdKab)
+                        ->where('k.level_anomali', $this->levelAnomali)
+                        ->whereIn('anomali.id_kategori_anomali', $targetKategoriIds)
+                        ->update(['anomali.is_insert' => 0]);
+                }
+
+                // 2. Olah Baris Data
+                $step = 0;
+                foreach ($items as $item) {
+                    $step++;
+                    if ($isInteractive) {
+                        CLI::showProgress($step, $totalItems);
+                    } else {
+                        if ($step % 500 === 0 || $step === $totalItems) {
+                            $percent = round(($step / $totalItems) * 100);
+                            CLI::write("[" . date('Y-m-d H:i:s') . "] Kab {$kdKab} Progress: {$percent}% ({$step}/{$totalItems})");
+                        }
+                    }
+
+                    $rowNum = $item['line'];
+                    $row    = $item['row'];
+
+                    if ($isRT) {
                         $data = [
-                            'kode_prov'    => $kdProv,
-                            'kode_kab'     => $kdKab,
-                            'kode_kec'     => $kdKec,
-                            'kode_desa'    => $kdDesa,
-                            'kode_sls'     => $kdSls,
-                            'nurt'         => $nurt,
-                            'nuart'        => $nuart,
-                            'anomali'      => trim((string)($row[9] ?? '')),
-                            'nama_krt'     => trim((string)($row[7] ?? '')),
-                            'nama_art'     => trim((string)($row[8] ?? '')),
-                            'id_wilayah'   => $idWil,
-                            'id_assigment' => $idAss,
+                            'kode_prov'    => $row[0] ?? '',
+                            'kode_kab'     => $row[1] ?? '',
+                            'kode_kec'     => $row[2] ?? '',
+                            'kode_desa'    => $row[3] ?? '',
+                            'kode_sls'     => $row[4] ?? '',
+                            'nurt'         => $row[5] ?? '',
+                            'nuart'        => $row[6] ?? '',
+                            'nama_krt'     => ucwords(trim($row[7] ?? '')),
+                            'nama_art'     => ucwords(trim($row[8] ?? '')),
+                            'anomali'      => strtoupper(trim($row[9] ?? '')),
+                            'id_assigment' => trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? '') . '_' . trim($row[6] ?? ''),
+                            'id_wilayah'   => trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')),
                         ];
-                    } else { // NRT / SLS Level
-                        $kodeNurt = sprintf("%04d", (int)($row[5] ?? 0));
-                        $idAss    = $kdProv . $kdKab . $kdKec . $kdDesa . $kdSls . $kodeNurt;
-                        $idWil    = substr($idAss, 0, $levelWilayah);
-
+                    } else {
                         $data = [
-                            'kode_prov'    => $kdProv,
-                            'kode_kab'     => $kdKab,
-                            'kode_kec'     => $kdKec,
-                            'kode_desa'    => $kdDesa,
-                            'kode_sls'     => $kdSls,
-                            'kode_nurt'    => $kodeNurt,
-                            'anomali'      => trim((string)($row[7] ?? '')),
-                            'nama_nrt'     => trim((string)($row[6] ?? '')),
-                            'id_wilayah'   => $idWil,
-                            'id_assigment' => $idAss,
+                            'kode_prov'    => $row[0] ?? '',
+                            'kode_kab'     => $row[1] ?? '',
+                            'kode_kec'     => $row[2] ?? '',
+                            'kode_desa'    => $row[3] ?? '',
+                            'kode_sls'     => $row[4] ?? '',
+                            'kode_nurt'    => $row[5] ?? '',
+                            'nama_nrt'     => ucwords(trim($row[6] ?? '')),
+                            'anomali'      => strtoupper(trim($row[7] ?? '')),
+                            'id_assigment' => trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? ''),
+                            'id_wilayah'   => trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')),
                         ];
                     }
 
-                    // Native Validation (Hindari CI Validation Overhead)
-                    $errors = [];
-                    if (empty($data['anomali'])) {
-                        $errors[] = 'Kolom anomali wajib diisi';
-                    }
-                    if (strlen($data['id_wilayah']) !== (int)$levelWilayah) {
-                        $errors[] = "Panjang ID Wilayah tidak sesuai ({$levelWilayah} digit)";
-                    }
-                    if (!isset($mapValidWilayah[$data['id_wilayah']])) {
-                        $errors[] = 'ID Wilayah tidak terdaftar di master wilayah';
-                    }
+                    // Reset dan Validasi Baris
+                    $this->validation->reset();
+                    $this->validation->setRules($rule, $message);
 
-                    if (!empty($errors)) {
+                    if (!$this->validation->run($data)) {
                         $errorDetails[] = [
                             'baris'    => $rowNum,
                             'data'     => $data['id_assigment'],
-                            'messages' => $errors,
+                            'messages' => $this->validation->getErrors(),
                         ];
                         $gagal++;
                         continue;
                     }
 
-                    // Kumpulkan Assignment Baru jika Belum Ada di DB & Batch Pending
-                    if (!isset($this->mappedAssigment[$data['id_assigment']]) && !isset($batchNewAssignment[$data['id_assigment']])) {
-                        $batchNewAssignment[$data['id_assigment']] = [
+                    // Get/Create Assignment ID
+                    $id_assigment = null;
+                    if (!isset($this->mappedAssigment[$data['id_assigment']])) {
+                        $datum = [
                             'kd_assigment' => $data['id_assigment'],
                             'id_wilayah'   => $data['id_wilayah'],
                             'id_kegiatan'  => $this->idKegiatan,
@@ -205,83 +270,186 @@ class ImportService
                             'kd_nrt'       => $data['kode_nurt'] ?? null,
                             'nm_nrt'       => $data['nama_nrt'] ?? null,
                         ];
-                    }
 
-                    $validItems[] = $data;
-                }
-
-                // F. Bulk Insert Assignment Baru
-                if (!empty($batchNewAssignment)) {
-                    $chunks = array_chunk(array_values($batchNewAssignment), 1000);
-                    foreach ($chunks as $chunk) {
-                        $this->assigmentModel->insertBatch($chunk);
-                    }
-                    // Reload map assignment agar ID auto-increment dari database ter-fetch
-                    $this->loadAssigmentByKabToMap($kdKab);
-                }
-
-                // G. Pemrosesan Anomali (Batch Insert & Update)
-                $batchNewAnomali  = [];
-                $updateAnomaliIds = [];
-
-                foreach ($validItems as $data) {
-                    $idAssigment = $this->mappedAssigment[$data['id_assigment']]['id'] ?? null;
-                    if (!$idAssigment) continue;
-
-                    $anomaliCodes = array_filter(array_map('trim', explode(',', rtrim($data['anomali'], ','))));
-
-                    foreach ($anomaliCodes as $kodeAnom) {
-                        $idKat = $this->mappedKategori[$kodeAnom]['id'] ?? null;
-                        if (!$idKat) continue;
-
-                        // Cek apakah anomali sudah ada
-                        if (isset($mapExistingAnomali[$idAssigment][$idKat])) {
-                            $updateAnomaliIds[] = $mapExistingAnomali[$idAssigment][$idKat];
-                        } else {
-                            $batchNewAnomali[] = [
-                                'id_kategori_anomali' => $idKat,
-                                'id_wilayah'          => $data['id_wilayah'],
-                                'id_assigment'        => $idAssigment,
-                                'is_insert'           => 1,
-                                'konfirmasi'          => '',
-                            ];
+                        $id_assigment = $this->assigmentModel->insert($datum);
+                        if (!$id_assigment) {
+                            $existing = $this->assigmentModel
+                                ->where('id_kegiatan', $this->idKegiatan)
+                                ->where('kd_assigment', $data['id_assigment'])
+                                ->first();
+                            $id_assigment = $existing['id'] ?? null;
                         }
+
+                        if ($id_assigment) {
+                            $this->mappedAssigment[$data['id_assigment']] = ['id' => $id_assigment];
+                        }
+                    } else {
+                        $id_assigment = $this->mappedAssigment[$data['id_assigment']]['id'];
+                    }
+
+                    if (!$id_assigment) {
+                        $errorDetails[] = [
+                            'baris'    => $rowNum,
+                            'data'     => $data['id_assigment'],
+                            'messages' => ['Gagal menyimpan data assignment.'],
+                        ];
+                        $gagal++;
+                        continue;
+                    }
+
+                    // Insert/Update Anomali per Baris
+                    $listAnomali     = $this->anomaliModel->getAnomaliByAssigment($id_assigment);
+                    $anomaliTambahan = array_map('trim', explode(',', rtrim($data['anomali'], ',')));
+
+                    $errStatus = $this->insertAnomali($listAnomali, $anomaliTambahan, $id_assigment, $data['id_wilayah']);
+                    if ($errStatus) {
+                        $errorDetails[] = [
+                            'baris'    => $rowNum,
+                            'data'     => $data['id_assigment'],
+                            'messages' => [$errStatus],
+                        ];
+                        $gagal++;
+                        continue;
                     }
 
                     $berhasil++;
                 }
 
-                // H. Eksekusi Batch Insert Anomali Baru
-                if (!empty($batchNewAnomali)) {
-                    $chunks = array_chunk($batchNewAnomali, 1000);
-                    foreach ($chunks as $chunk) {
-                        $this->db->table('anomali')->insertBatch($chunk);
-                    }
+                // 3. Post-Processing Status Sistem Per Kabupaten (Secara Bulk)
+                if (!empty($targetKategoriIds)) {
+                    // Update yang tidak lagi ada di file upload
+                    $this->db->table('anomali')
+                        ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali')
+                        ->where('k.id_kegiatan', $this->idKegiatan)
+                        ->where('LEFT(anomali.id_wilayah, 4)', $kdKab)
+                        ->where('k.level_anomali', $this->levelAnomali)
+                        ->whereIn('anomali.id_kategori_anomali', $targetKategoriIds)
+                        ->where('anomali.is_insert', 0)
+                        ->groupStart()
+                        ->where('anomali.konfirmasi', '')
+                        ->orWhere('anomali.konfirmasi IS NULL', null, false)
+                        ->groupEnd()
+                        ->update([
+                            'anomali.is_sistem'  => 1,
+                            'anomali.konfirmasi' => 'System: Sudah diperbaiki di fasih'
+                        ]);
+
+                    // Reset status sistem jika anomali muncul kembali di file upload
+                    $this->db->table('anomali')
+                        ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali')
+                        ->where('k.id_kegiatan', $this->idKegiatan)
+                        ->where('LEFT(anomali.id_wilayah, 4)', $kdKab)
+                        ->where('k.level_anomali', $this->levelAnomali)
+                        ->whereIn('anomali.id_kategori_anomali', $targetKategoriIds)
+                        ->where('anomali.is_sistem', 1)
+                        ->where('anomali.is_insert', 1)
+                        ->update([
+                            'anomali.is_sistem'  => 0,
+                            'anomali.konfirmasi' => ''
+                        ]);
                 }
 
-                // I. Eksekusi Batch Update Anomali Existing (Set is_insert = 1)
-                if (!empty($updateAnomaliIds)) {
-                    $uniqueUpdateIds = array_unique($updateAnomaliIds);
-                    $chunks = array_chunk($uniqueUpdateIds, 1000);
-                    foreach ($chunks as $chunk) {
-                        $this->db->table('anomali')
-                            ->whereIn('id', $chunk)
-                            ->update(['is_insert' => 1]);
-                    }
-                }
+                // Commit Transaksi Per Kabupaten
+                $this->db->transComplete();
 
-                $this->db->transCommit();
-            } catch (\Throwable $e) {
-                $this->db->transRollback();
-                log_message('error', 'Error Upload Excel Kab ' . $kdKab . ': ' . $e->getMessage());
-                throw $e;
+                if ($this->db->transStatus() === false) {
+                    CLI::error("\nGagal melakukan commit transaksi untuk Kab: $kdKab", 'red');
+                } else {
+                    CLI::write("\nSelesai memproses Kab: $kdKab", 'green');
+                }
+            }
+
+            // Update Log Selesai
+            $this->logModel->update($logId, [
+                'status'        => 'selesai',
+                'total_baris'   => $totalBaris,
+                'berhasil'      => $berhasil,
+                'gagal'         => $gagal,
+                'error_details' => json_encode($errorDetails)
+            ]);
+
+            CLI::write("Proses Selesai. Total Berhasil: $berhasil, Gagal: $gagal", 'green');
+        } catch (\Throwable $th) {
+            CLI::error("Fatal Error: " . $th->getMessage());
+            $this->logModel->update($logId, [
+                'status'        => 'gagal',
+                'error_details' => json_encode([['baris' => '-', 'data' => 'System Execution', 'messages' => [$th->getMessage()]]]),
+            ]);
+        }
+    }
+
+    public function insertAnomali($listAnomali, $anomaliTambahan, $id_assigment, $id_wilayah)
+    {
+        $mappedExisting = [];
+        if (!empty($listAnomali)) {
+            foreach ($listAnomali as $list) {
+                $mappedExisting[$list['id_kategori_anomali']] = $list['id'];
             }
         }
 
-        return [
-            'berhasil'     => $berhasil,
-            'gagal'        => $gagal,
-            'errorDetails' => $errorDetails
-        ];
+        foreach ($anomaliTambahan as $kodeAnom) {
+            if (empty($kodeAnom)) continue;
+
+            if (!isset($this->mappedKategori[$kodeAnom])) {
+                return "Gagal mengidentifikasi ID Kategori untuk kode: $kodeAnom";
+            }
+
+            $katInfo = $this->mappedKategori[$kodeAnom];
+            if ($katInfo['level_wilayah'] != $this->levelAnomali) {
+                return "Akses ditolak untuk menambahkan ANOMALI: $kodeAnom";
+            }
+
+            $idKat = $katInfo['id'];
+
+            if (isset($mappedExisting[$idKat])) {
+                $idAnomaliTabel = $mappedExisting[$idKat];
+                $this->db->table('anomali')
+                    ->where('id', $idAnomaliTabel)
+                    ->update(['is_insert' => 1]);
+            } else {
+                $dataSave = [
+                    'id_kategori_anomali' => $idKat,
+                    'id_wilayah'          => $id_wilayah,
+                    'id_assigment'        => $id_assigment,
+                    'is_insert'           => 1,
+                    'konfirmasi'          => '',
+                ];
+
+                $this->anomaliModel->insert($dataSave);
+                $newAnomaliId = $this->anomaliModel->getInsertID();
+
+                if ($newAnomaliId) {
+                    $mappedExisting[$idKat] = $newAnomaliId;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function loadKategoriToMap($id_kegiatan)
+    {
+        $listKategori = $this->kategoriModel->where('id_kegiatan', $id_kegiatan)->findAll();
+        $map = [];
+        foreach ($listKategori as $kat) {
+            $map[$kat['kode_anomali']] = [
+                'id'            => $kat['id'],
+                'level_wilayah' => $kat['level_anomali']
+            ];
+        }
+        return $map;
+    }
+
+    public function loadAssigmentByKabToMap($id_kegiatan, $kdKab)
+    {
+        $listAssigment = $this->assigmentModel
+            ->where('id_kegiatan', $id_kegiatan)
+            ->where('LEFT(id_wilayah, 4)', $kdKab)
+            ->findAll();
+
+        $this->mappedAssigment = [];
+        foreach ($listAssigment as $ass) {
+            $this->mappedAssigment[$ass['kd_assigment']] = ['id' => $ass['id']];
+        }
     }
 }

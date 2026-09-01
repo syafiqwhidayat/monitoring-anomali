@@ -51,36 +51,72 @@ class JobRunner extends BaseCommand
             $jobProcessedCount++;
 
             // Kunci status menjadi 'proses'
-            $db->table('log_upload')->update(['status' => 'proses'], ['id' => $job->id]);
+            $db->table('log_upload')
+                ->where('id', $job->id)
+                ->update(['status' => 'proses']);
 
             CLI::write("\n[Job #{$jobProcessedCount}] Memproses Job ID: {$job->id} (Tipe: {$job->jenis})", "cyan");
 
             try {
+                // Sanitasi & penanganan parameter NULL/kosong
+                $namaFile   = !empty($job->nama_file) ? $job->nama_file : 'NULL';
+                $idJob      = !empty($job->id) ? $job->id : 'NULL';
+                $idKegiatan = !empty($job->id_kegiatan) ? $job->id_kegiatan : 'NULL';
+                $wilayah    = !empty($job->wilayah) ? $job->wilayah : 'NULL';
+                $idUser     = !empty($job->id_user) ? $job->id_user : 'NULL';
+
                 $command = null;
+
                 if ($job->jenis === 'wilayah') {
-                    $command = "proses:wilayah $job->nama_file $job->id $job->id_kegiatan $job->wilayah";
+                    $command = "proses:wilayah {$namaFile} {$idJob} {$idKegiatan} {$wilayah}";
                 } elseif ($job->jenis === 'anomali') {
-                    $command = "proses:anomali $job->nama_file $job->id $job->id_kegiatan $job->wilayah";
+                    $command = "proses:anomali {$namaFile} {$idJob} {$idKegiatan} {$wilayah}";
                 } elseif ($job->jenis === 'anomali_individu') {
-                    $command = "proses:anomali_individu $job->nama_file $job->id $job->id_kegiatan $job->wilayah $job->id_user";
+                    $command = "proses:anomali_individu {$namaFile} {$idJob} {$idKegiatan} {$wilayah} {$idUser}";
                 } elseif ($job->jenis === 'anomali_individu_forced') {
-                    $command = "proses:anomali_individu $job->nama_file $job->id $job->id_kegiatan $job->wilayah $job->id_user 1";
+                    $command = "proses:anomali_individu {$namaFile} {$idJob} {$idKegiatan} {$wilayah} {$idUser} 1";
                 } else {
-                    $command = "proses:konfirmasi $job->nama_file $job->id $job->wilayah";
+                    $command = "proses:konfirmasi {$namaFile} {$idJob} {$wilayah}";
                 }
 
                 // Jalankan command internal
+                // Mulai menangkap output buffer untuk menangkap pesan error konsol non-exception
+                ob_start();
                 command($command);
+                $output = ob_get_clean();
+
+                // Cek apakah sub-command mencetak pesan error parameter
+                if (stristr($output, 'Parameter tidak lengkap') !== false || stristr($output, 'wajib diisi') !== false) {
+                    throw new \Exception(trim(strip_tags($output)));
+                }
+
+                // Cetak ulang output normal jika tidak ada error
+                CLI::write($output);
 
                 CLI::write("Job ID {$job->id} Sukses dijalankan.", "green");
             } catch (\Throwable $th) {
-                // Update status gagal jika terjadi error catchable
-                $db->table('log_upload')->update([
-                    'status'        => 'gagal',
-                    'error_details' => json_encode([['baris' => '-', 'data' => 'System Runner', 'messages' => [$th->getMessage()]]]),
-                ], ['id' => $job->id]);
+                // Pastikan buffer dibersihkan jika error terjadi di dalam try
+                if (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
 
-                CLI::error("Error pada Job ID {$job->id}: " . $th->getMessage());
+                $errorMessage = $th->getMessage();
+
+                // Update status gagal jika terjadi error catchable
+                $db->table('log_upload')
+                    ->where('id', $job->id)
+                    ->update([
+                        'status'        => 'gagal',
+                        'error_details' => json_encode([
+                            [
+                                'baris'    => '-',
+                                'data'     => 'System Runner',
+                                'messages' => [$errorMessage]
+                            ]
+                        ]),
+                    ]);
+
+                CLI::error("❌ Error pada Job ID {$job->id}: {$errorMessage}");
             }
         }
 
