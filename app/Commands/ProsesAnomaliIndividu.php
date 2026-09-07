@@ -352,7 +352,9 @@ class ProsesAnomaliIndividu extends BaseCommand
                     $existingData = $mappedExisting[$checkKey];
 
                     $konfirmasiDb = isset($existingData['konfirmasi']) ? trim($existingData['konfirmasi']) : null;
+                    $dateKonfDb       = $existingData['date_konfirmasi'] ?? null;
                     $isSistemDb   = isset($existingData['is_sistem']) ? (int)$existingData['is_sistem'] : 0;
+
                     if ($isSistemDb === 1) {
                         $konfirmasiDb = null;
                         $isDbKosong   = true;
@@ -360,33 +362,45 @@ class ProsesAnomaliIndividu extends BaseCommand
                         $isDbKosong   = ($konfirmasiDb === null || $konfirmasiDb === '' || strtolower($konfirmasiDb) === 'none' || $konfirmasiDb === '-');
                     }
 
-                    $finalKonfirmasi = $isDbKosong ? null : $konfirmasiDb;
+                    $finalKonfirmasi = $isDbKosong ? null : $konfirmasiDb; // Default pertahankan nilai DB
+                    $isChanged       = false;          // Flag penanda perubahan nilai konfirmasi
 
                     if ($forcedKonfirmasi == 1) {
-                        if ($konfirmasi !== '' && $konfirmasi !== '-') {
-                            $finalKonfirmasi = $konfirmasi;
-                        } else {
-                            CLI::write('Force Kosong');
-                            $finalKonfirmasi = null;
+                        $newKonfVal = ($konfirmasi !== '' && $konfirmasi !== '-') ? $konfirmasi : null;
+                        if ($newKonfVal !== $konfirmasiDb) {
+                            $finalKonfirmasi = $newKonfVal;
+                            $isChanged       = true;
                         }
+                        // if ($konfirmasi !== '' && $konfirmasi !== '-') {
+                        //     $finalKonfirmasi = $konfirmasi;
+                        // } else {
+                        //     CLI::write('Force Kosong');
+                        //     $finalKonfirmasi = null;
+                        // }
                     } else {
+                        // Jika forcedKonfirmasi = 0, hanya update jika DB kosong dan Excel punya isian baru
                         if ($isDbKosong) {
-                            $finalKonfirmasi = $konfirmasi;
+                            $newKonfVal = ($konfirmasi !== '' && $konfirmasi !== '-') ? $konfirmasi : null;
+                            if ($newKonfVal !== null) {
+                                $finalKonfirmasi = $newKonfVal;
+                                $isChanged       = true;
+                            }
+                            // $finalKonfirmasi = $konfirmasi;
                         }
                     }
 
-                    $dateKonfirmasi = (!empty($finalKonfirmasi) && $finalKonfirmasi !== '-' && strtolower($finalKonfirmasi) !== 'none') ? date('Y-m-d H:i:s') : null;
-
-                    if ($existingData['id'] === null) {
-                        foreach ($batchInsertAnomali as $bKey => $bInsert) {
-                            if ($bInsert['id_assigment'] == $currentAssignmentId && $bInsert['id_kategori_anomali'] == $idKategoriAnomali) {
-                                $batchInsertAnomali[$bKey]['konfirmasi']      = $finalKonfirmasi;
-                                $batchInsertAnomali[$bKey]['date_konfirmasi'] = $dateKonfirmasi;
-                                $batchInsertAnomali[$bKey]['isi_fasih']       = $isiFasih;
-                                $batchInsertAnomali[$bKey]['id_user']         = $idUser;
-                            }
-                        }
+                    // Update date_konfirmasi HANYA jika terjadi perubahan nilai
+                    if ($isChanged) {
+                        $dateKonfirmasi = (!empty($finalKonfirmasi) && $finalKonfirmasi !== '-' && strtolower($finalKonfirmasi) !== 'none')
+                            ? date('Y-m-d H:i:s')
+                            : null;
                     } else {
+                        $dateKonfirmasi = $dateKonfDb; // Pertahankan tanggal lama
+                    }
+
+                    // $dateKonfirmasi = (!empty($finalKonfirmasi) && $finalKonfirmasi !== '-' && strtolower($finalKonfirmasi) !== 'none') ? date('Y-m-d H:i:s') : null;
+
+                    if (!empty($existingData['id'])) {
                         $batchUpdateAnomali[] = [
                             'id'              => $existingData['id'],
                             'id_user'         => $idUser,
@@ -397,8 +411,44 @@ class ProsesAnomaliIndividu extends BaseCommand
                             'date_konfirmasi' => $dateKonfirmasi,
                             'date_updated'    => date('Y-m-d H:i:s')
                         ];
+                    } else {
+                        // JIKA DATA BARU DITEMUKAN DUA KALI DI EXCEL (Masih di Memory $batchInsertAnomali)
+                        foreach ($batchInsertAnomali as $bKey => $bInsert) {
+                            if ($bInsert['id_assigment'] == $currentAssignmentId && $bInsert['id_kategori_anomali'] == $idKategoriAnomali) {
+                                $batchInsertAnomali[$bKey]['konfirmasi']      = $finalKonfirmasi;
+                                $batchInsertAnomali[$bKey]['date_konfirmasi'] = $dateKonfirmasi;
+                                $batchInsertAnomali[$bKey]['isi_fasih']       = $isiFasih;
+                                $batchInsertAnomali[$bKey]['id_user']         = $idUser;
+                            }
+                        }
                     }
-                    CLI::write("final konfirmasi: $finalKonfirmasi");
+
+                    // if ($existingData['id'] === null) {
+                    //     foreach ($batchInsertAnomali as $bKey => $bInsert) {
+                    //         if ($bInsert['id_assigment'] == $currentAssignmentId && $bInsert['id_kategori_anomali'] == $idKategoriAnomali) {
+                    //             $batchInsertAnomali[$bKey]['konfirmasi']      = $finalKonfirmasi;
+                    //             $batchInsertAnomali[$bKey]['date_konfirmasi'] = $dateKonfirmasi;
+                    //             $batchInsertAnomali[$bKey]['isi_fasih']       = $isiFasih;
+                    //             $batchInsertAnomali[$bKey]['id_user']         = $idUser;
+                    //         }
+                    //     }
+                    // } else {
+                    //     $batchUpdateAnomali[] = [
+                    //         'id'              => $existingData['id'],
+                    //         'id_user'         => $idUser,
+                    //         'isi_fasih'       => $isiFasih,
+                    //         'is_insert'       => 1,
+                    //         'is_sistem'       => 0,
+                    //         'konfirmasi'      => $finalKonfirmasi,
+                    //         'date_konfirmasi' => $dateKonfirmasi,
+                    //         'date_updated'    => date('Y-m-d H:i:s')
+                    //     ];
+                    // }
+
+                    // UPDATE MEMORI LOCAL AGAR BARIS EXCEL SEBERATNYA BISA MEMBACA NILAI TERBARU
+                    $mappedExisting[$checkKey]['konfirmasi']      = $finalKonfirmasi;
+                    $mappedExisting[$checkKey]['date_konfirmasi'] = $dateKonfirmasi;
+                    CLI::write("Final konfirmasi: " . ($finalKonfirmasi ?? 'NULL') . " | Status Berubah: " . ($isChanged ? 'YA' : 'TIDAK'));
                 } else {
                     // KONDISI B: DATA BELUM ADA -> INSERT
                     CLI::write("konfirmasi: $konfirmasi");

@@ -441,6 +441,7 @@ class Anom extends BaseController
     {
         $userWilayah = auth()->user()->wilayah_kerja;
 
+
         // Aturan Hak Akses Wilayah (Jika 1300 bebas pilih, jika kab/kota kunci ke wilayahnya)
         if ($userWilayah !== '1300') {
             $data['filterWilayah'] = $userWilayah;
@@ -451,19 +452,31 @@ class Anom extends BaseController
         }
 
         $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
+        $data['filterKategori'] = $this->request->getGet('fil-kategori') ?? '';
+        $data['filterFlag'] = $this->request->getGet('fil-flag') ?? '';
+        $data['filterStatus'] = $this->request->getGet('fil-stat') ?? 1;
         $data['message'] = null;
         $data['title'] = 'Konfirmasi Anomali Fasih';
+        $data['filterTglMulai'] = $this->request->getGet('fil-tgl-mulai') ?? '';
+        $filterIsLap = $this->request->getGet('fil-lap');
+        $data['filterIsLap'] = ($filterIsLap !== null && $filterIsLap !== '') ? $filterIsLap : '0';
 
         // Setup Dropdown Filter sesuai standar fungsi list() Anda
         $data['listLevel'] = [
             ['id' => '', 'nama' => "Semua Level Anomali"]
         ];
         $data['listWilayah'] = [];
+        $data['listSelKdAnom'] = [['id' => '', 'nama' => "Semua Jenis Anomali"]];
+        $data['listSelFlag']   = [['value' => '', 'nama' => "Semua Flag"]];
 
+        $listSelKdAnom = $this->anomaliModel->getKdAnomaliByUser() ?? [];
+        $listSelFlag = $this->anomaliModel->getFlagByUser() ?? [];
         $listSelLevel = $this->anomaliModel->getLevelAnomByUser() ?? [];
         $listSelWilayah = $this->anomaliModel->getWilayahAnomByUser() ?? [];
 
-        $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel);
+        $data['listSelKdAnom'] = array_merge($data['listSelKdAnom'], $listSelKdAnom ?? []);
+        $data['listSelFlag'] = array_merge($data['listSelFlag'], $listSelFlag ?? []);
+        $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel ?? []);
         $data['listWilayah'] = $listSelWilayah;
 
         // Cek apakah request untuk download Excel
@@ -471,12 +484,17 @@ class Anom extends BaseController
 
         try {
             // Menggunakan cara aman: Panggil builder langsung dari instance model
-            $this->anomaliModel->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.date_updated, 
-                                     art.kd_assigment, art.nm_krt, art.nm_art, art.nm_nrt,
-                                     k.kode_anomali, k.detil_anomali, k.level_anomali,anomali.isi_fasih, art.kd_krt as kd_krt')
+            $this->anomaliModel->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.date_konfirmasi, anomali.is_lap, 
+                                     art.kd_assigment, art.nm_krt, art.nm_art, art.nm_nrt, art.kd_krt as kd_krt,
+                                     k.kode_anomali, k.detil_anomali, k.level_anomali, k.flag,anomali.isi_fasih,
+                                     u_ppl.name as nm_ppl, u_pml.name as nm_pml,
+                                     w.nm_sls as nm_sls')
                 ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
                 ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
-                ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left');
+                ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left')
+                ->join('users u_ppl', 'u_ppl.id = wt.id_ppl', 'left')
+                ->join('users u_pml', 'u_pml.id = wt.id_pml', 'left')
+                ->join('wilayah w', 'anomali.id_wilayah = w.id');
 
             // LOGIKA UTAMA EVALUASI:
             // Konfirmasi terisi, is_lap = 0, tetapi masih muncul di update terbaru (is_insert = 1)
@@ -484,11 +502,15 @@ class Anom extends BaseController
                 ->where('LENGTH (anomali.konfirmasi) > 0')
                 // ->where('anomali.konfirmasi IS NOT NULL')
                 // ->where('anomali.konfirmasi !=', '')
-                ->where('anomali.is_lap', 0)
-                ->where('anomali.is_insert', 1);
+                // ->where('anomali.is_lap', 0)
+                ->where('anomali.is_insert', 1)
+                ->where('k.is_show', 1)
+                ->where('k.id_kegiatan', session()->get('aktif_kegiatan'));
+
+            $this->anomaliModel->where('anomali.is_lap', (int)$data['filterIsLap']);
 
             // filter hanya yg aktif
-            $this->anomaliModel->where('k.is_show = 1');
+            // $this->anomaliModel->where('k.is_show = 1');
 
 
             // Filter Level Anomali jika dipilih
@@ -496,9 +518,25 @@ class Anom extends BaseController
                 $this->anomaliModel->where('k.level_anomali', $data['filterLevel']);
             }
 
+            // 2. Filter Jenis / Kode Anomali
+            if (!empty($data['filterKategori'])) {
+                $this->anomaliModel->where('k.kode_anomali', $data['filterKategori']);
+            }
+
+            // 3. Filter Flag Prioritas
+            if (!empty($data['filterFlag'])) {
+                $this->anomaliModel->where('k.flag_anomali', $data['filterFlag']);
+            }
+
             // Filter Wilayah Kerja tingkat Kab/Kota (dari filter harian atau lock akun organik)
             if (!empty($data['filterWilayah'])) {
                 $this->anomaliModel->like('anomali.id_wilayah', $data['filterWilayah'], 'after');
+            }
+
+            // filter menurt tanggal
+            if (!empty($data['filterTglMulai'])) {
+                // Memfilter dari awal hari (00:00:00) pada tanggal yang dipilih
+                $this->anomaliModel->where('anomali.date_konfirmasi >=', $data['filterTglMulai'] . ' 00:00:00');
             }
 
             // Menyesuaikan dengan standar pengecekan role/group di aplikasi Anda
@@ -515,8 +553,9 @@ class Anom extends BaseController
 
             // DD($this->anomaliModel->findAll());
 
-            $this->anomaliModel->orderBy('anomali.id_wilayah', 'ASC')
-                ->orderBy('k.kode_anomali', 'ASC');
+            $this->anomaliModel
+                ->orderBy('anomali.date_konfirmasi', 'DESC')
+                ->orderBy('anomali.id_wilayah', 'ASC');
 
             if ($isExport) {
                 // Ambil semua data tanpa limit halaman untuk dilempar ke Excel
@@ -525,7 +564,7 @@ class Anom extends BaseController
             } else {
                 $totalRows = $this->anomaliModel->countAllResults(false);
                 $page = $this->request->getVar('page_group_assignment') ?? 1;
-                $perPage = 25;
+                $perPage = 15;
                 $offset = ($page - 1) * $perPage;
 
                 $data['listAnom'] = $this->anomaliModel->get($perPage, $offset)->getResultArray();
@@ -587,10 +626,10 @@ class Anom extends BaseController
             $builder = $this->anomaliModel->builder();
 
             // SELECT dengan tambahan nama PPL dan PML dari tabel master user/petugas Anda
-            $builder->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.is_lap, anomali.is_insert, anomali.date_updated,
+            $builder->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.is_lap, anomali.is_insert, anomali.date_konfirmasi,
                               art.id AS id_assignment_obj, art.kd_assigment, art.kd_krt,art.nm_krt, art.nm_art, art.nm_nrt,
                               k.kode_anomali, k.detil_anomali, k.level_anomali, k.flag,
-                              u_ppl.username as nama_ppl, u_pml.username as nama_pml') // Sesuaikan field nama di tabel user Anda (misal: 'nama' atau 'username')
+                              u_ppl.name as nama_ppl, u_pml.name as nama_pml') // Sesuaikan field nama di tabel user Anda (misal: 'nama' atau 'username')
                 ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
                 ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
                 ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left')
@@ -644,7 +683,7 @@ class Anom extends BaseController
             }
 
             // Diurutkan berdasarkan objek tugas (assignment) agar rowspan bekerja sempurna di view
-            $builder->orderBy('art.id', 'ASC')
+            $builder->orderBy('anomali.id_wilayah', 'ASC')
                 ->orderBy('k.kode_anomali', 'ASC');
 
             if ($isExport) {
@@ -817,5 +856,49 @@ class Anom extends BaseController
             </div>';
 
         return view('log_upload/log_comp_error', $data);
+    }
+
+    public function toggleIsLap()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Akses ditolak']);
+        }
+
+        $idAnomali = $this->request->getPost('id_anomali');
+
+        if (empty($idAnomali)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'ID Anomali tidak ditemukan']);
+        }
+
+        // Ambil data anomali saat ini
+        $anomali = $this->anomaliModel->find($idAnomali);
+        if (!$anomali) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Data tidak ditemukan']);
+        }
+
+        // Toggle nilai: jika 1 jadi 0, jika 0 jadi 1
+        $newIsLap = ((int)$anomali['is_lap'] === 1) ? 0 : 1;
+        $now = date('Y-m-d H:i:s');
+
+        // Update is_lap dan date_konfirmasi
+        $updated = $this->anomaliModel->update($idAnomali, [
+            'is_lap'          => $newIsLap,
+            'date_konfirmasi' => $now,
+            'date_updated'    => $now
+        ]);
+
+        if ($updated) {
+            // Set flashdata sukses untuk ditampilkan setelah reload
+            $label = ($newIsLap === 1) ? 'Kondisi Lapangan (1)' : 'Bukan Kondisi Lapangan (0)';
+            session()->setFlashdata('success', "Status berhasil diubah menjadi <strong>{$label}</strong> dan waktu konfirmasi telah diperbarui.");
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Status berhasil diperbarui'
+            ]);
+        }
+
+        session()->setFlashdata('error', 'Gagal memperbarui status kondisi lapangan.');
+        return $this->response->setJSON(['success' => false, 'message' => 'Gagal memperbarui data']);
     }
 }

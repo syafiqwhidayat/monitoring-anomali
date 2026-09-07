@@ -181,7 +181,7 @@
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <?= $row['date_updated']; ?>
+                                        <?= $row['date_konfirmasi']; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

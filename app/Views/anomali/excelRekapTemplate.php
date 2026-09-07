@@ -17,7 +17,7 @@ $headers = [
     'Nama KRT',
     'Nama ART',
     'Kode Anomali',
-    'Apakah Kondisi Lapangan (1. Ya, 2. Tidak)',
+    'Apakah Kondisi Lapangan (0. Tidak, 1. Ya) (cth: 1)',
     'Isi Konfirmasi / Tanggapan Lapangan'
 ];
 
@@ -56,7 +56,7 @@ foreach ($listAnom as $row) {
     $sheet->setCellValue('C' . $rowNum, $row['nm_krt'] ?? $row['nm_nrt'] ?? '-');
     $sheet->setCellValue('D' . $rowNum, $row['nm_art'] ?? '-');
     $sheet->setCellValue('E' . $rowNum, $row['kode_anomali']);
-    $sheet->setCellValue('F' . $rowNum, ''); // Sengaja dikosongkan untuk diisi petugas
+    $sheet->setCellValue('F' . $rowNum, $row['is_lap']); // Sengaja dikosongkan untuk diisi petugas
     $sheet->setCellValue('G' . $rowNum, !empty($row['konfirmasi']) ? $row['konfirmasi'] : '');
 
     // Set Format ID dan Kode Wilayah sebagai TEXT agar nol di awal tidak hilang (@)
