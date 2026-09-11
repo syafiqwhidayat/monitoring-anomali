@@ -178,7 +178,7 @@
                                                                 <span class="text-orange font-weight-medium">👔 PML: <?= esc($pml['nama']) ?></span>
                                                             </div>
                                                             <div class="col-md-2 text-center">
-                                                                <small class="text-muted"><?= $pml['total'] ?> Anomali</small>
+                                                                <small class="text-muted"><?= $pml['total'] ?? 0 ?> Anomali</small>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <?php
@@ -204,7 +204,7 @@
                                                                 <thead>
                                                                     <tr>
                                                                         <th>Nama PPL</th>
-                                                                        <th class="text-center" style="width: 15%;">Total Anomali</th>
+                                                                        <th class="text-center" style="width: 15%;">Progres/Total Anomali</th>
                                                                         <th style="width: 50%;">Progres Anomali</th>
                                                                     </tr>
                                                                 </thead>
@@ -212,7 +212,7 @@
                                                                     <?php foreach ($pml['ppl'] as $pplId => $ppl): ?>
                                                                         <tr>
                                                                             <td class="text-truncate text-dark font-weight-medium">🏃 PPL: <?= esc($ppl['nama']) ?></td>
-                                                                            <td class="text-center font-weight-bold text-dark"><?= $ppl['total'] ?></td>
+                                                                            <td class="text-center font-weight-bold text-dark"><?= ($ppl['lap'] ?? 0) + ($ppl['non_lap'] ?? 0) ?> / <?= $ppl['total'] ?? 0 ?></td>
                                                                             <td>
                                                                                 <?php
                                                                                 $ppl_lap = $ppl['total'] > 0 ? round(($ppl['lap'] / $ppl['total']) * 100, 1) : 0;

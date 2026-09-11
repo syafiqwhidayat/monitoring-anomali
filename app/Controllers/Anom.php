@@ -484,7 +484,8 @@ class Anom extends BaseController
 
         try {
             // Menggunakan cara aman: Panggil builder langsung dari instance model
-            $this->anomaliModel->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.date_konfirmasi, anomali.is_lap, 
+            $this->anomaliModel->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.date_konfirmasi, anomali.is_lap,
+                                     anomali.is_check,
                                      art.kd_assigment, art.nm_krt, art.nm_art, art.nm_nrt, art.kd_krt as kd_krt,
                                      k.kode_anomali, k.detil_anomali, k.level_anomali, k.flag,anomali.isi_fasih,
                                      u_ppl.name as nm_ppl, u_pml.name as nm_pml,
@@ -900,5 +901,109 @@ class Anom extends BaseController
 
         session()->setFlashdata('error', 'Gagal memperbarui status kondisi lapangan.');
         return $this->response->setJSON(['success' => false, 'message' => 'Gagal memperbarui data']);
+    }
+
+    public function toggleCheck()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Akses ditolak']);
+        }
+
+        $idAnomali = $this->request->getPost('id_anomali');
+        $anomali   = $this->anomaliModel->find($idAnomali);
+
+        if (!$anomali) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Data tidak ditemukan']);
+        }
+
+        // Balik nilai is_check (0 jadi 1, 1 jadi 0)
+        $currentCheck = (int)($anomali['is_check'] ?? 0);
+        $newCheck     = ($currentCheck === 1) ? 0 : 1;
+
+        // Lakukan update secara langsung
+        $updated = $this->anomaliModel->update($idAnomali, [
+            'is_check' => $newCheck,
+            // Jika tabel ada kolom date_updated, uncomment baris di bawah:
+            // 'date_updated' => date('Y-m-d H:i:s')
+        ]);
+
+        return $this->response->setJSON([
+            'success'  => (bool)$updated,
+            'is_check' => $newCheck,
+            'message'  => 'Status cek berhasil diperbarui'
+        ]);
+    }
+
+    public function getChat()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Akses ditolak']);
+        }
+
+        $idAnomali = $this->request->getGet('id_anomali');
+        $anomali   = $this->anomaliModel->find($idAnomali);
+
+        if (!$anomali) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Data tidak ditemukan']);
+        }
+
+        $chatData = !empty($anomali['chat']) ? json_decode($anomali['chat'], true) : [];
+
+        return $this->response->setJSON([
+            'success'    => true,
+            'chat'       => $chatData ?? [],
+            'user_email' => auth()->user()->email ?? 'user@bps.go.id'
+        ]);
+    }
+
+    public function sendChat()
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setStatusCode(405)->setJSON(['success' => false, 'message' => 'Akses ditolak']);
+        }
+
+        $idAnomali = $this->request->getPost('id_anomali');
+        $pesan     = trim((string)$this->request->getPost('pesan'));
+        $userEmail = auth()->user()->email ?? 'unknown@bps.go.id';
+
+        if (empty($idAnomali) || empty($pesan)) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Pesan tidak boleh kosong']);
+        }
+
+        // Validasi Regex: Hanya Huruf, Angka, Spasi, Titik (.), Koma (,), dan Tanda Tanya (?)
+        if (!preg_match('/^[a-zA-Z0-9\s.,?]+$/', $pesan)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Pesan hanya boleh berisi huruf, angka, titik, koma, dan tanda tanya.'
+            ]);
+        }
+
+        $anomali = $this->anomaliModel->find($idAnomali);
+        if (!$anomali) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Data tidak ditemukan']);
+        }
+
+        $existingChat = !empty($anomali['chat']) ? json_decode($anomali['chat'], true) : [];
+        if (!is_array($existingChat)) {
+            $existingChat = [];
+        }
+
+        // Append percakapan baru
+        $existingChat[] = [
+            'email' => $userEmail,
+            'pesan' => $pesan,
+            'waktu' => date('Y-m-d H:i:s')
+        ];
+
+        $updated = $this->anomaliModel->update($idAnomali, [
+            'chat'         => json_encode($existingChat),
+            'date_updated' => date('Y-m-d H:i:s')
+        ]);
+
+        return $this->response->setJSON([
+            'success' => (bool)$updated,
+            'chat'    => $existingChat,
+            'message' => $updated ? 'Pesan terkirim' : 'Gagal menyimpan pesan'
+        ]);
     }
 }

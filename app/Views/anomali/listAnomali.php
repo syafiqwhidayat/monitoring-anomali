@@ -63,6 +63,37 @@
             width: 2px;
         }
     }
+
+    /* Pembungkus teks dengan area terbatas */
+    .marquee-wrapper {
+        max-width: 140px;
+        overflow: hidden;
+        white-space: nowrap;
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    /* Animasi teks berjalan pelan bolak-balik */
+    .marquee-content {
+        display: inline-block;
+        font-size: 0.775rem;
+        animation: auto-scroll 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes auto-scroll {
+
+        0%,
+        20% {
+            transform: translateX(0%);
+        }
+
+        80%,
+        100% {
+            transform: translateX(min(0px, calc(-100% + 130px)));
+            /* Menggeser teks sampai ujung */
+        }
+    }
 </style>
 
 <div class="container-xl py-4">
@@ -107,7 +138,7 @@
                         <select name="fil-flag" class="form-select bg-light border-0" id="filter-flag">
                             <option value="">Semua Jenis</option>
                             <?php foreach ($listSelFlag as $l): ?>
-                                <option value="<?= $l['value']; ?>" <?= ($l['value'] == $filterFlag) ? 'selected' : ''; ?>> Flag <?= $l['value']; ?></option>
+                                <option value="<?= $l['value']; ?>" <?= ($l['value'] == $filterFlag) ? 'selected' : ''; ?>> Prioritas <?= $l['value']; ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>

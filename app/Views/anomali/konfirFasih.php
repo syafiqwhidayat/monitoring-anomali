@@ -177,13 +177,33 @@
                                         <small><?= !empty($row['date_konfirmasi']) ? date('d/m/Y H:i', strtotime($row['date_konfirmasi'])) : '-'; ?></small>
                                     </td>
                                     <td class="text-center">
-                                        <button type="button"
-                                            class="btn btn-sm <?= ($row['is_lap'] == 1) ? 'btn-outline-blue' : 'btn-outline-success'; ?> btn-toggle-lap"
-                                            data-id="<?= $row['id_anomali']; ?>"
-                                            title="Klik untuk mengubah status Kondisi Lapangan">
-                                            <i class="fas fa-sync-alt me-1"></i>
-                                            <?= ($row['is_lap'] == 1) ? 'Perbaikan Fasih' : 'Kondisi Lap'; ?>
-                                        </button>
+                                        <div class="d-flex flex-column gap-1">
+                                            <button type="button"
+                                                class="btn btn-sm <?= ($row['is_lap'] == 1) ? 'btn-outline-blue' : 'btn-outline-success'; ?> btn-toggle-lap"
+                                                data-id="<?= $row['id_anomali']; ?>"
+                                                title="Klik untuk mengubah status Kondisi Lapangan">
+                                                <i class="fas fa-sync-alt me-1"></i>
+                                                <?= ($row['is_lap'] == 1) ? 'Perbaikan Fasih' : 'Kondisi Lap'; ?>
+                                            </button>
+
+                                            <div class="d-flex gap-1 justify-content-center">
+                                                <!-- Tombol Check (Flag) -->
+                                                <button type="button"
+                                                    class="btn btn-sm <?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'btn-success' : 'btn-outline-secondary'; ?> btn-toggle-check"
+                                                    data-id="<?= $row['id_anomali']; ?>"
+                                                    title="<?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'Sudah Dicek' : 'Tandai Sudah Dicek'; ?>">
+                                                    <i class="fas <?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'fa-check-circle' : 'fa-check'; ?>"></i>
+                                                </button>
+
+                                                <!-- Tombol Chat Modal -->
+                                                <button type="button"
+                                                    class="btn btn-sm btn-outline-primary btn-open-chat"
+                                                    data-id="<?= $row['id_anomali']; ?>"
+                                                    title="Buka Chat Diskusi">
+                                                    <i class="fas fa-comments"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -208,22 +228,59 @@
     </div>
 </div>
 
+<!-- Modal Chat -->
+<div class="modal fade" id="modalChat" tabindex="-1" aria-labelledby="modalChatLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalChatLabel"><i class="fas fa-comments me-2"></i> Diskusi Anomali</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-light">
+                <div class="mb-2 pb-2 border-bottom">
+                    <small class="text-muted d-block">Login sebagai:</small>
+                    <strong id="chatUserEmail" class="text-primary"></strong>
+                </div>
+
+                <!-- Box Chat Scrollable -->
+                <div id="chatContainer" style="height: 300px; overflow-y: auto;" class="d-flex flex-column gap-2 p-2">
+                    <!-- Bubble Chat Direset & Diisi Via AJAX -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form id="formSendChat" class="w-100">
+                    <input type="hidden" id="chatIdAnomali" name="id_anomali">
+                    <div class="input-group">
+                        <input type="text" id="chatInputPesan" class="form-control"
+                            placeholder="Ketik pesan (huruf, angka, ., , ?)"
+                            pattern="[a-zA-Z0-9\s.,?]+"
+                            title="Hanya diperbolehkan huruf, angka, titik, koma, dan tanda tanya."
+                            required>
+                        <button type="submit" class="btn btn-primary" id="btnSendChat">
+                            <i class="fas fa-paper-plane"></i> Kirim
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const toggleButtons = document.querySelectorAll('.btn-toggle-lap');
+        const csrfToken = '<?= csrf_token() ?>';
+        const csrfHash = '<?= csrf_hash() ?>';
 
-        toggleButtons.forEach(button => {
+        // 1. Logic Toggle Is Lap
+        document.querySelectorAll('.btn-toggle-lap').forEach(button => {
             button.addEventListener('click', function() {
-                const idAnomali = this.getAttribute('data-id');
                 const btn = this;
-
-                // Efek visual instant: Disable tombol & beri indikator loading
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Memproses...';
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>...';
 
                 const formData = new FormData();
-                formData.append('id_anomali', idAnomali);
-                formData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+                formData.append('id_anomali', this.getAttribute('data-id'));
+                formData.append(csrfToken, csrfHash);
 
                 fetch('<?= base_url('anomali/ubah-is-lap'); ?>', {
                         method: 'POST',
@@ -232,24 +289,153 @@
                         },
                         body: formData
                     })
-                    .then(response => response.json())
+                    .then(res => res.json())
                     .then(data => {
                         if (data.success) {
-                            // Refresh halaman instant (pagination & filter tetap terjaga)
                             window.location.reload();
                         } else {
                             alert('Gagal: ' + data.message);
                             btn.disabled = false;
-                            btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Coba Lagi';
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Terjadi kesalahan sistem.');
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i> Coba Lagi';
                     });
             });
+        });
+
+        // 2. Logic Toggle Check (Flag Status)
+        document.querySelectorAll('.btn-toggle-check').forEach(button => {
+            button.addEventListener('click', function() {
+                const btn = this;
+                const idAnomali = btn.getAttribute('data-id');
+
+                const formData = new FormData();
+                formData.append('id_anomali', idAnomali);
+                formData.append(csrfToken, csrfHash);
+
+                fetch('<?= base_url('anomali/toggle-check'); ?>', {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.is_check == 1) {
+                                btn.className = 'btn btn-sm btn-success btn-toggle-check';
+                                btn.innerHTML = '<i class="fas fa-check-circle"></i>';
+                                btn.title = 'Sudah Dicek';
+                            } else {
+                                btn.className = 'btn btn-sm btn-outline-secondary btn-toggle-check';
+                                btn.innerHTML = '<i class="fas fa-check"></i>';
+                                btn.title = 'Tandai Sudah Dicek';
+                            }
+                        } else {
+                            alert(data.message);
+                        }
+                    });
+            });
+        });
+
+        // 3. Logic Chat Modal
+        const modalChatElement = document.getElementById('modalChat');
+        const modalChat = new bootstrap.Modal(modalChatElement);
+        const chatContainer = document.getElementById('chatContainer');
+        const chatUserEmail = document.getElementById('chatUserEmail');
+        const chatIdAnomali = document.getElementById('chatIdAnomali');
+        const chatInputPesan = document.getElementById('chatInputPesan');
+        let currentUserEmail = '';
+
+        // Buka Modal & Fetch Data Chat
+        document.querySelectorAll('.btn-open-chat').forEach(button => {
+            button.addEventListener('click', function() {
+                const idAnomali = this.getAttribute('data-id');
+                chatIdAnomali.value = idAnomali;
+                chatContainer.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Memuat chat...</div>';
+                modalChat.show();
+
+                fetch(`<?= base_url('anomali/get-chat'); ?>?id_anomali=${idAnomali}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            currentUserEmail = data.user_email;
+                            chatUserEmail.textContent = currentUserEmail;
+                            renderChatBubbles(data.chat);
+                        }
+                    });
+            });
+        });
+
+        // Render Bubble Chat
+        function renderChatBubbles(chatList) {
+            chatContainer.innerHTML = '';
+            if (!chatList || chatList.length === 0) {
+                chatContainer.innerHTML = '<div class="text-center text-muted my-auto"><small>Belum ada percakapan.</small></div>';
+                return;
+            }
+
+            chatList.forEach(item => {
+                const isMe = item.email === currentUserEmail;
+                const bubbleHtml = `
+                <div class="d-flex flex-column ${isMe ? 'align-items-end' : 'align-items-start'}">
+                    <small class="text-muted" style="font-size: 10px;">${item.email} - ${item.waktu ?? ''}</small>
+                    <div class="p-2 rounded text-break shadow-sm ${isMe ? 'bg-primary text-white' : 'bg-white text-dark border'}" style="max-width: 80%; font-size: 13px;">
+                        ${item.pesan}
+                    </div>
+                </div>
+            `;
+                chatContainer.insertAdjacentHTML('beforeend', bubbleHtml);
+            });
+
+            // Auto scroll ke paling bawah
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Sanitisasi Input Chat secara real-time
+        chatInputPesan.addEventListener('input', function() {
+            this.value = this.value.replace(/[^a-zA-Z0-9\s.,?]/g, '');
+        });
+
+        // Submit Form Chat
+        document.getElementById('formSendChat').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const pesan = chatInputPesan.value.trim();
+
+            if (!pesan) return;
+
+            const btnSend = document.getElementById('btnSendChat');
+            btnSend.disabled = true;
+
+            const formData = new FormData();
+            formData.append('id_anomali', chatIdAnomali.value);
+            formData.append('pesan', pesan);
+            formData.append(csrfToken, csrfHash);
+
+            fetch('<?= base_url('anomali/send-chat'); ?>', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    btnSend.disabled = false;
+                    if (data.success) {
+                        chatInputPesan.value = '';
+                        renderChatBubbles(data.chat);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(() => {
+                    btnSend.disabled = false;
+                    alert('Gagal mengirim pesan.');
+                });
         });
     });
 </script>

@@ -56,10 +56,12 @@ $isTargetKhusus = ($jenis === 'Ruta' || $jenis === 'Anom');
                                             <?= esc($d['kd']); ?>
                                         </span>
 
-                                        <span class="text-secondary fw-semibold text-start text-truncate d-inline-block match-name"
-                                            style="font-size: 0.775rem; max-width: 150px; vertical-align: middle; --bs-md-max-width: 100%;">
-                                            <?= esc($d['nm']); ?>
-                                        </span>
+                                        <div class="marquee-wrapper me-1">
+                                            <span class="text-secondary fw-semibold text-start match-name marquee-content"
+                                                title="<?= esc($d['nm']); ?>">
+                                                <?= esc($d['nm']); ?>
+                                            </span>
+                                        </div>
                                     </div>
 
                                     <span class="badge bg-light text-muted border rounded-pill fw-bold px-1-5 py-0-5 badge-counter flex-shrink-0" style="font-size: 0.65rem;">

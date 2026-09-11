@@ -23,6 +23,8 @@ class AnomaliModel extends Model
         'is_insert',
         'is_sistem',
         'isi_fasih',
+        'is_check',
+        'chat',
         'date_konfirmasi'
     ];
 

@@ -451,6 +451,8 @@ class Monitoring extends BaseController
             if (!empty($filterKategori)) {
                 $builder->where('a.id_kategori_anomali', $filterKategori);
             }
+            // hanya menampilkan yg pulic saja
+            $builder->where('ka.is_show', 1);
             return $builder;
         };
 

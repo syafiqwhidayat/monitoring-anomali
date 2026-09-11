@@ -38,7 +38,7 @@
                                     <?php foreach ($jsonData as $key => $val): ?>
                                         <?php
                                         // Cek apakah angka dan bukan kode KBLI (jika KBLI/kode tertentu biasanya berupa string angka yang tidak ingin diberi pemisah ribuan)
-                                        $isNumeric = is_numeric($val) && !preg_match('/kbli|kode|id/i', $key);
+                                        $isNumeric = is_numeric($val) && !preg_match('/kbli|kode|id|nik|kk/i', $key);
                                         $displayVal = $isNumeric ? number_format((float)$val, 0, ',', '.') : $val;
                                         ?>
                                         <div class="d-flex align-items-center justify-content-between p-2 rounded-2 bg-white border border-light-subtle shadow-sm">

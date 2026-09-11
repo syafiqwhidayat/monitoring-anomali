@@ -18,6 +18,25 @@ class JobRunner extends BaseCommand
         set_time_limit(0);
 
         // =================================================================
+        // PENGAMAN 0: CLEANUP JOB STUCK / KILLED
+        // =================================================================
+        // Jika job berstatus 'proses' tapi tidak ada update selama lebih dari 10 menit,
+        // diasumsikan proses terbunuh paksa (Killed) oleh OS.
+        $tenMinutesAgo = date('Y-m-d H:i:s', strtotime('-15 minutes'));
+        $db->table('log_upload')
+            ->where('status', 'proses')
+            ->where('updated_at <', $tenMinutesAgo)
+            ->update([
+                'status'        => 'gagal',
+                'error_details' => json_encode([[
+                    'baris'    => '-',
+                    'data'     => 'System Runner',
+                    'messages' => ['Proses terhenti secara paksa oleh server (Out of Memory / Process Killed). Data/File mengandung baris hantu yang melebihi kapasitas memori.']
+                ]])
+            ]);
+        // =================================================================
+
+        // =================================================================
         // PENGAMAN 1: CEK APAKAH CRON SEBELUMNYA MASIH BERJALAN
         // =================================================================
         $runningJob = $db->table('log_upload')

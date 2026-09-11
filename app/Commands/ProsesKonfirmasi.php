@@ -7,12 +7,41 @@ use CodeIgniter\CLI\CLI;
 use App\Models\LogUploadModel;
 use App\Models\AnomaliModel;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\IReadFilter;
+
+class ChunkReadFilter implements IReadFilter
+{
+    private $startRow = 0;
+    private $chunkSize = 0;
+
+    public function setRows(int $startRow, int $chunkSize): void
+    {
+        $this->startRow  = $startRow;
+        $this->chunkSize = $chunkSize;
+    }
+
+    public function readCell(string $columnAddress, int $row, string $worksheetName = ''): bool
+    {
+        // Pembatasan Kolom: HANYA baca kolom A sampai G
+        $allowedColumns = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+        if (!in_array($columnAddress, $allowedColumns, true)) {
+            return false;
+        }
+
+        // Pembatasan Baris: Hanya baca baris chunk aktif
+        if ($row >= $this->startRow && $row < ($this->startRow + $this->chunkSize)) {
+            return true;
+        }
+
+        return false;
+    }
+}
 
 class ProsesKonfirmasi extends BaseCommand
 {
     protected $group       = 'App';
     protected $name        = 'proses:konfirmasi';
-    protected $description = 'Memproses unggahan Excel tanggapan lapangan dengan penyesuaian kolom isLap dan konfirmasi.';
+    protected $description = 'Memproses unggahan Excel tanggapan lapangan dengan Proteksi Baris/Kolom Hantu.';
     protected $usage       = 'proses:konfirmasi [namaFile] [logId] [kodeKabOtoritas]';
 
     protected $logModel;
@@ -21,9 +50,11 @@ class ProsesKonfirmasi extends BaseCommand
 
     public function run(array $params)
     {
+        ini_set('memory_limit', '1024M');
+
         $fileName = $params[0] ?? null;
         $logId    = $params[1] ?? null;
-        $idKab    = $params[2] ?? null; // Kode BPS Kabupaten user, misal: 1311
+        $idKab    = $params[2] ?? null;
 
         if (!$fileName || !$logId || !$idKab) {
             CLI::error("Parameter kurang lengkap! Dibutuhkan: namaFile, logId, dan kodeKabOtoritas.");
@@ -42,43 +73,102 @@ class ProsesKonfirmasi extends BaseCommand
                 throw new \Exception("File tidak ditemukan di direktori uploads.");
             }
 
-            // MEREDAM ERROR DOM DOCUMENT PADA FILE HTML/XML
             if (function_exists('libxml_use_internal_errors')) {
                 libxml_use_internal_errors(true);
             }
 
-            $spreadsheet = IOFactory::load($filePath);
-            $sheetData   = $spreadsheet->getActiveSheet()->toArray();
+            $inputFileType = IOFactory::identify($filePath);
 
-            if (function_exists('libxml_clear_errors')) {
-                libxml_clear_errors();
-            }
+            /** @var \PhpOffice\PhpSpreadsheet\Reader\BaseReader $reader */
+            $reader = IOFactory::createReader($inputFileType);
 
-            $totalBaris   = count($sheetData) - 1;
-            $berhasil     = 0;
-            $gagal        = 0;
-            $errorDetails = [];
-            $batchUpdateData = [];
+            // Abaikan styling, rumus, dan format sel
+            $reader->setReadDataOnly(true);
+            $reader->setReadEmptyCells(false);
 
-            // ========================================================
-            // OPTIMASI 1: MAPPING DATA DATABASE DALAM CHUNK (MEMORI SAFE)
-            // ========================================================
-            $allIdsInExcel = [];
-            for ($i = 1; $i < count($sheetData); $i++) {
-                $idAnomali = trim((string)($sheetData[$i][0] ?? ''));
-                if (!empty($idAnomali)) {
-                    $allIdsInExcel[] = $idAnomali;
+            $info      = $reader->listWorksheetInfo($filePath);
+            $totalRows = $info[0]['totalRows'] ?? 0;
+
+            // Batasi maksimal pindaian jika XML mengindikasikan 1 juta baris hantu
+            // Ini mencegah perulangan tak terbatas
+            $maxRowsToScan = min($totalRows, 100000);
+
+            $chunkSize   = 1000;
+            $chunkFilter = new ChunkReadFilter();
+            $reader->setReadFilter($chunkFilter);
+
+            $berhasil         = 0;
+            $gagal            = 0;
+            $errorDetails     = [];
+            $totalBarisData   = 0;
+            $consecutiveEmptyChunks = 0; // Penghitung chunk kosong berturut-turut
+
+            // Iterasi mulai dari baris 2 (melewati header baris 1)
+            for ($startRow = 2; $startRow <= $maxRowsToScan; $startRow += $chunkSize) {
+
+                $chunkFilter->setRows($startRow, $chunkSize);
+
+                // Load sheet
+                $spreadsheet = $reader->load($filePath);
+                $worksheet   = $spreadsheet->getActiveSheet();
+
+                $chunkIds = [];
+                $rowsData = [];
+                $endRow   = $startRow + $chunkSize - 1;
+
+                for ($rowNum = $startRow; $rowNum <= $endRow; $rowNum++) {
+                    // Ambil nilai sel dengan aman
+                    $cellA = $worksheet->getCell("A{$rowNum}");
+                    $cellF = $worksheet->getCell("F{$rowNum}");
+                    $cellG = $worksheet->getCell("G{$rowNum}");
+
+                    $idAnomali  = $cellA ? trim((string)$cellA->getValue()) : '';
+                    $isLapRaw   = $cellF ? trim((string)$cellF->getValue()) : '';
+                    $konfirmasi = $cellG ? trim((string)$cellG->getValue()) : '';
+
+                    // Jika Kolom A, F, dan G semuanya kosong, lewati
+                    if ($idAnomali === '' && $isLapRaw === '' && $konfirmasi === '') {
+                        continue;
+                    }
+
+                    $rowsData[$rowNum] = [
+                        'id_anomali' => $idAnomali,
+                        'is_lap_raw' => $isLapRaw,
+                        'konfirmasi' => $konfirmasi,
+                    ];
+
+                    if (!empty($idAnomali)) {
+                        $chunkIds[] = $idAnomali;
+                    }
+
+                    $totalBarisData++;
                 }
-            }
 
-            $mappedAnomali = [];
-            if (!empty($allIdsInExcel)) {
-                // Pecah kueri whereIn menjadi max 500 ID per batch agar database tidak crash/limit
-                $chunks = array_chunk(array_unique($allIdsInExcel), 500);
-                foreach ($chunks as $chunkIds) {
+                // Cek jika chunk ini kosong
+                if (empty($rowsData)) {
+                    $consecutiveEmptyChunks++;
+
+                    // Bersihkan memori chunk ini
+                    $spreadsheet->disconnectWorksheets();
+                    unset($spreadsheet, $worksheet, $rowsData, $chunkIds);
+                    gc_collect_cycles();
+
+                    // Jika 2 chunk berturut-turut (2.000 baris) kosong total, dipastikan ini area baris hantu
+                    if ($consecutiveEmptyChunks >= 2) {
+                        break;
+                    }
+                    continue;
+                }
+
+                // Reset penghitung chunk kosong jika menemukan data
+                $consecutiveEmptyChunks = 0;
+
+                // Query DB hanya untuk ID aktif di chunk ini
+                $mappedAnomali = [];
+                if (!empty($chunkIds)) {
                     $dbData = $this->db->table('anomali')
                         ->select('id, id_wilayah, konfirmasi')
-                        ->whereIn('id', $chunkIds)
+                        ->whereIn('id', array_unique($chunkIds))
                         ->get()
                         ->getResultArray();
 
@@ -86,120 +176,105 @@ class ProsesKonfirmasi extends BaseCommand
                         $mappedAnomali[$rowDb['id']] = $rowDb;
                     }
                 }
-            }
-            // ========================================================
 
-            $this->db->transStart();
+                $batchUpdateData = [];
 
-            // Loop utama data Excel
-            for ($i = 1; $i < count($sheetData); $i++) {
-                $row    = $sheetData[$i];
-                $rowNum = $i + 1;
+                // Validasi data
+                foreach ($rowsData as $rowNum => $row) {
+                    $idAnomali  = $row['id_anomali'];
+                    $isLapRaw   = $row['is_lap_raw'];
+                    $konfirmasi = $row['konfirmasi'];
 
-                // PASTIKAN INDEKS KOLOM SESUAI DENGAN FILE EXCEL UPLOAD ANDA
-                // Contoh jika struktur Excel: 
-                // Col 0: ID Anomali
-                // Col 5: Is_Lap (0 atau 1)
-                // Col 6: Konfirmasi / Jawaban
-                $idAnomali  = trim((string)($row[0] ?? ''));
-                $isLapRaw   = trim((string)($row[5] ?? ''));
-                $konfirmasi = trim((string)($row[6] ?? ''));
+                    if (empty($idAnomali)) {
+                        $errorDetails[] = [
+                            'baris'    => $rowNum,
+                            'data'     => "ID Anomali: -",
+                            'messages' => ["ID Anomali Kosong pada baris ini."]
+                        ];
+                        $gagal++;
+                        continue;
+                    }
 
-                if (empty($idAnomali)) {
-                    $errorDetails[] = [
-                        'baris'    => $rowNum,
-                        'data'     => "ID Anomali: -",
-                        'messages' => ["ID Anomali Kosong pada baris ini."]
+                    if (strlen($isLapRaw) === 0 && strlen($konfirmasi) === 0) {
+                        $errorDetails[] = [
+                            'baris'    => $rowNum,
+                            'data'     => "ID Anomali: " . $idAnomali,
+                            'messages' => ["Kolom 'Apakah Kondisi Lapangan' dan 'Konfirmasi' keduanya kosong."]
+                        ];
+                        $gagal++;
+                        continue;
+                    }
+
+                    if ($isLapRaw !== '0' && $isLapRaw !== '1') {
+                        $errorDetails[] = [
+                            'baris'    => $rowNum,
+                            'data'     => "ID Anomali: " . $idAnomali,
+                            'messages' => ["Gagal! Kolom isLap berkode '" . ($isLapRaw !== '' ? $isLapRaw : 'NULL') . "' tidak valid."]
+                        ];
+                        $gagal++;
+                        continue;
+                    }
+
+                    if (!isset($mappedAnomali[$idAnomali])) {
+                        $errorDetails[] = [
+                            'baris'    => $rowNum,
+                            'data'     => "ID Anomali: " . $idAnomali,
+                            'messages' => ["ID Anomali tidak ditemukan di database."]
+                        ];
+                        $gagal++;
+                        continue;
+                    }
+
+                    $dataExisting      = $mappedAnomali[$idAnomali];
+                    $kabWilayahAnomali = substr($dataExisting['id_wilayah'], 0, 4);
+
+                    if ($kabWilayahAnomali !== $idKab) {
+                        $errorDetails[] = [
+                            'baris'    => $rowNum,
+                            'data'     => "ID Anomali: " . $idAnomali,
+                            'messages' => ["Gagal! ID berada di luar wilayah otoritas Anda."]
+                        ];
+                        $gagal++;
+                        continue;
+                    }
+
+                    if (!empty($dataExisting['konfirmasi']) && trim($dataExisting['konfirmasi']) !== '-') {
+                        $errorDetails[] = [
+                            'baris'    => $rowNum,
+                            'data'     => "ID Anomali: " . $idAnomali,
+                            'messages' => ["Gagal! Data konfirmasi di database sudah terisi."]
+                        ];
+                        $gagal++;
+                        continue;
+                    }
+
+                    $batchUpdateData[] = [
+                        'id'              => $idAnomali,
+                        'konfirmasi'      => $konfirmasi,
+                        'is_lap'          => ($isLapRaw === '1') ? 1 : 0,
+                        'date_konfirmasi' => date('Y-m-d H:i:s'),
+                        'date_updated'    => date('Y-m-d H:i:s'),
                     ];
-                    $gagal++;
-                    continue;
+                    $berhasil++;
                 }
 
-                // GUNAKAN strlen() BUKAN empty() agar angka '0' tidak dianggap kosong!
-                if (strlen($isLapRaw) === 0 && strlen($konfirmasi) === 0) {
-                    $errorDetails[] = [
-                        'baris'    => $rowNum,
-                        'data'     => "ID Anomali: " . $idAnomali,
-                        'messages' => ["Kolom 'Apakah Kondisi Lapangan' dan 'Konfirmasi' keduanya kosong."]
-                    ];
-                    $gagal++;
-                    continue;
+                if (!empty($batchUpdateData)) {
+                    $this->db->table('anomali')->updateBatch($batchUpdateData, 'id');
                 }
 
-                // VALIDASI VALUE isLap (Harus '1' atau '0')
-                if ($isLapRaw !== '0' && $isLapRaw !== '1') {
-                    $errorDetails[] = [
-                        'baris'    => $rowNum,
-                        'data'     => "ID Anomali: " . $idAnomali,
-                        'messages' => ["Gagal! Kolom isLap berkode '" . ($isLapRaw !== '' ? $isLapRaw : 'NULL') . "' tidak valid. Harus bernilai 1 (True) atau 0 (False)."]
-                    ];
-                    $gagal++;
-                    continue;
-                }
-
-                $dbIsLap = ($isLapRaw === '1') ? 1 : 0;
-
-                // Cek ketersediaan di DB Map
-                if (!isset($mappedAnomali[$idAnomali])) {
-                    $errorDetails[] = [
-                        'baris'    => $rowNum,
-                        'data'     => "ID Anomali: " . $idAnomali,
-                        'messages' => ["ID Anomali tidak ditemukan di database."]
-                    ];
-                    $gagal++;
-                    continue;
-                }
-
-                $dataExisting = $mappedAnomali[$idAnomali];
-
-                // Validasi Otoritas Wilayah
-                $kabWilayahAnomali = substr($dataExisting['id_wilayah'], 0, 4);
-                if ($kabWilayahAnomali !== $idKab) {
-                    $errorDetails[] = [
-                        'baris'    => $rowNum,
-                        'data'     => "ID Anomali: " . $idAnomali,
-                        'messages' => ["Gagal! ID berada di luar wilayah otoritas Anda (Wilayah data: " . $kabWilayahAnomali . ")."]
-                    ];
-                    $gagal++;
-                    continue;
-                }
-
-                // Validasi jika konfirmasi sudah pernah diisi
-                if (!empty($dataExisting['konfirmasi']) && trim($dataExisting['konfirmasi']) !== '-') {
-                    $errorDetails[] = [
-                        'baris'    => $rowNum,
-                        'data'     => "ID Anomali: " . $idAnomali,
-                        'messages' => ["Gagal! Data konfirmasi di database sudah terisi sebelumnya."]
-                    ];
-                    $gagal++;
-                    continue;
-                }
-
-                // Masukkan ke antrean batch update
-                $batchUpdateData[] = [
-                    'id'           => $idAnomali,
-                    'konfirmasi'   => $konfirmasi,
-                    'is_lap'       => $dbIsLap,
-                    'date_konfirmasi' => date('Y-m-d H:i:s'),
-                    'date_updated' => date('Y-m-d H:i:s'),
-                ];
-                $berhasil++;
+                // Bersihkan memori secara ketat di setiap akhir chunk
+                $spreadsheet->disconnectWorksheets();
+                unset($spreadsheet, $worksheet, $rowsData, $chunkIds, $batchUpdateData, $mappedAnomali);
+                gc_collect_cycles();
             }
 
-            // EXEKUSI BATCH UPDATE DALAM CHUNK (Mencegah Query Limit)
-            if (!empty($batchUpdateData)) {
-                $batchChunks = array_chunk($batchUpdateData, 500);
-                foreach ($batchChunks as $bChunk) {
-                    $this->db->table('anomali')->updateBatch($bChunk, 'id');
-                }
+            if (function_exists('libxml_clear_errors')) {
+                libxml_clear_errors();
             }
 
-            $this->db->transComplete();
-
-            // Simpan Log Selesai
             $logFinalData = [
                 'status'        => 'selesai',
-                'total_baris'   => $totalBaris,
+                'total_baris'   => $totalBarisData,
                 'berhasil'      => $berhasil,
                 'gagal'         => $gagal,
                 'error_details' => json_encode($errorDetails)
@@ -208,10 +283,6 @@ class ProsesKonfirmasi extends BaseCommand
 
             CLI::write("Proses konfirmasi selesai. Berhasil: $berhasil, Gagal: $gagal", 'green');
         } catch (\Throwable $th) {
-            if ($this->db->transStatus() === false) {
-                $this->db->transRollback();
-            }
-
             CLI::error("Sistem Berhenti: " . $th->getMessage());
 
             $this->logModel->update($logId, [

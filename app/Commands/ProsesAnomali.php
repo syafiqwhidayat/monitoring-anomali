@@ -82,6 +82,8 @@ class ProsesAnomali extends BaseCommand
                 'kode_sls'   => 'required|exact_length[6]',
                 'nurt'       => 'required|max_length[244]',
                 'nuart'      => 'required|max_length[244]',
+                'nama_krt'      => 'required|max_length[244]',
+                'nama_art'      => 'required|max_length[244]',
                 'anomali'    => 'required',
                 'id_wilayah' => "required|exact_length[{$levelWilayah}]|is_not_unique[wilayah.id]",
             ];
@@ -92,8 +94,8 @@ class ProsesAnomali extends BaseCommand
                 'kode_kec'   => 'permit_empty|exact_length[3]',
                 'kode_desa'  => 'permit_empty|exact_length[3]',
                 'kode_sls'   => 'permit_empty|exact_length[6]',
-                'kode_nurt'  => 'required|max_length[255]',
-                'nama_nrt'   => 'required',
+                'nurt'       => 'required|max_length[255]',
+                'nama_krt'   => 'required',
                 'anomali'    => 'required',
                 'id_wilayah' => "required|exact_length[{$levelWilayah}]|is_not_unique[wilayah.id]",
             ];
@@ -138,7 +140,7 @@ class ProsesAnomali extends BaseCommand
                 $uniqueKodesInExcel = [];
                 foreach ($items as $item) {
                     $row        = $item['row'];
-                    $anomaliStr = $isRT ? ($row[9] ?? '') : ($row[7] ?? '');
+                    $anomaliStr = $row[9]; //$isRT ? ($row[9] ?? '') : ($row[7] ?? '');
                     $arrAnomali = explode(',', rtrim($anomaliStr, ','));
 
                     foreach ($arrAnomali as $kode) {
@@ -187,13 +189,13 @@ class ProsesAnomali extends BaseCommand
 
                 // Set Flag awal is_insert = 0 untuk scope kabupaten & kategori terkait
                 if (!empty($targetKategoriIds)) {
-                    $this->db->table('anomali')
-                        ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali')
+                    $this->db->table('anomali a')
+                        ->join('kategori_anomali k', 'k.id = a.id_kategori_anomali')
                         ->where('k.id_kegiatan', $this->idKegiatan)
-                        ->where('LEFT(anomali.id_wilayah, 4)', $kdKab)
+                        ->where('LEFT(a.id_wilayah, 4)', $kdKab)
                         ->where('k.level_anomali', $this->levelAnomali)
-                        ->whereIn('anomali.id_kategori_anomali', $targetKategoriIds)
-                        ->update(['anomali.is_insert' => 0]);
+                        ->whereIn('a.id_kategori_anomali', $targetKategoriIds)
+                        ->update(['a.is_insert' => 0]);
                 }
 
                 // 2. Olah Baris Data
@@ -234,9 +236,11 @@ class ProsesAnomali extends BaseCommand
                             'kode_kec'     => $row[2] ?? '',
                             'kode_desa'    => $row[3] ?? '',
                             'kode_sls'     => $row[4] ?? '',
-                            'kode_nurt'    => $row[5] ?? '',
-                            'nama_nrt'     => ucwords(trim($row[6] ?? '')),
-                            'anomali'      => strtoupper(trim($row[7] ?? '')),
+                            'nurt'         => $row[5] ?? '',
+                            'nuart'        => null,
+                            'nama_krt'     => ucwords(trim($row[7] ?? '')),
+                            'nama_art'     => null,
+                            'anomali'      => strtoupper(trim($row[9] ?? '')),
                             'id_assigment' => trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')) . '_' . trim($row[5] ?? ''),
                             'id_wilayah'   => trim(($row[0] ?? '') . ($row[1] ?? '') . ($row[2] ?? '') . ($row[3] ?? '') . ($row[4] ?? '')),
                         ];
@@ -259,17 +263,27 @@ class ProsesAnomali extends BaseCommand
                     // Get/Create Assignment ID
                     $id_assigment = null;
                     if (!isset($this->mappedAssigment[$data['id_assigment']])) {
-                        $datum = [
-                            'kd_assigment' => $data['id_assigment'],
-                            'id_wilayah'   => $data['id_wilayah'],
-                            'id_kegiatan'  => $this->idKegiatan,
-                            'kd_krt'       => $data['nurt'] ?? null,
-                            'kd_art'       => $data['nuart'] ?? null,
-                            'nm_krt'       => $data['nama_krt'] ?? null,
-                            'nm_art'       => $data['nama_art'] ?? null,
-                            'kd_nrt'       => $data['kode_nurt'] ?? null,
-                            'nm_nrt'       => $data['nama_nrt'] ?? null,
-                        ];
+                        if ($isRT) {
+                            $datum = [
+                                'kd_assigment' => $data['id_assigment'],
+                                'id_wilayah'   => $data['id_wilayah'],
+                                'id_kegiatan'  => $this->idKegiatan,
+                                'kd_krt'       => $data['nurt'] ?? null,
+                                'nm_krt'       => $data['nama_krt'] ?? null,
+                                'kd_art'       => $data['nuart'] ?? null,
+                                'nm_art'       => $data['nama_art'] ?? null,
+                            ];
+                        } else {
+                            $datum = [
+                                'kd_assigment' => $data['id_assigment'],
+                                'id_wilayah'   => $data['id_wilayah'],
+                                'id_kegiatan'  => $this->idKegiatan,
+                                'kd_krt'       => $data['nurt'] ?? null,
+                                'nm_krt'       => $data['nama_krt'] ?? null,
+                                'kd_art'       => null,
+                                'nm_art'       => null,
+                            ];
+                        }
 
                         $id_assigment = $this->assigmentModel->insert($datum);
                         if (!$id_assigment) {
@@ -318,34 +332,34 @@ class ProsesAnomali extends BaseCommand
                 // 3. Post-Processing Status Sistem Per Kabupaten (Secara Bulk)
                 if (!empty($targetKategoriIds)) {
                     // Update yang tidak lagi ada di file upload
-                    $this->db->table('anomali')
-                        ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali')
+                    $this->db->table('anomali a')
+                        ->join('kategori_anomali k', 'k.id = a.id_kategori_anomali')
                         ->where('k.id_kegiatan', $this->idKegiatan)
-                        ->where('LEFT(anomali.id_wilayah, 4)', $kdKab)
+                        ->where('LEFT(a.id_wilayah, 4)', $kdKab)
                         ->where('k.level_anomali', $this->levelAnomali)
-                        ->whereIn('anomali.id_kategori_anomali', $targetKategoriIds)
-                        ->where('anomali.is_insert', 0)
+                        ->whereIn('a.id_kategori_anomali', $targetKategoriIds)
+                        ->where('a.is_insert', 0)
                         ->groupStart()
-                        ->where('anomali.konfirmasi', '')
-                        ->orWhere('anomali.konfirmasi IS NULL', null, false)
+                        ->where('a.konfirmasi', '')
+                        ->orWhere('a.konfirmasi IS NULL')
                         ->groupEnd()
                         ->update([
-                            'anomali.is_sistem'  => 1,
-                            'anomali.konfirmasi' => 'System: Sudah diperbaiki di fasih'
+                            'a.is_sistem'  => 1,
+                            'a.konfirmasi' => 'System: Sudah diperbaiki di fasih'
                         ]);
 
                     // Reset status sistem jika anomali muncul kembali di file upload
-                    $this->db->table('anomali')
-                        ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali')
+                    $this->db->table('anomali a')
+                        ->join('kategori_anomali k', 'k.id = a.id_kategori_anomali')
                         ->where('k.id_kegiatan', $this->idKegiatan)
-                        ->where('LEFT(anomali.id_wilayah, 4)', $kdKab)
+                        ->where('LEFT(a.id_wilayah, 4)', $kdKab)
                         ->where('k.level_anomali', $this->levelAnomali)
-                        ->whereIn('anomali.id_kategori_anomali', $targetKategoriIds)
-                        ->where('anomali.is_sistem', 1)
-                        ->where('anomali.is_insert', 1)
+                        ->whereIn('a.id_kategori_anomali', $targetKategoriIds)
+                        ->where('a.is_sistem', 1)
+                        ->where('a.is_insert', 1)
                         ->update([
-                            'anomali.is_sistem'  => 0,
-                            'anomali.konfirmasi' => ''
+                            'a.is_sistem'  => 0,
+                            'a.konfirmasi' => ''
                         ]);
                 }
 
@@ -415,8 +429,10 @@ class ProsesAnomali extends BaseCommand
                     'konfirmasi'          => '',
                 ];
 
-                $this->anomaliModel->insert($dataSave);
-                $newAnomaliId = $this->anomaliModel->getInsertID();
+                // $this->anomaliModel->insert($dataSave);
+                // $newAnomaliId = $this->anomaliModel->getInsertID();
+                $this->db->table('anomali')->insert($dataSave);
+                $newAnomaliId = $this->db->insertID();
 
                 if ($newAnomaliId) {
                     $mappedExisting[$idKat] = $newAnomaliId;

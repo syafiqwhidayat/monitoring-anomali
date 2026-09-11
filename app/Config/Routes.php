@@ -29,6 +29,9 @@ $routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator,mit
     $routes->get('listEdit', 'Anom::list/1'); //memunculkan anomali yg mau di edit
     $routes->get('konfir-fasih', 'Anom::konfirFasih'); //memunculkan anomali yg mau di edit
     $routes->post('ubah-is-lap', 'Anom::toggleIsLap');
+    $routes->post('toggle-check', 'Anom::toggleCheck');
+    $routes->get('get-chat', 'Anom::getChat');
+    $routes->post('send-chat', 'Anom::sendChat');
 });
 $routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
     $routes->get('konfirmasiBulk', 'Anom::konfirmasiBulk'); //untuk konfirmasi secara bulk
