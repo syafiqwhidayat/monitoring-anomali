@@ -153,6 +153,7 @@
                                     <a class="dropdown-item" href="<?= base_url('/anomali/konfirmasiBulk') ?>">Konfirmasi Bulk Anomali</a>
                                 <?php endif; ?>
                                 <a class="dropdown-item" href="<?= base_url('/anomali/konfir-fasih') ?>">Konfirmasi Fasih</a>
+                                <a class="dropdown-item" href="<?= base_url('/anomali/pesan-list') ?>">Pesan Anomali</a>
                                 <?php if (session('aktif_role') !== 'mitra'): ?>
                                     <a class="dropdown-item" href="<?= base_url('/anomali/rekap-anomali') ?>">Rekap By Assigment</a>
                                     <a class="dropdown-item" href="<?= base_url('/anomali/log') ?>">Log Upload Konfirmasi</a>

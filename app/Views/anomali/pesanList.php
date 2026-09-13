@@ -45,11 +45,11 @@
             </h2>
         </div>
 
-        <!-- Target Collapse (Default tanpa class 'show' agar dikontrol oleh JS saat load) -->
+        <!-- Target Collapse -->
         <div id="collapseFilter" class="collapse" aria-labelledby="headingFilter">
             <div class="card-body">
 
-                <!-- FORM FILTER ANDA -->
+                <!-- FORM FILTER -->
                 <form method="GET" action="<?= current_url(); ?>" class="row g-3">
                     <!-- Filter Level Anomali -->
                     <div class="col-md-3">
@@ -116,22 +116,6 @@
                         </select>
                     </div>
 
-                    <!-- Filter Status Cek -->
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">Status Cek</label>
-                        <select name="fil-check" class="form-select form-control">
-                            <option value="" <?= ($filterCheck === '') ? 'selected' : ''; ?>>Semua</option>
-                            <option value="1" <?= ($filterCheck === '1') ? 'selected' : ''; ?>>Sudah Di Cek</option>
-                            <option value="0" <?= ($filterCheck === '0') ? 'selected' : ''; ?>>Belum Di Cek</option>
-                        </select>
-                    </div>
-
-                    <!-- Filter Konfirmasi Sejak Tanggal -->
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold">Konfirmasi setelah Tanggal</label>
-                        <input type="date" name="fil-tgl-mulai" class="form-control" value="<?= esc($filterTglMulai); ?>">
-                    </div>
-
                     <!-- Filter Kondisi Lapangan -->
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Kondisi Lapangan?</label>
@@ -172,7 +156,7 @@
                             <th width="10%">Kode Anom</th>
                             <th>Deskripsi Aturan / Rules</th>
                             <th width="25%" class="bg-warning text-dark">Konfirmasi Petugas Sebelumnya</th>
-                            <th width="10%">Waktu Konfirmasi</th>
+                            <th width="10%">Waktu Chat</th>
                             <th width="6%">Aksi</th>
                         </tr>
                     </thead>
@@ -181,7 +165,20 @@
                             <?php
                             $page = isset($_GET['page_group_assignment']) ? (int)$_GET['page_group_assignment'] : 1;
                             $no   = 1 + (($page - 1) * 15);
+                            $currentUserEmail = session('email') ?? (function_exists('auth') && auth()->user() ? auth()->user()->email : '');
+
                             foreach ($listAnom as $row):
+                                // Parse JSON Data Chat
+                                $chatData = !empty($row['chat']) ? json_decode($row['chat'], true) : [];
+                                $hasChat  = is_array($chatData) && count($chatData) > 0;
+
+                                // Ambil pesan chat terakhir
+                                $lastChat = $hasChat ? end($chatData) : null;
+                                $lastChatTime   = $lastChat && isset($lastChat['waktu']) ? $lastChat['waktu'] : null;
+                                $lastChatSender = $lastChat && isset($lastChat['email']) ? $lastChat['email'] : null;
+
+                                // Kondisi Tampil Titik Oren: Ada chat DAN pengirim terakhir BUKAN user yang login saat ini
+                                $showOrangeDot = $hasChat && ($lastChatSender !== $currentUserEmail);
                             ?>
                                 <tr>
                                     <td class="text-center"><?= $no++; ?></td>
@@ -200,7 +197,6 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <!-- <small class="text-muted d-block" style="font-size: 10px;">ID: <?= $row['kd_assigment']; ?></small> -->
                                         <strong><?= $row['nm_krt'] ?? $row['nm_art'] ?? $row['nm_nrt'] ?? '-'; ?></strong>/
                                         <strong><?= $row['nm_art'] ?? $row['nm_art'] ?? $row['nm_art'] ?? '-'; ?></strong>
                                     </td>
@@ -213,11 +209,19 @@
                                     <td class="bg-light text-green" style="font-style: italic; font-weight: 500; font-size: 13px;">
                                         <?= esc($row['konfirmasi']); ?>
                                     </td>
+                                    <!-- Menampilkan Waktu Chat Terakhir -->
                                     <td class="text-center">
-                                        <small><?= !empty($row['date_konfirmasi']) ? date('d/m/Y H:i', strtotime($row['date_konfirmasi'])) : '-'; ?></small>
+                                        <small><?= !empty($lastChatTime) ? date('d/m/Y H:i', strtotime($lastChatTime)) : '-'; ?></small>
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex flex-column gap-1">
+                                            <button type="button"
+                                                class="btn btn-sm btn-outline-warning btn-open-edit-konfirmasi"
+                                                data-id="<?= $row['id_anomali']; ?>"
+                                                data-konfirmasi="<?= esc($row['konfirmasi']); ?>"
+                                                title="Edit Konfirmasi">
+                                                <i class="fas fa-edit"></i> Edit Konfirmasi
+                                            </button>
                                             <button type="button"
                                                 class="btn btn-sm <?= ($row['is_lap'] == 1) ? 'btn-outline-blue' : 'btn-outline-success'; ?> btn-toggle-lap"
                                                 data-id="<?= $row['id_anomali']; ?>"
@@ -228,19 +232,16 @@
 
                                             <div class="d-flex gap-1 justify-content-center">
                                                 <!-- Tombol Check (Flag) -->
-                                                <button type="button"
-                                                    class="btn btn-sm <?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'btn-success' : 'btn-outline-secondary'; ?> btn-toggle-check"
-                                                    data-id="<?= $row['id_anomali']; ?>"
-                                                    title="<?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'Sudah Dicek' : 'Tandai Sudah Dicek'; ?>">
-                                                    <i class="fas <?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'fa-check-circle' : 'fa-check'; ?>"></i>
-                                                </button>
+                                                <?php if (session('isOrganik')): ?>
+                                                    <button type="button"
+                                                        class="btn btn-sm <?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'btn-success' : 'btn-outline-secondary'; ?> btn-toggle-check"
+                                                        data-id="<?= $row['id_anomali']; ?>"
+                                                        title="<?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'Sudah Dicek' : 'Tandai Sudah Dicek'; ?>">
+                                                        <i class="fas <?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'fa-check-circle' : 'fa-check'; ?>"></i>
+                                                    </button>
+                                                <?php endif; ?>
 
                                                 <!-- Tombol Chat Modal -->
-                                                <?php
-                                                // Decode JSON chat untuk memastikan data bernilai array dan tidak kosong
-                                                $chatData = !empty($row['chat']) ? json_decode($row['chat'], true) : [];
-                                                $hasChat  = is_array($chatData) && count($chatData) > 0;
-                                                ?>
                                                 <div class="btn-chat-container">
                                                     <button type="button"
                                                         class="btn btn-sm btn-outline-primary btn-open-chat"
@@ -248,8 +249,10 @@
                                                         title="Buka Chat Diskusi">
                                                         <i class="fas fa-comments"></i>
                                                     </button>
-                                                    <?php if ($hasChat): ?>
-                                                        <span class="chat-badge-dot" title="Ada pesan diskusi"></span>
+
+                                                    <!-- Titik Oren hanya jika pengirim terakhir bukan user yang sedang login -->
+                                                    <?php if ($showOrangeDot): ?>
+                                                        <span class="chat-badge-dot" title="Ada pesan baru dari pengguna lain"></span>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
@@ -259,7 +262,7 @@
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-5">
+                                <td colspan="9" class="text-center text-muted py-5">
                                     <i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i>
                                     Hebat! Tidak ditemukan anomali yang belum diperbaiki di fasih.
                                 </td>
@@ -316,6 +319,47 @@
     </div>
 </div>
 
+<!-- Modal Edit Konfirmasi -->
+<div class="modal fade" id="modalEditKonfirmasi" tabindex="-1" aria-labelledby="modalEditKonfirmasiLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="modalEditKonfirmasiLabel"><i class="fas fa-edit me-2"></i> Edit Konfirmasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formEditKonfirmasi">
+                <div class="modal-body">
+                    <input type="hidden" id="editIdAnomali" name="id">
+
+                    <div class="mb-3">
+                        <label for="editKonfirmasiText" class="form-label fw-bold">Konfirmasi Petugas</label>
+
+                        <!-- Wadah pesan error jika validasi gagal (Terletak di atas textarea) -->
+                        <div id="editKonfirmasiError" class="alert alert-danger py-2 px-3 small d-none" role="alert">
+                            <i class="fas fa-exclamation-triangle me-1"></i> <span id="editKonfirmasiErrorText"></span>
+                        </div>
+
+                        <textarea class="form-control"
+                            id="editKonfirmasiText"
+                            name="konfirmasi"
+                            rows="4"
+                            pattern="[a-zA-Z0-9\s.,?]+"
+                            title="Hanya diperbolehkan huruf, angka, spasi, titik, koma, tanda tanya, dan tanda seru"
+                            required></textarea>
+                        <small class="text-muted d-block mt-1">
+                            * Karakter yang diizinkan: Huruf, angka, spasi, titik (.), koma (,), tanda tanya (?), dan tanda seru (!). Minimum 5 karakter.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning" id="btnSaveKonfirmasi">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <style>
     .btn-chat-container {
         position: relative;
@@ -341,14 +385,11 @@
         const csrfHash = '<?= csrf_hash() ?>';
         const collapseElement = document.getElementById('collapseFilter');
 
-        // logic filter
+        // Logic accordion filter
         if (collapseElement) {
-            // Cek lebar viewport (768px adalah breakpoint md standar Bootstrap)
             if (window.innerWidth >= 768) {
-                // Jika Desktop (>= 768px), buka accordion secara default
                 collapseElement.classList.add('show');
             } else {
-                // Jika HP/Mobile (< 768px), pastikan accordion tertutup
                 collapseElement.classList.remove('show');
             }
         }
@@ -517,6 +558,91 @@
                 .catch(() => {
                     btnSend.disabled = false;
                     alert('Gagal mengirim pesan.');
+                });
+        });
+
+        // Modal Edit Konfirmasi
+        const modalEditKonfirmasi = new bootstrap.Modal(document.getElementById('modalEditKonfirmasi'));
+        const editIdAnomali = document.getElementById('editIdAnomali');
+        const editKonfirmasiText = document.getElementById('editKonfirmasiText');
+        const editKonfirmasiError = document.getElementById('editKonfirmasiError');
+        const editKonfirmasiErrorText = document.getElementById('editKonfirmasiErrorText');
+
+        // Buka Modal Edit Konfirmasi
+        document.querySelectorAll('.btn-open-edit-konfirmasi').forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const textKonfirmasi = this.getAttribute('data-konfirmasi');
+
+                editIdAnomali.value = id;
+                editKonfirmasiText.value = textKonfirmasi;
+
+                // Sembunyikan error lama saat modal dibuka
+                editKonfirmasiError.classList.add('d-none');
+                editKonfirmasiText.classList.remove('is-invalid');
+
+                modalEditKonfirmasi.show();
+            });
+        });
+
+        // Submit Form Edit Konfirmasi
+        document.getElementById('formEditKonfirmasi').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btnSave = document.getElementById('btnSaveKonfirmasi');
+
+            // Reset tampilan error
+            editKonfirmasiError.classList.add('d-none');
+            editKonfirmasiText.classList.remove('is-invalid');
+
+            btnSave.disabled = true;
+            btnSave.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Menyimpan...';
+
+            const formData = new FormData();
+            formData.append('id', editIdAnomali.value);
+            formData.append('konfirmasi', editKonfirmasiText.value);
+            formData.append(csrfToken, csrfHash);
+
+            fetch('<?= base_url('anomali/updateKonfirmasi'); ?>', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = 'Simpan Perubahan';
+
+                    if (data.status === 'success') {
+                        const updatedId = editIdAnomali.value;
+                        const newKonfirmasi = editKonfirmasiText.value;
+
+                        // Update UI teks secara langsung pada tabel
+                        const textSpan = document.getElementById(`text-konfirmasi-${updatedId}`);
+                        if (textSpan) {
+                            textSpan.textContent = newKonfirmasi;
+                        }
+
+                        // Update attribute tombol
+                        const btnEdit = document.querySelector(`.btn-open-edit-konfirmasi[data-id="${updatedId}"]`);
+                        if (btnEdit) {
+                            btnEdit.setAttribute('data-konfirmasi', newKonfirmasi);
+                        }
+
+                        modalEditKonfirmasi.hide();
+                    } else {
+                        // Munculkan pesan error di atas input text
+                        editKonfirmasiErrorText.textContent = data.message || 'Inputan tidak sesuai aturan!';
+                        editKonfirmasiError.classList.remove('d-none');
+                        editKonfirmasiText.classList.add('is-invalid');
+                    }
+                })
+                .catch(() => {
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = 'Simpan Perubahan';
+                    editKonfirmasiErrorText.textContent = 'Terjadi kesalahan sistem/koneksi.';
+                    editKonfirmasiError.classList.remove('d-none');
                 });
         });
     });

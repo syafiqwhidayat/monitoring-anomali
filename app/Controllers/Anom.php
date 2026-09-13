@@ -440,6 +440,8 @@ class Anom extends BaseController
     public function konfirFasih()
     {
         $userWilayah = auth()->user()->wilayah_kerja;
+        $aktifKegiatan = session()->get('aktif_kegiatan');
+        $currentUser = auth()->user();
 
 
         // Aturan Hak Akses Wilayah (Jika 1300 bebas pilih, jika kab/kota kunci ke wilayahnya)
@@ -460,6 +462,8 @@ class Anom extends BaseController
         $data['filterTglMulai'] = $this->request->getGet('fil-tgl-mulai') ?? '';
         $filterIsLap = $this->request->getGet('fil-lap');
         $data['filterIsLap'] = ($filterIsLap !== null && $filterIsLap !== '') ? $filterIsLap : '0';
+        $data['filterCheck'] = $this->request->getGet('fil-check') ?? '';
+        $data['filterSubSls'] = $this->request->getGet('fil-subsls') ?? '';
 
         // Setup Dropdown Filter sesuai standar fungsi list() Anda
         $data['listLevel'] = [
@@ -479,13 +483,31 @@ class Anom extends BaseController
         $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel ?? []);
         $data['listWilayah'] = $listSelWilayah;
 
+        // AMBIL DATA OPTION UNTUK FILTER SUB SLS (wilayah_tugas JOIN wilayah)
+        $db = \Config\Database::connect();
+        $builderWt = $db->table('wilayah_tugas wt')
+            ->select('wt.id_wilayah, w.nm_sls')
+            ->join('wilayah w', 'w.id = wt.id_wilayah', 'inner')
+            ->where('wt.id_kegiatan', $aktifKegiatan);
+
+        if (session('aktif_role') === 'mitra') {
+            $idUser = $currentUser->id;
+            $builderWt->groupStart()
+                ->where('wt.id_ppl', $idUser)
+                ->orWhere('wt.id_pml', $idUser)
+                ->orWhere('wt.id_koseka', $idUser)
+                ->groupEnd();
+        }
+
+        $data['listSubSls'] = $builderWt->orderBy('wt.id_wilayah', 'ASC')->get()->getResultArray();
+
         // Cek apakah request untuk download Excel
         $isExport = $this->request->getGet('export') === 'excel';
 
         try {
             // Menggunakan cara aman: Panggil builder langsung dari instance model
             $this->anomaliModel->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.date_konfirmasi, anomali.is_lap,
-                                     anomali.is_check,
+                                     anomali.is_check,anomali.chat,
                                      art.kd_assigment, art.nm_krt, art.nm_art, art.nm_nrt, art.kd_krt as kd_krt,
                                      k.kode_anomali, k.detil_anomali, k.level_anomali, k.flag,anomali.isi_fasih,
                                      u_ppl.name as nm_ppl, u_pml.name as nm_pml,
@@ -513,6 +535,15 @@ class Anom extends BaseController
             // filter hanya yg aktif
             // $this->anomaliModel->where('k.is_show = 1');
 
+            // FILTER Status Cek (is_check)
+            if ($data['filterCheck'] !== '') {
+                $this->anomaliModel->where('anomali.is_check', (int)$data['filterCheck']);
+            }
+
+            // FILTER Specific Sub SLS (id_wilayah)
+            if (!empty($data['filterSubSls'])) {
+                $this->anomaliModel->where('anomali.id_wilayah', $data['filterSubSls']);
+            }
 
             // Filter Level Anomali jika dipilih
             if (!empty($data['filterLevel'])) {
@@ -521,7 +552,7 @@ class Anom extends BaseController
 
             // 2. Filter Jenis / Kode Anomali
             if (!empty($data['filterKategori'])) {
-                $this->anomaliModel->where('k.kode_anomali', $data['filterKategori']);
+                $this->anomaliModel->where('anomali.id_kategori_anomali', $data['filterKategori']);
             }
 
             // 3. Filter Flag Prioritas
@@ -541,7 +572,6 @@ class Anom extends BaseController
             }
 
             // Menyesuaikan dengan standar pengecekan role/group di aplikasi Anda
-            $currentUser = auth()->user();
             if (session('aktif_role') === 'mitra') {
                 $idUser = $currentUser->id;
 
@@ -552,11 +582,9 @@ class Anom extends BaseController
                     ->groupEnd();
             }
 
-            // DD($this->anomaliModel->findAll());
-
             $this->anomaliModel
-                ->orderBy('anomali.date_konfirmasi', 'DESC')
-                ->orderBy('anomali.id_wilayah', 'ASC');
+                ->orderBy('art.kd_krt', 'ASC')
+                ->orderBy('art.nm_art', 'ASC');
 
             if ($isExport) {
                 // Ambil semua data tanpa limit halaman untuk dilempar ke Excel
@@ -1005,5 +1033,210 @@ class Anom extends BaseController
             'chat'    => $existingChat,
             'message' => $updated ? 'Pesan terkirim' : 'Gagal menyimpan pesan'
         ]);
+    }
+
+    /**
+     * Menampilkan daftar anomali yang belum dicek dan memiliki percakapan/chat
+     */
+    public function pesanList()
+    {
+        $userWilayah = auth()->user()->wilayah_kerja;
+        $aktifKegiatan = session()->get('aktif_kegiatan');
+        $currentUser = auth()->user();
+
+
+        // Aturan Hak Akses Wilayah (Jika 1300 bebas pilih, jika kab/kota kunci ke wilayahnya)
+        if ($userWilayah !== '1300') {
+            $data['filterWilayah'] = $userWilayah;
+            $data['isKunciWilayah'] = true;
+        } else {
+            $data['filterWilayah'] = $this->request->getGet('fil-wilayah') ?? '';
+            $data['isKunciWilayah'] = false;
+        }
+
+        $data['filterLevel'] = $this->request->getGet('fil-level') ?? '';
+        $data['filterKategori'] = $this->request->getGet('fil-kategori') ?? '';
+        $data['filterFlag'] = $this->request->getGet('fil-flag') ?? '';
+        $data['filterStatus'] = $this->request->getGet('fil-stat') ?? 1;
+        $data['message'] = null;
+        $data['title'] = 'Chat Diskusi Anomali';
+        $data['filterTglMulai'] = $this->request->getGet('fil-tgl-mulai') ?? '';
+        $filterIsLap = $this->request->getGet('fil-lap');
+        $data['filterIsLap'] = ($filterIsLap !== null && $filterIsLap !== '') ? $filterIsLap : '0';
+        $data['filterCheck'] = $this->request->getGet('fil-check') ?? '';
+        $data['filterSubSls'] = $this->request->getGet('fil-subsls') ?? '';
+
+        // Setup Dropdown Filter sesuai standar fungsi list() Anda
+        $data['listLevel'] = [
+            ['id' => '', 'nama' => "Semua Level Anomali"]
+        ];
+        $data['listWilayah'] = [];
+        $data['listSelKdAnom'] = [['id' => '', 'nama' => "Semua Jenis Anomali"]];
+        $data['listSelFlag']   = [['value' => '', 'nama' => "Semua Flag"]];
+
+        $listSelKdAnom = $this->anomaliModel->getKdAnomaliByUser() ?? [];
+        $listSelFlag = $this->anomaliModel->getFlagByUser() ?? [];
+        $listSelLevel = $this->anomaliModel->getLevelAnomByUser() ?? [];
+        $listSelWilayah = $this->anomaliModel->getWilayahAnomByUser() ?? [];
+
+        $data['listSelKdAnom'] = array_merge($data['listSelKdAnom'], $listSelKdAnom ?? []);
+        $data['listSelFlag'] = array_merge($data['listSelFlag'], $listSelFlag ?? []);
+        $data['listLevel'] = array_merge($data['listLevel'], $listSelLevel ?? []);
+        $data['listWilayah'] = $listSelWilayah;
+
+        // AMBIL DATA OPTION UNTUK FILTER SUB SLS (wilayah_tugas JOIN wilayah)
+        $db = \Config\Database::connect();
+        $builderWt = $db->table('wilayah_tugas wt')
+            ->select('wt.id_wilayah, w.nm_sls')
+            ->join('wilayah w', 'w.id = wt.id_wilayah', 'inner')
+            ->where('wt.id_kegiatan', $aktifKegiatan);
+
+        if (session('aktif_role') === 'mitra') {
+            $idUser = $currentUser->id;
+            $builderWt->groupStart()
+                ->where('wt.id_ppl', $idUser)
+                ->orWhere('wt.id_pml', $idUser)
+                ->orWhere('wt.id_koseka', $idUser)
+                ->groupEnd();
+        }
+
+        $data['listSubSls'] = $builderWt->orderBy('wt.id_wilayah', 'ASC')->get()->getResultArray();
+
+        // Cek apakah request untuk download Excel
+        $isExport = $this->request->getGet('export') === 'excel';
+
+        try {
+            // Menggunakan cara aman: Panggil builder langsung dari instance model
+            $this->anomaliModel->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.date_konfirmasi, anomali.is_lap,
+                                     anomali.is_check,anomali.chat,
+                                     art.kd_assigment, art.nm_krt, art.nm_art, art.nm_nrt, art.kd_krt as kd_krt,
+                                     k.kode_anomali, k.detil_anomali, k.level_anomali, k.flag,anomali.isi_fasih,
+                                     u_ppl.name as nm_ppl, u_pml.name as nm_pml,
+                                     w.nm_sls as nm_sls')
+                ->join('assigment art', 'art.id = anomali.id_assigment', 'left')
+                ->join('kategori_anomali k', 'k.id = anomali.id_kategori_anomali', 'left')
+                ->join('wilayah_tugas wt', 'wt.id_wilayah = anomali.id_wilayah AND wt.id_kegiatan = k.id_kegiatan', 'left')
+                ->join('users u_ppl', 'u_ppl.id = wt.id_ppl', 'left')
+                ->join('users u_pml', 'u_pml.id = wt.id_pml', 'left')
+                ->join('wilayah w', 'anomali.id_wilayah = w.id');
+
+            // LOGIKA UTAMA EVALUASI:
+            // Konfirmasi terisi, is_lap = 0, tetapi masih muncul di update terbaru (is_insert = 1)
+            $this->anomaliModel
+                ->where('LENGTH (anomali.konfirmasi) > 0')
+                // ->where('anomali.konfirmasi IS NOT NULL')
+                // ->where('anomali.konfirmasi !=', '')
+                // ->where('anomali.is_lap', 0)
+                ->where('anomali.is_insert', 1)
+                ->where('k.is_show', 1)
+                ->where('k.id_kegiatan', session()->get('aktif_kegiatan'));
+
+            $this->anomaliModel->where('anomali.is_lap', (int)$data['filterIsLap']);
+
+            // filter hanya yg aktif
+            // $this->anomaliModel->where('k.is_show = 1');
+
+            // FILTER Status Cek (is_check)
+            if ($data['filterCheck'] !== '') {
+                $this->anomaliModel->where('anomali.is_check', (int)$data['filterCheck']);
+            }
+
+            // FILTER Specific Sub SLS (id_wilayah)
+            if (!empty($data['filterSubSls'])) {
+                $this->anomaliModel->where('anomali.id_wilayah', $data['filterSubSls']);
+            }
+
+            // Filter Level Anomali jika dipilih
+            if (!empty($data['filterLevel'])) {
+                $this->anomaliModel->where('k.level_anomali', $data['filterLevel']);
+            }
+
+            // 2. Filter Jenis / Kode Anomali
+            if (!empty($data['filterKategori'])) {
+                $this->anomaliModel->where('anomali.id_kategori_anomali', $data['filterKategori']);
+            }
+
+            // 3. Filter Flag Prioritas
+            if (!empty($data['filterFlag'])) {
+                $this->anomaliModel->where('k.flag_anomali', $data['filterFlag']);
+            }
+
+            // Filter Wilayah Kerja tingkat Kab/Kota (dari filter harian atau lock akun organik)
+            if (!empty($data['filterWilayah'])) {
+                $this->anomaliModel->like('anomali.id_wilayah', $data['filterWilayah'], 'after');
+            }
+
+            // filter menurt tanggal
+            if (!empty($data['filterTglMulai'])) {
+                // Memfilter dari awal hari (00:00:00) pada tanggal yang dipilih
+                $this->anomaliModel->where('anomali.date_konfirmasi >=', $data['filterTglMulai'] . ' 00:00:00');
+            }
+
+            // Menyesuaikan dengan standar pengecekan role/group di aplikasi Anda
+            if (session('aktif_role') === 'mitra') {
+                $idUser = $currentUser->id;
+
+                $this->anomaliModel->groupStart()
+                    ->where('wt.id_ppl', $idUser)
+                    ->orWhere('wt.id_pml', $idUser)
+                    ->orWhere('wt.id_koseka', $idUser)
+                    ->groupEnd();
+            }
+
+            $this->anomaliModel
+                ->orderBy('art.kd_krt', 'ASC')
+                ->orderBy('art.nm_art', 'ASC');
+
+            if ($isExport) {
+                // Ambil semua data tanpa limit halaman untuk dilempar ke Excel
+                $allData = $this->anomaliModel->findAll();
+
+                // Sort array berdasarkan chat terbaru (Descending)
+                usort($allData, function ($a, $b) {
+                    $chatA = !empty($a['chat']) ? json_decode($a['chat'], true) : [];
+                    $chatB = !empty($b['chat']) ? json_decode($b['chat'], true) : [];
+
+                    $lastChatA = (is_array($chatA) && !empty($chatA)) ? (end($chatA)['waktu'] ?? '') : '';
+                    $lastChatB = (is_array($chatB) && !empty($chatB)) ? (end($chatB)['waktu'] ?? '') : '';
+
+                    return strcmp($lastChatB, $lastChatA);
+                });
+
+                $data['listAnom'] = $allData;
+                return view('anomali/excelKonfirFasih', $data);
+            } else {
+                // 1. Ambil SEMUA data hasil query filter (tanpa limit get)
+                $allData = $this->anomaliModel->findAll();
+                $totalRows = count($allData);
+
+                // 2. Lakukan Sorting Array di Controller (Chat Terbaru ke Terlama)
+                usort($allData, function ($a, $b) {
+                    $chatA = !empty($a['chat']) ? json_decode($a['chat'], true) : [];
+                    $chatB = !empty($b['chat']) ? json_decode($b['chat'], true) : [];
+
+                    $lastChatA = (is_array($chatA) && !empty($chatA)) ? (end($chatA)['waktu'] ?? '') : '';
+                    $lastChatB = (is_array($chatB) && !empty($chatB)) ? (end($chatB)['waktu'] ?? '') : '';
+
+                    return strcmp($lastChatB, $lastChatA); // Descending (Terbaru di atas)
+                });
+
+                // 3. Paginasi Manual (Slice Array sesuai Halaman Aktif)
+                $page    = (int) ($this->request->getVar('page_group_assignment') ?? 1);
+                $perPage = 15;
+                $offset  = ($page - 1) * $perPage;
+
+                // Ambil 15 data sesuai halaman setelah di-sort
+                $data['listAnom'] = array_slice($allData, $offset, $perPage);
+
+                // 4. Generate Pager
+                $pager = \Config\Services::pager();
+                $data['pager'] = $pager->makeLinks($page, $perPage, $totalRows, 'my_pager', 0, 'group_assignment');
+            }
+        } catch (\Throwable $th) {
+            $data['listAnom'] = [];
+            $data['message'] = "Gagal memuat data catatan evaluasi: " . $th->getMessage();
+        }
+
+        return view('anomali/pesanList', $data);
     }
 }
