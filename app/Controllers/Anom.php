@@ -1063,7 +1063,7 @@ class Anom extends BaseController
         $data['filterTglMulai'] = $this->request->getGet('fil-tgl-mulai') ?? '';
         $filterIsLap = $this->request->getGet('fil-lap');
         $data['filterIsLap'] = ($filterIsLap !== null && $filterIsLap !== '') ? $filterIsLap : '0';
-        $data['filterCheck'] = $this->request->getGet('fil-check') ?? '';
+        // $data['filterCheck'] = $this->request->getGet('fil-check') ?? '';
         $data['filterSubSls'] = $this->request->getGet('fil-subsls') ?? '';
 
         // Setup Dropdown Filter sesuai standar fungsi list() Anda
@@ -1137,9 +1137,11 @@ class Anom extends BaseController
             // $this->anomaliModel->where('k.is_show = 1');
 
             // FILTER Status Cek (is_check)
-            if ($data['filterCheck'] !== '') {
-                $this->anomaliModel->where('anomali.is_check', (int)$data['filterCheck']);
-            }
+            $this->anomaliModel
+                ->where('anomali.is_check', 0)
+                ->where('anomali.chat IS NOT NULL')
+                ->where('anomali.chat !=', '')
+                ->where('anomali.chat !=', '[]');
 
             // FILTER Specific Sub SLS (id_wilayah)
             if (!empty($data['filterSubSls'])) {
@@ -1164,12 +1166,6 @@ class Anom extends BaseController
             // Filter Wilayah Kerja tingkat Kab/Kota (dari filter harian atau lock akun organik)
             if (!empty($data['filterWilayah'])) {
                 $this->anomaliModel->like('anomali.id_wilayah', $data['filterWilayah'], 'after');
-            }
-
-            // filter menurt tanggal
-            if (!empty($data['filterTglMulai'])) {
-                // Memfilter dari awal hari (00:00:00) pada tanggal yang dipilih
-                $this->anomaliModel->where('anomali.date_konfirmasi >=', $data['filterTglMulai'] . ' 00:00:00');
             }
 
             // Menyesuaikan dengan standar pengecekan role/group di aplikasi Anda
