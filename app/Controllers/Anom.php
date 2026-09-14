@@ -1062,7 +1062,7 @@ class Anom extends BaseController
         $data['title'] = 'Chat Diskusi Anomali';
         $data['filterTglMulai'] = $this->request->getGet('fil-tgl-mulai') ?? '';
         $filterIsLap = $this->request->getGet('fil-lap');
-        $data['filterIsLap'] = ($filterIsLap !== null && $filterIsLap !== '') ? $filterIsLap : '0';
+        $data['filterIsLap'] = ($filterIsLap !== null && $filterIsLap !== '') ? (string)$filterIsLap : '';
         // $data['filterCheck'] = $this->request->getGet('fil-check') ?? '';
         $data['filterSubSls'] = $this->request->getGet('fil-subsls') ?? '';
 
@@ -1131,7 +1131,9 @@ class Anom extends BaseController
                 ->where('k.is_show', 1)
                 ->where('k.id_kegiatan', session()->get('aktif_kegiatan'));
 
-            $this->anomaliModel->where('anomali.is_lap', (int)$data['filterIsLap']);
+            if ($data['filterIsLap'] !== '') {
+                $this->anomaliModel->where('anomali.is_lap', (int)$data['filterIsLap']);
+            }
 
             // filter hanya yg aktif
             // $this->anomaliModel->where('k.is_show = 1');

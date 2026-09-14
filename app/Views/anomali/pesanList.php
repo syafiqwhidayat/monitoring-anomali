@@ -4,7 +4,7 @@
 <div class="container-fluid px-4 mt-4">
     <h1 class="mt-4"><?= $title; ?></h1>
     <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item text-orange fw-bold">Daftar Anomali yang sudah dijawab dan bukan kondisi lapangan namun masih muncul sebagai anomali. Kemungkinan belum diperbaiki di FASIH.</li>
+        <li class="breadcrumb-item text-orange fw-bold">Daftar Chat dikusi anomali PPL, PML, dan Korlap</li>
     </ol>
 
     <?php if (!empty($message)): ?>
@@ -120,6 +120,7 @@
                     <div class="col-md-3">
                         <label class="form-label fw-bold">Kondisi Lapangan?</label>
                         <select name="fil-lap" class="form-select form-control">
+                            <option value="" <?= ($filterIsLap === '') ? 'selected' : ''; ?>>Semua Kondisi</option>
                             <option value="0" <?= ($filterIsLap === '0') ? 'selected' : ''; ?>>Perbaikan Fasih</option>
                             <option value="1" <?= ($filterIsLap === '1') ? 'selected' : ''; ?>>Kondisi Lapangan</option>
                         </select>
@@ -163,57 +164,101 @@
                     <tbody>
                         <?php if (!empty($listAnom) && count($listAnom) > 0): ?>
                             <?php
+                            // 1. HITUNG ROWSPAN UNTUK MENGELOMPOKKAN BERDASARKAN KRT
+                            $krtCounts = [];
                             $page = isset($_GET['page_group_assignment']) ? (int)$_GET['page_group_assignment'] : 1;
                             $no   = 1 + (($page - 1) * 15);
                             $currentUserEmail = session('email') ?? (function_exists('auth') && auth()->user() ? auth()->user()->email : '');
 
-                            foreach ($listAnom as $row):
-                                // Parse JSON Data Chat
-                                $chatData = !empty($row['chat']) ? json_decode($row['chat'], true) : [];
-                                $hasChat  = is_array($chatData) && count($chatData) > 0;
+                            // Loop Pertama: Menghitung total data per KRT di halaman ini
+                            foreach ($listAnom as $row) {
+                                $krtKey = !empty($row['kd_krt']) ? $row['kd_krt'] : ($row['nm_krt'] ?? 'UNKNOWN');
+                                if (!isset($krtCounts[$krtKey])) {
+                                    $krtCounts[$krtKey] = 0;
+                                }
+                                $krtCounts[$krtKey]++;
+                            }
 
-                                // Ambil pesan chat terakhir
-                                $lastChat = $hasChat ? end($chatData) : null;
+                            // Array penanda KRT mana saja yang sudah di-render cell utamanya
+                            $processedKrt = [];
+                            ?>
+
+                            <!-- Loop Kedua: Render HTML Tabel -->
+                            <?php foreach ($listAnom as $row):
+                                $krtKey = !empty($row['kd_krt']) ? $row['kd_krt'] : ($row['nm_krt'] ?? 'UNKNOWN');
+                                $isFirstRowOfKrt = !in_array($krtKey, $processedKrt);
+
+                                if ($isFirstRowOfKrt) {
+                                    $rowspan = $krtCounts[$krtKey];
+                                    $processedKrt[] = $krtKey; // Tandai KRT ini sudah dirender
+                                }
+
+                                // Parse JSON Data Chat & Cek Titik Oren
+                                $chatData       = !empty($row['chat']) ? json_decode($row['chat'], true) : [];
+                                $hasChat        = is_array($chatData) && count($chatData) > 0;
+                                $lastChat       = $hasChat ? end($chatData) : null;
                                 $lastChatTime   = $lastChat && isset($lastChat['waktu']) ? $lastChat['waktu'] : null;
                                 $lastChatSender = $lastChat && isset($lastChat['email']) ? $lastChat['email'] : null;
-
-                                // Kondisi Tampil Titik Oren: Ada chat DAN pengirim terakhir BUKAN user yang login saat ini
-                                $showOrangeDot = $hasChat && ($lastChatSender !== $currentUserEmail);
+                                $showOrangeDot  = $hasChat && ($lastChatSender !== $currentUserEmail);
                             ?>
                                 <tr>
-                                    <td class="text-center"><?= $no++; ?></td>
-                                    <td class="text-center" style="font-family: monospace; font-size: 13px;">
-                                        `<?= $row['nm_sls']; ?>
-                                        `<?= $row['id_wilayah']; ?>
-                                        <?php if (session('isOrganik')): ?>
-                                            <a href="https://fasih-sm.bps.go.id/app/assignment-detail/<?= esc($row['kd_krt']); ?>"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="badge bg-blue-lt text-blue px-1-5 py-0-5 rounded text-decoration-none"
-                                                style="font-size: 0.65rem; max-width: 80px; font-family: var(--bs-font-sans-serif);"
-                                                title="Buka Fasih untuk wilayah <?= esc($row['kd_krt']); ?>">
-                                                ke Fasih-SM
-                                            </a>
-                                        <?php endif; ?>
-                                    </td>
+                                    <td class="text-center align-middle"><?= $no++; ?></td>
+
+                                    <!-- KOLOM WILAYAH, PPL, & PML (DI-MERGE JIKA KRT SAMA) -->
+                                    <?php if ($isFirstRowOfKrt): ?>
+                                        <td rowspan="<?= $rowspan; ?>" class="text-center align-middle" style="background-color: #f8f9fa;">
+                                            <div class="fw-bold mb-1" style="font-family: monospace; font-size: 13px;">
+                                                <?= esc($row['nm_sls']); ?><br>
+                                                <span class="text-muted">(<?= esc($row['id_wilayah']); ?>)</span>
+                                            </div>
+                                            <hr class="my-1">
+                                            <small class="d-block text-start"><strong>PPL:</strong> <?= esc($row['nm_ppl'] ?? '-'); ?></small>
+                                            <small class="d-block text-start text-muted"><strong>PML:</strong> <?= esc($row['nm_pml'] ?? '-'); ?></small>
+                                        </td>
+                                    <?php endif; ?>
+
+                                    <!-- KOLOM KRT & TOMBOL FASIH (DI-MERGE JIKA KRT SAMA) -->
+                                    <?php if ($isFirstRowOfKrt): ?>
+                                        <td rowspan="<?= $rowspan; ?>" class="text-center align-middle" style="background-color: #f8f9fa;">
+                                            <strong class="d-block mb-1"><?= esc($row['nm_krt'] ?? '-'); ?></strong>
+                                            <small class="text-muted d-block mb-2" style="font-size: 11px;">Kode: <?= esc($row['kd_krt'] ?? '-'); ?></small>
+
+                                            <?php if (session('isOrganik') && !empty($row['kd_krt'])): ?>
+                                                <a href="https://fasih-sm.bps.go.id/app/assignment-detail/<?= esc($row['kd_krt']); ?>"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="btn btn-sm btn-outline-primary px-2 py-1 text-decoration-none"
+                                                    style="font-size: 0.75rem;"
+                                                    title="Buka Fasih untuk wilayah <?= esc($row['kd_krt']); ?>">
+                                                    <i class="fas fa-external-link-alt me-1"></i> ke Fasih-SM
+                                                </a>
+                                            <?php endif; ?>
+                                        </td>
+                                    <?php endif; ?>
+
+                                    <!-- KOLOM ART -->
                                     <td>
-                                        <strong><?= $row['nm_krt'] ?? $row['nm_art'] ?? $row['nm_nrt'] ?? '-'; ?></strong>/
-                                        <strong><?= $row['nm_art'] ?? $row['nm_art'] ?? $row['nm_art'] ?? '-'; ?></strong>
+                                        <strong><?= esc($row['nm_art'] ?? '-'); ?></strong>
                                     </td>
-                                    <td>
-                                        <small class="d-block"><strong>PPL:</strong> <?= esc($row['nm_ppl'] ?? '-'); ?></small>
-                                        <small class="d-block text-muted"><strong>PML:</strong> <?= esc($row['nm_pml'] ?? '-'); ?></small>
-                                    </td>
-                                    <td class="text-center fw-bold text-danger"><?= $row['kode_anomali']; ?></td>
-                                    <td><small><?= $row['detil_anomali']; ?></small></td>
+
+                                    <!-- KOLOM KODE ANOMALI -->
+                                    <td class="text-center fw-bold text-danger"><?= esc($row['kode_anomali']); ?></td>
+
+                                    <!-- KOLOM DESKRIPSI -->
+                                    <td><small><?= esc($row['detil_anomali']); ?></small></td>
+
+                                    <!-- KOLOM KONFIRMASI -->
                                     <td class="bg-light text-green" style="font-style: italic; font-weight: 500; font-size: 13px;">
                                         <?= esc($row['konfirmasi']); ?>
                                     </td>
-                                    <!-- Menampilkan Waktu Chat Terakhir -->
-                                    <td class="text-center">
+
+                                    <!-- KOLOM WAKTU CHAT TERAKHIR -->
+                                    <td class="text-center align-middle">
                                         <small><?= !empty($lastChatTime) ? date('d/m/Y H:i', strtotime($lastChatTime)) : '-'; ?></small>
                                     </td>
-                                    <td class="text-center">
+
+                                    <!-- KOLOM AKSI -->
+                                    <td class="text-center align-middle">
                                         <div class="d-flex flex-column gap-1">
                                             <button type="button"
                                                 class="btn btn-sm btn-outline-warning btn-open-edit-konfirmasi"
@@ -222,6 +267,7 @@
                                                 title="Edit Konfirmasi">
                                                 <i class="fas fa-edit"></i> Edit Konfirmasi
                                             </button>
+
                                             <button type="button"
                                                 class="btn btn-sm <?= ($row['is_lap'] == 1) ? 'btn-outline-blue' : 'btn-outline-success'; ?> btn-toggle-lap"
                                                 data-id="<?= $row['id_anomali']; ?>"
@@ -241,7 +287,7 @@
                                                     </button>
                                                 <?php endif; ?>
 
-                                                <!-- Tombol Chat Modal -->
+                                                <!-- Tombol Chat Modal dengan Titik Oren -->
                                                 <div class="btn-chat-container">
                                                     <button type="button"
                                                         class="btn btn-sm btn-outline-primary btn-open-chat"
@@ -250,7 +296,6 @@
                                                         <i class="fas fa-comments"></i>
                                                     </button>
 
-                                                    <!-- Titik Oren hanya jika pengirim terakhir bukan user yang sedang login -->
                                                     <?php if ($showOrangeDot): ?>
                                                         <span class="chat-badge-dot" title="Ada pesan baru dari pengguna lain"></span>
                                                     <?php endif; ?>
@@ -264,7 +309,7 @@
                             <tr>
                                 <td colspan="9" class="text-center text-muted py-5">
                                     <i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i>
-                                    Hebat! Tidak ditemukan anomali yang belum diperbaiki di fasih.
+                                    Tidak ditemukan pesan diskusi anomali.
                                 </td>
                             </tr>
                         <?php endif; ?>

@@ -179,10 +179,13 @@
                     <tbody>
                         <?php if (!empty($listAnom) && count($listAnom) > 0): ?>
                             <?php
-                            // 1. HITUNG ROWSPAN UNTUK MENGELOMPOKKAN BERDASARKAN KRT
+                            // 1. HITUNG HITUNGAN (ROWSPAN) UNTUK MENGELOMPOKKAN BERDASARKAN KRT
                             $krtCounts = [];
+                            $page = isset($_GET['page_group_assignment']) ? (int)$_GET['page_group_assignment'] : 1;
+                            $no   = 1 + (($page - 1) * 15);
+
+                            // Loop Pertama: khusus menghitung jumlah kemunculan KRT
                             foreach ($listAnom as $row) {
-                                // Menggunakan kd_krt sebagai key acuan merge
                                 $krtKey = !empty($row['kd_krt']) ? $row['kd_krt'] : ($row['nm_krt'] ?? 'UNKNOWN');
                                 if (!isset($krtCounts[$krtKey])) {
                                     $krtCounts[$krtKey] = 0;
@@ -190,21 +193,22 @@
                                 $krtCounts[$krtKey]++;
                             }
 
-                            $page = isset($_GET['page_group_assignment']) ? (int)$_GET['page_group_assignment'] : 1;
-                            $no   = 1 + (($page - 1) * 15);
-                            $processedKrt = []; // Menyimpan KRT yang sudah di-render td-nya
+                            // Array untuk mencatat KRT mana saja yang sudah dirender kolom utamanya
+                            $processedKrt = [];
+                            ?>
 
-                            foreach ($listAnom as $row):
+                            <!-- Loop Kedua: khusus mencetak baris HTML tabel -->
+                            <?php foreach ($listAnom as $row):
                                 $krtKey = !empty($row['kd_krt']) ? $row['kd_krt'] : ($row['nm_krt'] ?? 'UNKNOWN');
                                 $isFirstRowOfKrt = !in_array($krtKey, $processedKrt);
 
                                 if ($isFirstRowOfKrt) {
                                     $rowspan = $krtCounts[$krtKey];
-                                    $processedKrt[] = $krtKey;
+                                    $processedKrt[] = $krtKey; // Tandai bahwa KRT ini sudah dirender
                                 }
                             ?>
                                 <tr>
-                                    <td class="text-center"><?= $no++; ?></td>
+                                    <td class="text-center align-middle"><?= $no++; ?></td>
 
                                     <!-- KOLOM WILAYAH, PPL, & PML (DI-MERGE JIKA KRT SAMA) -->
                                     <?php if ($isFirstRowOfKrt): ?>
@@ -281,7 +285,6 @@
 
                                                 <!-- Tombol Chat Modal -->
                                                 <?php
-                                                // Decode JSON chat untuk memastikan data bernilai array dan tidak kosong
                                                 $chatData = !empty($row['chat']) ? json_decode($row['chat'], true) : [];
                                                 $hasChat  = is_array($chatData) && count($chatData) > 0;
                                                 ?>
