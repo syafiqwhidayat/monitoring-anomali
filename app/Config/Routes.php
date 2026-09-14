@@ -32,6 +32,7 @@ $routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator,mit
     $routes->post('toggle-check', 'Anom::toggleCheck');
     $routes->get('get-chat', 'Anom::getChat');
     $routes->post('send-chat', 'Anom::sendChat');
+    $routes->get('pesan-list', 'Anom::pesanList');
 });
 $routes->group('anomali', ['filter' => 'activeRole:superadmin,admin,operator'], static function ($routes) {
     $routes->get('konfirmasiBulk', 'Anom::konfirmasiBulk'); //untuk konfirmasi secara bulk

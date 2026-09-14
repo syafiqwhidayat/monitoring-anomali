@@ -26,88 +26,128 @@
         </div>
     <?php endif; ?>
 
-    <div class="card mb-4 border-primary">
-        <div class="card-header bg-primary text-white">
-            <i class="fas fa-filter me-1"></i> Filter Wilayah & Level Evaluasi
+
+    <!-- Card Filter Utama -->
+    <div class="card border-primary mb-3 shadow-sm">
+        <div class="card-header bg-primary p-0" id="headingFilter">
+            <h2 class="mb-0 w-100">
+                <button class="btn bg-primary text-white w-100 d-flex justify-content-between align-items-center p-3 border-0 rounded-top"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseFilter"
+                    aria-expanded="false"
+                    aria-controls="collapseFilter">
+                    <span class="fw-bold text-white">
+                        <i class="fas fa-filter me-2"></i>Filter Konfirmasi Fasih
+                    </span>
+                    <i class="fas fa-chevron-down text-white icon-collapse"></i>
+                </button>
+            </h2>
         </div>
-        <div class="card-body">
-            <form method="GET" action="<?= current_url(); ?>" class="row g-3">
-                <!-- Filter Level Anomali -->
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Level Anomali</label>
-                    <select name="fil-level" class="form-select form-control">
-                        <?php foreach ($listLevel as $lvl): ?>
-                            <option value="<?= $lvl['id']; ?>" <?= ($filterLevel == $lvl['id']) ? 'selected' : ''; ?>>
-                                <?= empty($lvl['id']) ? $lvl['nama'] : 'Level ' . $lvl['id']; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
 
-                <!-- Filter Jenis / Kode Anomali -->
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Jenis Anomali</label>
-                    <select name="fil-kategori" class="form-select form-control">
-                        <?php foreach ($listSelKdAnom as $anom): ?>
-                            <option value="<?= $anom['id']; ?>" <?= ($filterKategori == $anom['id']) ? 'selected' : ''; ?>>
-                                <?= empty($anom['id']) ? $anom['nama'] : $anom['nama']; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+        <!-- Target Collapse (Default tanpa class 'show' agar dikontrol oleh JS saat load) -->
+        <div id="collapseFilter" class="collapse" aria-labelledby="headingFilter">
+            <div class="card-body">
 
-                <!-- Filter Flag Prioritas -->
-                <div class="col-md-2">
-                    <label class="form-label fw-bold">Flag Prioritas</label>
-                    <select name="fil-flag" class="form-select form-control">
-                        <?php foreach ($listSelFlag as $flg): ?>
-                            <option value="<?= $flg['value']; ?>" <?= ($filterFlag == $flg['value']) ? 'selected' : ''; ?>>
-                                <?= empty($flg['value']) ? $flg['nama'] : 'Flag ' . $flg['value']; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                <!-- FORM FILTER ANDA -->
+                <form method="GET" action="<?= current_url(); ?>" class="row g-3">
+                    <!-- Filter Level Anomali -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Level Anomali</label>
+                        <select name="fil-level" class="form-select form-control">
+                            <?php foreach ($listLevel as $lvl): ?>
+                                <option value="<?= $lvl['id']; ?>" <?= ($filterLevel == $lvl['id']) ? 'selected' : ''; ?>>
+                                    <?= empty($lvl['id']) ? $lvl['nama'] : 'Level ' . $lvl['id']; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-                <!-- Filter Wilayah Kerja -->
-                <div class="col-md-2">
-                    <label class="form-label fw-bold">Wilayah Kerja</label>
-                    <select name="fil-wilayah" class="form-select form-control" <?= $isKunciWilayah ? 'disabled' : ''; ?>>
-                        <option value="">-- Semua Wilayah --</option>
-                        <?php foreach ($listWilayah as $wil): ?>
-                            <option value="<?= $wil['id']; ?>" <?= ($filterWilayah == $wil['id']) ? 'selected' : ''; ?>>
-                                <?= $wil['id']; ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                    <?php if ($isKunciWilayah): ?>
-                        <input type="hidden" name="fil-wilayah" value="<?= $filterWilayah; ?>">
-                    <?php endif; ?>
-                </div>
+                    <!-- Filter Jenis / Kode Anomali -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Jenis Anomali</label>
+                        <select name="fil-kategori" class="form-select form-control">
+                            <?php foreach ($listSelKdAnom as $anom): ?>
+                                <option value="<?= $anom['id']; ?>" <?= ($filterKategori == $anom['id']) ? 'selected' : ''; ?>>
+                                    <?= empty($anom['id']) ? $anom['nama'] : $anom['nama']; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-                <!-- Filter Konfirmasi Sejak Tanggal -->
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Konfirmasi setelah Tanggal</label>
-                    <input type="date" name="fil-tgl-mulai" class="form-control" value="<?= esc($filterTglMulai); ?>">
-                </div>
+                    <!-- Filter Flag Prioritas -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Flag Prioritas</label>
+                        <select name="fil-flag" class="form-select form-control">
+                            <?php foreach ($listSelFlag as $flg): ?>
+                                <option value="<?= $flg['value']; ?>" <?= ($filterFlag == $flg['value']) ? 'selected' : ''; ?>>
+                                    <?= empty($flg['value']) ? $flg['nama'] : 'Flag ' . $flg['value']; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
-                <!-- Filter Konsidi Lapangan -->
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">Kondisi Lapangan?</label>
-                    <select name="fil-lap" class="form-select form-control">
-                        <option value="0" <?= ($filterIsLap === '0') ? 'selected' : ''; ?>>
-                            Perbaikan Fasih
-                        </option>
-                        <option value="1" <?= ($filterIsLap === '1') ? 'selected' : ''; ?>>
-                            Kondisi Lapangan
-                        </option>
-                    </select>
-                </div>
+                    <!-- Filter Wilayah Kerja -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Wilayah Kerja</label>
+                        <select name="fil-wilayah" class="form-select form-control" <?= $isKunciWilayah ? 'disabled' : ''; ?>>
+                            <option value="">-- Semua Wilayah --</option>
+                            <?php foreach ($listWilayah as $wil): ?>
+                                <option value="<?= $wil['id']; ?>" <?= ($filterWilayah == $wil['id']) ? 'selected' : ''; ?>>
+                                    <?= $wil['id']; ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if ($isKunciWilayah): ?>
+                            <input type="hidden" name="fil-wilayah" value="<?= $filterWilayah; ?>">
+                        <?php endif; ?>
+                    </div>
 
-                <div class="col-md-4 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-primary w-50">Filter Data</button>
-                    <a href="<?= current_url(); ?>" class="btn btn-secondary w-50">Reset</a>
-                </div>
-            </form>
+                    <!-- Filter Sub SLS -->
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Sub SLS</label>
+                        <select name="fil-subsls" class="form-select form-control">
+                            <option value="">-- Semua Sub SLS --</option>
+                            <?php foreach ($listSubSls as $sub): ?>
+                                <option value="<?= $sub['id_wilayah']; ?>" <?= ($filterSubSls == $sub['id_wilayah']) ? 'selected' : ''; ?>>
+                                    [<?= esc($sub['id_wilayah']); ?>] <?= esc($sub['nm_sls']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Filter Status Cek -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Status Cek</label>
+                        <select name="fil-check" class="form-select form-control">
+                            <option value="" <?= ($filterCheck === '') ? 'selected' : ''; ?>>Semua</option>
+                            <option value="1" <?= ($filterCheck === '1') ? 'selected' : ''; ?>>Sudah Di Cek</option>
+                            <option value="0" <?= ($filterCheck === '0') ? 'selected' : ''; ?>>Belum Di Cek</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Konfirmasi Sejak Tanggal -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Konfirmasi setelah Tanggal</label>
+                        <input type="date" name="fil-tgl-mulai" class="form-control" value="<?= esc($filterTglMulai); ?>">
+                    </div>
+
+                    <!-- Filter Kondisi Lapangan -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Kondisi Lapangan?</label>
+                        <select name="fil-lap" class="form-select form-control">
+                            <option value="0" <?= ($filterIsLap === '0') ? 'selected' : ''; ?>>Perbaikan Fasih</option>
+                            <option value="1" <?= ($filterIsLap === '1') ? 'selected' : ''; ?>>Kondisi Lapangan</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary w-50">Filter Data</button>
+                        <a href="<?= current_url(); ?>" class="btn btn-secondary w-50">Reset</a>
+                    </div>
+                </form>
+
+            </div>
         </div>
     </div>
 
@@ -239,12 +279,23 @@
                                                     <i class="fas <?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'fa-check-circle' : 'fa-check'; ?>"></i>
                                                 </button>
 
-                                                <button type="button"
-                                                    class="btn btn-sm btn-outline-primary btn-open-chat"
-                                                    data-id="<?= $row['id_anomali']; ?>"
-                                                    title="Buka Chat Diskusi">
-                                                    <i class="fas fa-comments"></i>
-                                                </button>
+                                                <!-- Tombol Chat Modal -->
+                                                <?php
+                                                // Decode JSON chat untuk memastikan data bernilai array dan tidak kosong
+                                                $chatData = !empty($row['chat']) ? json_decode($row['chat'], true) : [];
+                                                $hasChat  = is_array($chatData) && count($chatData) > 0;
+                                                ?>
+                                                <div class="btn-chat-container">
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-primary btn-open-chat"
+                                                        data-id="<?= $row['id_anomali']; ?>"
+                                                        title="Buka Chat Diskusi">
+                                                        <i class="fas fa-comments"></i>
+                                                    </button>
+                                                    <?php if ($hasChat): ?>
+                                                        <span class="chat-badge-dot" title="Ada pesan diskusi"></span>
+                                                    <?php endif; ?>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -309,10 +360,42 @@
     </div>
 </div>
 
+<style>
+    .btn-chat-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .chat-badge-dot {
+        position: absolute;
+        top: -3px;
+        right: -3px;
+        width: 9px;
+        height: 9px;
+        background-color: #fd7e14;
+        /* Warna Oren Bootstrap */
+        border: 1.5px solid #ffffff;
+        border-radius: 50%;
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const csrfToken = '<?= csrf_token() ?>';
         const csrfHash = '<?= csrf_hash() ?>';
+        const collapseElement = document.getElementById('collapseFilter');
+
+        // logic filter
+        if (collapseElement) {
+            // Cek lebar viewport (768px adalah breakpoint md standar Bootstrap)
+            if (window.innerWidth >= 768) {
+                // Jika Desktop (>= 768px), buka accordion secara default
+                collapseElement.classList.add('show');
+            } else {
+                // Jika HP/Mobile (< 768px), pastikan accordion tertutup
+                collapseElement.classList.remove('show');
+            }
+        }
 
         // 1. Logic Toggle Is Lap
         document.querySelectorAll('.btn-toggle-lap').forEach(button => {
