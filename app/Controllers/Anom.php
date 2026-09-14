@@ -656,7 +656,7 @@ class Anom extends BaseController
 
             // SELECT dengan tambahan nama PPL dan PML dari tabel master user/petugas Anda
             $builder->select('anomali.id AS id_anomali, anomali.id_wilayah, anomali.konfirmasi, anomali.is_lap, anomali.is_insert, anomali.date_konfirmasi,
-                              art.id AS id_assignment_obj, art.kd_assigment, art.kd_krt,art.nm_krt, art.nm_art, art.nm_nrt,
+                              art.id AS id_assignment_obj, art.kd_assigment, art.kd_krt,art.kd_art,art.nm_krt, art.nm_art,anomali.date_updated,
                               k.kode_anomali, k.detil_anomali, k.level_anomali, k.flag,
                               u_ppl.name as nama_ppl, u_pml.name as nama_pml') // Sesuaikan field nama di tabel user Anda (misal: 'nama' atau 'username')
                 ->join('assigment art', 'art.id = anomali.id_assigment', 'left')

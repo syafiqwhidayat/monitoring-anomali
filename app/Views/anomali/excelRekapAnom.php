@@ -21,18 +21,19 @@ $sheet->getRowDimension(1)->setRowHeight(35);
 
 // 2. Header Tabel
 $headers = [
-    'A3' => 'Kode Assignment',
-    'B3' => 'Nama KRT',
-    'C3' => 'Nama ART',
-    'D3' => 'Nama PPL',
-    'E3' => 'Nama PML',
-    'F3' => 'Kode Wilayah',
-    'G3' => 'Kode Anomali',
-    'H3' => 'Detil Anomali',
-    'I3' => 'Isi Konfirmasi / Tanggapan Lapangan',
-    'J3' => 'Status Is_Lap',
-    'K3' => 'Status Is_Insert',
-    'L3' => 'Waktu Sinkronisasi'
+    'A3' => 'Kode Wilayah',
+    'B3' => 'Id_Assigment',
+    'C3' => 'Id_Roster',
+    'D3' => 'Nama KRT',
+    'E3' => 'Nama Roster',
+    'F3' => 'Nama PPL',
+    'G3' => 'Nama PML',
+    'H3' => 'Kode Anomali',
+    'I3' => 'Detil Anomali',
+    'J3' => 'Konfirmasi',
+    'K3' => 'Kondisi Lapangan',
+    'L3' => 'Status Anomali',
+    'M3' => 'Waktu Update'
 ];
 
 foreach ($headers as $cell => $value) {
@@ -40,11 +41,11 @@ foreach ($headers as $cell => $value) {
 }
 
 // Styling Header (Bulk)
-$sheet->getStyle('A3:L3')->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFFFFF'));
-$sheet->getStyle('A3:L3')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('0D6EFD');
+$sheet->getStyle('A3:M3')->getFont()->setBold(true)->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('FFFFFF'));
+$sheet->getStyle('A3:M3')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('0D6EFD');
 $sheet->getStyle('I3')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFDA6A');
 $sheet->getStyle('I3')->getFont()->setColor(new \PhpOffice\PhpSpreadsheet\Style\Color('000000'));
-$sheet->getStyle('A3:L3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+$sheet->getStyle('A3:M3')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
 $sheet->getRowDimension(3)->setRowHeight(28);
 
 // 3. Pengisian Data
@@ -66,24 +67,25 @@ if (!empty($listAnom)) {
 
             $sheet->setCellValueExplicit("A{$currentRow}", $row['id_wilayah'] ?? '', DataType::TYPE_STRING);
             $sheet->setCellValueExplicit("B{$currentRow}", $row['kd_krt'] ?? '', DataType::TYPE_STRING);
-            $sheet->setCellValue("C{$currentRow}", $row['nm_krt'] ?? $row['nm_nrt'] ?? '-');
-            $sheet->setCellValue("D{$currentRow}", $row['nm_art'] ?? '-');
-            $sheet->setCellValue("E{$currentRow}", $row['nama_ppl'] ?? '-');
-            $sheet->setCellValue("F{$currentRow}", $row['nama_pml'] ?? '-');
+            $sheet->setCellValueExplicit("C{$currentRow}", $row['kd_art'] ?? '', DataType::TYPE_STRING);
+            $sheet->setCellValue("D{$currentRow}", $row['nm_krt'] ?? $row['nm_nrt'] ?? '-');
+            $sheet->setCellValue("E{$currentRow}", $row['nm_art'] ?? '-');
+            $sheet->setCellValue("F{$currentRow}", $row['nama_ppl'] ?? '-');
+            $sheet->setCellValue("G{$currentRow}", $row['nama_pml'] ?? '-');
 
             if ($span > 1) {
-                foreach (range('A', 'F') as $col) {
+                foreach (range('A', 'G') as $col) {
                     $sheet->mergeCells("{$col}{$currentRow}:{$col}{$endMergeRow}");
                 }
             }
         }
 
-        $sheet->setCellValue("G{$currentRow}", $row['kode_anomali'] ?? '');
-        $sheet->setCellValue("H{$currentRow}", $row['detil_anomali'] ?? '');
-        $sheet->setCellValue("I{$currentRow}", !empty($row['konfirmasi']) ? $row['konfirmasi'] : '[ Belum Ada Konfirmasi ]');
-        $sheet->setCellValue("J{$currentRow}", ((int)$row['is_lap'] === 1) ? 'Kondisi Lapangan' : 'Perbaikan Fasih');
-        $sheet->setCellValue("K{$currentRow}", ((int)$row['is_insert'] === 1) ? 'Anomali Aktif' : 'Anomali Clean');
-        $sheet->setCellValue("L{$currentRow}", !empty($row['date_updated']) ? date('Y-m-d H:i', strtotime($row['date_konfirmasi'])) : '-');
+        $sheet->setCellValue("H{$currentRow}", $row['kode_anomali'] ?? '');
+        $sheet->setCellValue("I{$currentRow}", $row['detil_anomali'] ?? '');
+        $sheet->setCellValue("J{$currentRow}", !empty($row['konfirmasi']) ? $row['konfirmasi'] : '[ Belum Ada Konfirmasi ]');
+        $sheet->setCellValue("K{$currentRow}", ((int)$row['is_lap'] === 1) ? 'Kondisi Lapangan' : 'Perbaikan Fasih');
+        $sheet->setCellValue("L{$currentRow}", ((int)$row['is_insert'] === 1) ? 'Anomali Aktif' : 'Anomali Clean');
+        $sheet->setCellValue("M{$currentRow}", !empty($row['date_updated']) ? date('Y-m-d H:i', strtotime($row['date_konfirmasi'])) : '-');
 
         $currentRow++;
     }
@@ -128,7 +130,8 @@ $columnWidths = [
     'I' => 40,
     'J' => 16,
     'K' => 16,
-    'L' => 18
+    'L' => 18,
+    'M' => 18
 ];
 foreach ($columnWidths as $col => $width) {
     $sheet->getColumnDimension($col)->setWidth($width);
