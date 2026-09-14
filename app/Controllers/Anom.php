@@ -555,8 +555,8 @@ class Anom extends BaseController
             // DD($this->anomaliModel->findAll());
 
             $this->anomaliModel
-                ->orderBy('anomali.date_konfirmasi', 'DESC')
-                ->orderBy('anomali.id_wilayah', 'ASC');
+                ->orderBy('art.kd_krt', 'ASC')
+                ->orderBy('art.nm_art', 'ASC');
 
             if ($isExport) {
                 // Ambil semua data tanpa limit halaman untuk dilempar ke Excel

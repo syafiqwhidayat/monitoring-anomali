@@ -126,12 +126,12 @@
                     <thead class="table-dark text-center">
                         <tr>
                             <th width="3%">No</th>
-                            <th width="10%">Wilayah</th>
-                            <th>Identitas Objek (KRT/ART)</th>
-                            <th width="10%">Petugas (PPL / PML)</th>
-                            <th width="10%">Kode Anom</th>
+                            <th width="15%">Wilayah, PPL & PML</th>
+                            <th width="15%">KRT</th>
+                            <th width="15%">ART</th>
+                            <th width="8%">Kode Anom</th>
                             <th>Deskripsi Aturan / Rules</th>
-                            <th width="25%" class="bg-warning text-dark">Konfirmasi Petugas Sebelumnya</th>
+                            <th width="20%" class="bg-warning text-dark">Konfirmasi Petugas Sebelumnya</th>
                             <th width="10%">Waktu Konfirmasi</th>
                             <th width="6%">Aksi</th>
                         </tr>
@@ -139,43 +139,88 @@
                     <tbody>
                         <?php if (!empty($listAnom) && count($listAnom) > 0): ?>
                             <?php
+                            // 1. HITUNG ROWSPAN UNTUK MENGELOMPOKKAN BERDASARKAN KRT
+                            $krtCounts = [];
+                            foreach ($listAnom as $row) {
+                                // Menggunakan kd_krt sebagai key acuan merge
+                                $krtKey = !empty($row['kd_krt']) ? $row['kd_krt'] : ($row['nm_krt'] ?? 'UNKNOWN');
+                                if (!isset($krtCounts[$krtKey])) {
+                                    $krtCounts[$krtKey] = 0;
+                                }
+                                $krtCounts[$krtKey]++;
+                            }
+
                             $page = isset($_GET['page_group_assignment']) ? (int)$_GET['page_group_assignment'] : 1;
                             $no   = 1 + (($page - 1) * 15);
+                            $processedKrt = []; // Menyimpan KRT yang sudah di-render td-nya
+
                             foreach ($listAnom as $row):
+                                $krtKey = !empty($row['kd_krt']) ? $row['kd_krt'] : ($row['nm_krt'] ?? 'UNKNOWN');
+                                $isFirstRowOfKrt = !in_array($krtKey, $processedKrt);
+
+                                if ($isFirstRowOfKrt) {
+                                    $rowspan = $krtCounts[$krtKey];
+                                    $processedKrt[] = $krtKey;
+                                }
                             ?>
                                 <tr>
                                     <td class="text-center"><?= $no++; ?></td>
-                                    <td class="text-center" style="font-family: monospace; font-size: 13px;">
-                                        `<?= $row['nm_sls']; ?>
-                                        `<?= $row['id_wilayah']; ?>
-                                        <?php if (session('isOrganik')): ?>
-                                            <a href="https://fasih-sm.bps.go.id/app/assignment-detail/<?= esc($row['kd_krt']); ?>"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                class="badge bg-blue-lt text-blue px-1-5 py-0-5 rounded text-decoration-none"
-                                                style="font-size: 0.65rem; max-width: 80px; font-family: var(--bs-font-sans-serif);"
-                                                title="Buka Fasih untuk wilayah <?= esc($row['kd_krt']); ?>">
-                                                ke Fasih-SM
-                                            </a>
-                                        <?php endif; ?>
-                                    </td>
+
+                                    <!-- KOLOM WILAYAH, PPL, & PML (DI-MERGE JIKA KRT SAMA) -->
+                                    <?php if ($isFirstRowOfKrt): ?>
+                                        <td rowspan="<?= $rowspan; ?>" class="text-center align-middle" style="background-color: #f8f9fa;">
+                                            <div class="fw-bold mb-1" style="font-family: monospace; font-size: 13px;">
+                                                <?= esc($row['nm_sls']); ?><br>
+                                                <span class="text-muted">(<?= esc($row['id_wilayah']); ?>)</span>
+                                            </div>
+                                            <hr class="my-1">
+                                            <small class="d-block text-start"><strong>PPL:</strong> <?= esc($row['nm_ppl'] ?? '-'); ?></small>
+                                            <small class="d-block text-start text-muted"><strong>PML:</strong> <?= esc($row['nm_pml'] ?? '-'); ?></small>
+                                        </td>
+                                    <?php endif; ?>
+
+                                    <!-- KOLOM KRT & TOMBOL FASIH (DI-MERGE JIKA KRT SAMA) -->
+                                    <?php if ($isFirstRowOfKrt): ?>
+                                        <td rowspan="<?= $rowspan; ?>" class="text-center align-middle" style="background-color: #f8f9fa;">
+                                            <strong class="d-block mb-1"><?= esc($row['nm_krt'] ?? '-'); ?></strong>
+                                            <small class="text-muted d-block mb-2" style="font-size: 11px;">Kode: <?= esc($row['kd_krt'] ?? '-'); ?></small>
+
+                                            <!-- Tombol Ke Fasih diletakkan di bawah Nama KRT -->
+                                            <?php if (session('isOrganik') && !empty($row['kd_krt'])): ?>
+                                                <a href="https://fasih-sm.bps.go.id/app/assignment-detail/<?= esc($row['kd_krt']); ?>"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="btn btn-sm btn-outline-primary px-2 py-1 text-decoration-none"
+                                                    style="font-size: 0.75rem;"
+                                                    title="Buka Fasih untuk wilayah <?= esc($row['kd_krt']); ?>">
+                                                    <i class="fas fa-external-link-alt me-1"></i> ke Fasih-SM
+                                                </a>
+                                            <?php endif; ?>
+                                        </td>
+                                    <?php endif; ?>
+
+                                    <!-- KOLOM ART -->
                                     <td>
-                                        <!-- <small class="text-muted d-block" style="font-size: 10px;">ID: <?= $row['kd_assigment']; ?></small> -->
-                                        <strong><?= $row['nm_krt'] ?? $row['nm_art'] ?? $row['nm_nrt'] ?? '-'; ?></strong>/
-                                        <strong><?= $row['nm_art'] ?? $row['nm_art'] ?? $row['nm_art'] ?? '-'; ?></strong>
+                                        <strong><?= esc($row['nm_art'] ?? '-'); ?></strong>
                                     </td>
-                                    <td>
-                                        <small class="d-block"><strong>PPL:</strong> <?= esc($row['nm_ppl'] ?? '-'); ?></small>
-                                        <small class="d-block text-muted"><strong>PML:</strong> <?= esc($row['nm_pml'] ?? '-'); ?></small>
-                                    </td>
-                                    <td class="text-center fw-bold text-danger"><?= $row['kode_anomali']; ?></td>
-                                    <td><small><?= $row['detil_anomali']; ?></small></td>
+
+                                    <!-- KOLOM KODE ANOMALI -->
+                                    <td class="text-center fw-bold text-danger"><?= esc($row['kode_anomali']); ?></td>
+
+                                    <!-- KOLOM DESKRIPSI -->
+                                    <td><small><?= esc($row['detil_anomali']); ?></small></td>
+
+                                    <!-- KOLOM KONFIRMASI -->
                                     <td class="bg-light text-green" style="font-style: italic; font-weight: 500; font-size: 13px;">
                                         <?= esc($row['konfirmasi']); ?>
                                     </td>
+
+                                    <!-- KOLOM WAKTU KONFIRMASI -->
                                     <td class="text-center">
                                         <small><?= !empty($row['date_konfirmasi']) ? date('d/m/Y H:i', strtotime($row['date_konfirmasi'])) : '-'; ?></small>
                                     </td>
+
+                                    <!-- KOLOM AKSI -->
                                     <td class="text-center">
                                         <div class="d-flex flex-column gap-1">
                                             <button type="button"
@@ -187,7 +232,6 @@
                                             </button>
 
                                             <div class="d-flex gap-1 justify-content-center">
-                                                <!-- Tombol Check (Flag) -->
                                                 <button type="button"
                                                     class="btn btn-sm <?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'btn-success' : 'btn-outline-secondary'; ?> btn-toggle-check"
                                                     data-id="<?= $row['id_anomali']; ?>"
@@ -195,7 +239,6 @@
                                                     <i class="fas <?= (!empty($row['is_check']) && $row['is_check'] == 1) ? 'fa-check-circle' : 'fa-check'; ?>"></i>
                                                 </button>
 
-                                                <!-- Tombol Chat Modal -->
                                                 <button type="button"
                                                     class="btn btn-sm btn-outline-primary btn-open-chat"
                                                     data-id="<?= $row['id_anomali']; ?>"
@@ -209,7 +252,7 @@
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7" class="text-center text-muted py-5">
+                                <td colspan="9" class="text-center text-muted py-5">
                                     <i class="fas fa-check-circle text-success fa-2x mb-2 d-block"></i>
                                     Hebat! Tidak ditemukan anomali yang belum diperbaiki di fasih.
                                 </td>
