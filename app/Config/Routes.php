@@ -105,6 +105,8 @@ $routes->group('peta', ['filter' => 'activeRole:superadmin,admin,operator'], sta
     $routes->get('get-sls', 'PetaController::getSls');
     $routes->get('get-subsls', 'PetaController::getSubSls');
     $routes->get('get-data-map/(:segment)', 'PetaController::getDataMap/$1');
+    $routes->get('locate-subsls', 'PetaController::locateSubSls');
+    $routes->get('get-batas/(:segment)/(:segment)', 'PetaController::getBatasWilayah/$1/$2');
 
     // 2. Rute Khusus Upload (Hanya Superadmin & Admin)
     $routes->get('upload', 'PetaController::uploadView');
